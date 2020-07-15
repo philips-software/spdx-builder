@@ -1,4 +1,4 @@
-package com.philips.research.ort2spdx.core.bom;
+package com.philips.research.convert2spdx.core.bom;
 
 import java.util.ArrayList;
 import java.util.List;

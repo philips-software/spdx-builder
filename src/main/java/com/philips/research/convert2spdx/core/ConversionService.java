@@ -1,4 +1,4 @@
-package com.philips.research.ort2spdx.core;
+package com.philips.research.convert2spdx.core;
 
 import java.io.File;
 

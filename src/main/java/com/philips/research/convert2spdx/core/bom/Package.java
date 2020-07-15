@@ -1,7 +1,8 @@
-package com.philips.research.ort2spdx.core.bom;
+package com.philips.research.convert2spdx.core.bom;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +14,7 @@ public class Package {
 
     private Party originator;
     private Party supplier;
+    private String filename;
     private URI location;
     private URL homePage;
     private String license;
@@ -20,6 +22,7 @@ public class Package {
     private String copyright;
     private String summary;
     private String description;
+    private String attribution;
 
     public Package(String name, String version) {
         this.name = name;
@@ -52,6 +55,15 @@ public class Package {
         return this;
     }
 
+    public Optional<String> getFilename() {
+        return Optional.ofNullable(filename);
+    }
+
+    public Package setFilename(String filename) {
+        this.filename = filename;
+        return this;
+    }
+
     public Optional<URI> getLocation() {
         return Optional.ofNullable(location);
     }
@@ -63,6 +75,10 @@ public class Package {
 
     public Optional<String> getHash(String format) {
         return Optional.ofNullable(hash.get(format.toUpperCase()));
+    }
+
+    public Map<String, String> getHashes() {
+        return Collections.unmodifiableMap(hash);
     }
 
     public Package addHash(String format, String hash) {
@@ -121,6 +137,15 @@ public class Package {
 
     public Package setDescription(String description) {
         this.description = description;
+        return this;
+    }
+
+    public Optional<String> getAttribution() {
+        return Optional.ofNullable(attribution);
+    }
+
+    public Package setAttribution(String attribution) {
+        this.attribution = attribution;
         return this;
     }
 }

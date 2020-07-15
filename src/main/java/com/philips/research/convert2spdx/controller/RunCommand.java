@@ -1,4 +1,4 @@
-package com.philips.research.ort2spdx.controller;
+package com.philips.research.convert2spdx.controller;
 
 import picocli.CommandLine;
 

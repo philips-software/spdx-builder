@@ -1,11 +1,9 @@
-package com.philips.research.ort2spdx.core.bom;
+package com.philips.research.convert2spdx.core.bom;
 
-enum Type {NONE, PERSON, ORGANIZATION}
 
 public class Party {
     private final Type type;
     private final String name;
-
     public Party() {
         this(Type.NONE, "");
     }
@@ -22,5 +20,7 @@ public class Party {
     public String getName() {
         return name;
     }
+
+    public enum Type {NONE, PERSON, ORGANIZATION, TOOL}
 
 }

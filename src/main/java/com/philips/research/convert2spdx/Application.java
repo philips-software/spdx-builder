@@ -1,6 +1,6 @@
-package com.philips.research.ort2spdx;
+package com.philips.research.convert2spdx;
 
-import com.philips.research.ort2spdx.controller.RunCommand;
+import com.philips.research.convert2spdx.controller.RunCommand;
 import picocli.CommandLine;
 
 public class Application {
