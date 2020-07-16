@@ -14,7 +14,7 @@ public class Package {
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
-
+    private final Set<String> detectedLicenses = new HashSet<>();
     private Party originator;
     private Party supplier;
     private String filename;
@@ -22,7 +22,6 @@ public class Package {
     private URL homePage;
     private String concludedLicense;
     private String declaredLicense;
-    private final Set<String> detectedLicenses = new HashSet<>();
     private String copyright;
     private String summary;
     private String description;
@@ -122,7 +121,7 @@ public class Package {
         return this;
     }
 
-    public Iterable<String> getDetectedLicenses() {
+    public Collection<String> getDetectedLicenses() {
         return detectedLicenses;
     }
 

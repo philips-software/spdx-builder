@@ -4,3 +4,6 @@ target/
 ### Intellij ###
 .idea/
 *.iml
+
+### Just to be sure
+bom.spdx

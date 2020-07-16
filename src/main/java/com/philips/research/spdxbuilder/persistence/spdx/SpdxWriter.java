@@ -77,7 +77,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         doc.addValue("PackageSupplier", SpdxParty.from(pkg.getSupplier()));
         doc.addValue("PackageOriginator", SpdxParty.from(pkg.getOriginator()));
         doc.addValue("PackageDownloadLocation", pkg.getLocation());
-        doc.addValue("FilesAnalyzed", false);
+        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicenses().isEmpty());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             doc.addValue("PackageChecksum", entry.getKey() + ": " + entry.getValue());
         }
@@ -85,6 +85,9 @@ public class SpdxWriter implements BillOfMaterialsStore {
         //TODO Need to also list the detected license per scanned file???
         doc.addValue("PackageLicenseConcluded", SpdxLicense.of(pkg.getConcludedLicense().orElse("")));
         doc.addValue("PackageLicenseDeclared", SpdxLicense.of(pkg.getDeclaredLicense().orElse("")));
+        for (String license: pkg.getDetectedLicenses()) {
+            doc.addValue("PackageLicenseInfoFromFiles", license);
+        }
         doc.addText("PackageCopyrightText", pkg.getCopyright());
         if (pkg.getSummary().isPresent()) {
             doc.addText("PackageSummary", pkg.getSummary());
