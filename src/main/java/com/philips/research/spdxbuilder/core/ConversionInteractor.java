@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-2020, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.philips.research.spdxbuilder.core;
 
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
@@ -13,10 +18,17 @@ public class ConversionInteractor implements ConversionService {
         this.store = store;
     }
 
+    @Override
     public void readOrtAnalysis(File file) {
         bom = store.read(ConversionStore.FileType.ORT, file);
     }
 
+    @Override
+    public void scanLicenses() {
+        bom.updateLicenses(store::detectLicenses);
+    }
+
+    @Override
     public void writeBillOfMaterials(File file) {
         store.write(bom, ConversionStore.FileType.SPDX, file);
     }

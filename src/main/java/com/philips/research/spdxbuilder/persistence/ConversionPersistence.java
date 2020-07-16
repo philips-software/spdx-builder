@@ -1,13 +1,27 @@
+/*
+ * Copyright (c) 2020-2020, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.philips.research.spdxbuilder.persistence;
 
 import com.philips.research.spdxbuilder.core.ConversionStore;
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
+import com.philips.research.spdxbuilder.persistence.license.LicenseScannerClient;
 import com.philips.research.spdxbuilder.persistence.ort.OrtReader;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
 
 import java.io.File;
+import java.net.URI;
+import java.util.List;
 
 public class ConversionPersistence implements ConversionStore {
+    private final LicenseScannerClient licenseClient;
+
+    public ConversionPersistence(URI licenseScannerUri) {
+        licenseClient = new LicenseScannerClient(licenseScannerUri);
+    }
+
     @Override
     public BillOfMaterials read(FileType type, File file) {
         //TODO switch on file type
@@ -21,6 +35,7 @@ public class ConversionPersistence implements ConversionStore {
     }
 
     @Override
-    public void detectLicense(Package pkg) {
+    public List<String> detectLicenses(String namespace, String name, String version, URI location) {
+        return licenseClient.scanLicenses(namespace, name, version, location);
     }
 }

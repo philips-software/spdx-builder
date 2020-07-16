@@ -1,11 +1,14 @@
+/*
+ * Copyright (c) 2020-2020, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Path;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 class OrtReaderTest {

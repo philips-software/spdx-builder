@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-2020, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -16,11 +21,9 @@ import java.io.IOException;
 
 public class OrtReader implements BillOfMaterialsStore {
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    {
-        MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
-        MAPPER.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-    }
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
+            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
     public BillOfMaterials read(File file) {
         try {
@@ -42,7 +45,7 @@ public class OrtReader implements BillOfMaterialsStore {
     }
 
     private Package readPackageJson(PackageBaseJson pkg) {
-        final var result = new Package(pkg.getName(), pkg.getVersion());
+        final var result = new Package(pkg.getNamespace(), pkg.getName(), pkg.getVersion());
         result.setSupplier(new Party(Party.Type.ORGANIZATION, pkg.getNamespace()));
         result.setDeclaredLicense(pkg.getSpdxLicense());
         result.setDescription(pkg.description);

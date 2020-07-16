@@ -1,13 +1,16 @@
+/*
+ * Copyright (c) 2020-2020, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.philips.research.spdxbuilder.core.bom;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class Package {
+    private final String namespace;
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
@@ -17,16 +20,22 @@ public class Package {
     private String filename;
     private URI location;
     private URL homePage;
-    private String license;
+    private String concludedLicense;
     private String declaredLicense;
+    private final Set<String> detectedLicenses = new HashSet<>();
     private String copyright;
     private String summary;
     private String description;
     private String attribution;
 
-    public Package(String name, String version) {
+    public Package(String namespace, String name, String version) {
+        this.namespace = namespace;
         this.name = name;
         this.version = version;
+    }
+
+    public String getNamespace() {
+        return namespace;
     }
 
     public String getName() {
@@ -95,12 +104,12 @@ public class Package {
         return this;
     }
 
-    public Optional<String> getLicense() {
-        return Optional.ofNullable(license);
+    public Optional<String> getConcludedLicense() {
+        return Optional.ofNullable(concludedLicense);
     }
 
-    public Package setLicense(String license) {
-        this.license = license;
+    public Package setConcludedLicense(String concludedLicense) {
+        this.concludedLicense = concludedLicense;
         return this;
     }
 
@@ -110,6 +119,15 @@ public class Package {
 
     public Package setDeclaredLicense(String license) {
         this.declaredLicense = license;
+        return this;
+    }
+
+    public Iterable<String> getDetectedLicenses() {
+        return detectedLicenses;
+    }
+
+    public Package addDetectedLicense(String detectedLicense) {
+        detectedLicenses.add(detectedLicense);
         return this;
     }
 
@@ -148,4 +166,5 @@ public class Package {
         this.attribution = attribution;
         return this;
     }
+
 }

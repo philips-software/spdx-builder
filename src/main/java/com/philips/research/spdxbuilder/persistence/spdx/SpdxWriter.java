@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-2020, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.philips.research.spdxbuilder.persistence.spdx;
 
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
@@ -78,7 +83,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         }
         doc.addValue("PackageHomePage", pkg.getHomePage());
         //TODO Need to also list the detected license per scanned file???
-        doc.addValue("PackageLicenseConcluded", SpdxLicense.of(pkg.getLicense().orElse("")));
+        doc.addValue("PackageLicenseConcluded", SpdxLicense.of(pkg.getConcludedLicense().orElse("")));
         doc.addValue("PackageLicenseDeclared", SpdxLicense.of(pkg.getDeclaredLicense().orElse("")));
         doc.addText("PackageCopyrightText", pkg.getCopyright());
         if (pkg.getSummary().isPresent()) {
