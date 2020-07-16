@@ -1,4 +1,4 @@
-# Convert2SPDX
+# SPDX-Builder
 
 ## Introduction
 This command line tool converts bill-of-materials information from various 
@@ -10,6 +10,14 @@ YAML files
 - [License Service](https://github.com/philips-labs/license-scanner) REST API
 
 ## Usage
-Run the application from the command line:
+See the command line help:
 
-`java -jar convert2spdx.jar`
+`java -jar convert2spdx.jar --help`
+
+## TO DO List
+- Read ORT analyzer file into model
+- Retrieve licenses from License Service
+- Support non-SPDX licenses
+
+
+

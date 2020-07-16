@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.philips.research</groupId>
-    <artifactId>convert2spdx</artifactId>
+    <artifactId>spdx-builder</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -88,7 +88,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>com.philips.research.convert2spdx.Application</mainClass>
+                                    <mainClass>com.philips.research.spdxbuilder.Application</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
