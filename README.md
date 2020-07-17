@@ -18,6 +18,10 @@ See the command line help:
 `java -jar convert2spdx.jar --help`
 
 ## TO DO List
-- Support a list of licenses scanned from files
+- Include hierarchical relations between packages in the SPDX output based on 
+the ORT dependency tree. (Should therefore capture which component is the 
+product itself.)
+- Support a list of licenses scanned from files (instead of a single statement)
+- Pass checksum to scanner and SPDX report
 - Support non-SPDX licenses (in input and output)
 - Support SPDX RDF/XML output format
