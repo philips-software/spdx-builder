@@ -1,27 +1,38 @@
 # SPDX-Builder
 
 ## Introduction
-This command line tool converts package information with license scan results 
-into SPDX 2.2 bill-of-material files.
+This command line tool converts package information from 
+[OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT) Analyzer 
+YAML files together with curated license scan results from a
+[License Scanning Service](https://github.com/philips-labs/license-scanner)
+backend service into an [SPDX 2.2](https://spdx.github.io/spdx-spec/) software 
+bill-of-material (SBOM) file.
 
-Package information is read from 
-[OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) Analyzer YAML 
-files.
-
-License scanning is delegated via the 
-[License Scanning Service](https://github.com/philips-labs/license-scanner) 
-REST API.
+This tool can be used in combination with the ORT Analyzer in CI/CD pipelines 
+to automatically generate an SPDX 2.2 SBOM for a many types of package manager-based 
+projects. (See the ORT documentation.)
 
 ## Usage
-See the command line help:
+See the command line help for the exact invocation syntax:
 
 `java -jar convert2spdx.jar --help`
 
+This Java application requires Java 11 or higher.
+
 ## TO DO List
-- Include hierarchical relations between packages in the SPDX output based on 
-the ORT dependency tree. (Should therefore capture which component is the 
-product itself.)
-- Support a list of licenses scanned from files (instead of a single statement)
-- Pass checksum to scanner and SPDX report
-- Support non-SPDX licenses (in input and output)
-- Support SPDX RDF/XML output format
+(Ticked checkboxes indicate topics currently under development.)
+
+Must-have:
+- [ ] Support a list of licenses for a single package (instead of one 
+canonical statement).
+- [ ] Expose hierarchical dependencies between product and packages.
+- [ ] Pass checksum to scanner and SPDX report.
+- [ ] Support non-SPDX licenses. 
+- [ ] Manual override of license (to support license choices).
+
+Should-have:
+- [ ] Support RDF/XML SPDX output format
+- [ ] Support output "flavors" for the purpose of the generated SBOM.
+
+Others:
+- [ ] Integration with [Quartermaster (QMSTR)](https://qmstr.org/).

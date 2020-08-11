@@ -5,7 +5,9 @@
 
 package com.philips.research.spdxbuilder.core.bom;
 
-
+/**
+ * Named person or organization.
+ */
 public class Party {
     private final Type type;
     private final String name;

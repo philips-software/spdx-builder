@@ -7,6 +7,9 @@ package com.philips.research.spdxbuilder.core;
 
 import java.io.File;
 
+/**
+ * Conversion use cases.
+ */
 public interface ConversionService {
     /**
      * Reads the result of an OSS Review Toolkit analysis.

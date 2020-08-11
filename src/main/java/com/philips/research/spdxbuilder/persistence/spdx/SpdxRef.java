@@ -5,6 +5,9 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
+/**
+ * Generic SPDX reference.
+ */
 public class SpdxRef {
     private final String ref;
 

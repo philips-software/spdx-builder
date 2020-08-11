@@ -19,15 +19,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Converts a bill-of-materials to an SPDX file.
+ */
 public class SpdxWriter implements BillOfMaterialsStore {
     private final Map<Object, SpdxRef> identifiers = new HashMap<>();
 
     private int nextId = 1;
 
     public BillOfMaterials read(File file) {
+        // Not implemented
         return null;
     }
 
+    /**
+     * Writes the bill-of-materials to an SPDX file.
+     */
     public void write(File file, BillOfMaterials bom) {
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             //TODO where does the product name come from?
@@ -69,7 +76,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
     private void writePackage(TagValueDocument doc, Package pkg) throws IOException {
         doc.addComment("Start of package " + pkg.getName() + " version " + pkg.getVersion());
         doc.addValue("PackageName", pkg.getName());
-        doc.addValue("SPDXID", newIdentifier(pkg));
+        doc.addValue("SPDXID", nextIdentifier(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
         if (pkg.getFilename().isPresent()) {
             doc.addValue("PackageFileName", pkg.getFilename());
@@ -85,7 +92,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         //TODO Need to also list the detected license per scanned file???
         doc.addValue("PackageLicenseConcluded", SpdxLicense.of(pkg.getConcludedLicense().orElse("")));
         doc.addValue("PackageLicenseDeclared", SpdxLicense.of(pkg.getDeclaredLicense().orElse("")));
-        for (String license: pkg.getDetectedLicenses()) {
+        for (String license : pkg.getDetectedLicenses()) {
             doc.addValue("PackageLicenseInfoFromFiles", license);
         }
         doc.addText("PackageCopyrightText", pkg.getCopyright());
@@ -108,7 +115,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
 //       doc.addValue("LicenseCrossReference", );
     }
 
-    private SpdxRef newIdentifier(Object object) {
+    private SpdxRef nextIdentifier(Object object) {
         final var ref = new SpdxRef(Integer.toString(nextId));
         identifiers.put(object, ref);
         nextId++;

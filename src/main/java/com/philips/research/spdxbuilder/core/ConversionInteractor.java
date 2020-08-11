@@ -9,6 +9,9 @@ import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 
 import java.io.File;
 
+/**
+ * Implementation of the conversion use cases.
+ */
 public class ConversionInteractor implements ConversionService {
     private final ConversionStore store;
 

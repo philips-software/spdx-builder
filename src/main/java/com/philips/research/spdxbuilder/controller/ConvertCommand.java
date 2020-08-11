@@ -13,9 +13,11 @@ import picocli.CommandLine.Option;
 import java.io.File;
 import java.net.URI;
 
+/**
+ * CLI command to generate an SPDX file from an ORT Analyzer YAML.
+ */
 @CommandLine.Command(name = "spdx-builder", mixinStandardHelpOptions = true, version = "1.0")
-public
-class ConvertCommand implements Runnable {
+public class ConvertCommand implements Runnable {
     @Option(names = "--ort", description = "Read ORT Analyzer YAML file", descriptionKey = "file")
     File ortFile;
 

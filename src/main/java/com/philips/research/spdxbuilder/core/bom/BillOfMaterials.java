@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Composition of a product.
+ */
 public class BillOfMaterials {
     private final List<Package> projects = new ArrayList<>();
     private final List<Package> dependencies = new ArrayList<>();

@@ -19,12 +19,23 @@ import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * OSS Review Toolkit (ORT) YAML file reader.
+ *
+ * @see <a href="https://github.com/oss-review-toolkit/ort">OSS Review Toolkit</a>
+ */
 public class OrtReader implements BillOfMaterialsStore {
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
             .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
+    /**
+     * Parses the ORT YAML file that was output by the ORT Analyzer.
+     *
+     * @param file
+     * @return reconstructed bill-of-materials
+     */
     public BillOfMaterials read(File file) {
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
@@ -39,7 +50,7 @@ public class OrtReader implements BillOfMaterialsStore {
             }
             return bom;
         } catch (IOException e) {
-            //TODO
+            //TODO needs a business exception
             throw new RuntimeException(e);
         }
     }

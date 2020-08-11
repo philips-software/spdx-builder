@@ -9,6 +9,9 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
+/**
+ * Single bill-of-materials package.
+ */
 public class Package {
     private final String namespace;
     private final String name;

@@ -11,6 +11,9 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Persistence API for bill-of-materials entities.
+ */
 public interface ConversionStore {
     BillOfMaterials read(FileType type, File file);
 

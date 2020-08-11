@@ -7,6 +7,9 @@ package com.philips.research.spdxbuilder.persistence.license;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
 
+/**
+ * Exception thrown in case of an error while obtaining license information.
+ */
 public class LicenseScannerException extends BusinessException {
     public LicenseScannerException(String message) {
         super(message);

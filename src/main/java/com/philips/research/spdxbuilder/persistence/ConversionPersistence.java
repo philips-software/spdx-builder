@@ -15,6 +15,9 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Persistence implementation for bill-of-material data in various formats.
+ */
 public class ConversionPersistence implements ConversionStore {
     private final LicenseScannerClient licenseClient;
 

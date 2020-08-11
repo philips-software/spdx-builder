@@ -5,8 +5,8 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-public class SpdxLicense {
-    public static final String VERSION = "3.8";
+class SpdxLicense {
+    static final String VERSION = "3.8";
 
     //TODO Only allow valid identifiers
     private final String identifier;
@@ -15,7 +15,10 @@ public class SpdxLicense {
         this.identifier = identifier;
     }
 
-    public static SpdxLicense of(String text) {
+    /**
+     * @return SPDX license for the provided textual description
+     */
+    static SpdxLicense of(String text) {
         // TODO Parse into structure of classes
         return new SpdxLicense(text);
     }

@@ -10,7 +10,10 @@ import com.philips.research.spdxbuilder.core.bom.Party;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class SpdxParty {
+/**
+ * Named organization or individual.
+ */
+final class SpdxParty {
     private final String type;
     private final String name;
     private final String email;
@@ -25,6 +28,9 @@ public final class SpdxParty {
         this.email = email;
     }
 
+    /**
+     * @return tool description
+     */
     static SpdxParty tool(String name, String version) {
         if (version != null) {
             name += '-' + version;
@@ -32,19 +38,31 @@ public final class SpdxParty {
         return new SpdxParty("Tool", name);
     }
 
+    /**
+     * @return organization description
+     */
     static SpdxParty organization(String name) {
         return new SpdxParty("Organization", name);
     }
 
+    /**
+     * @return individual description
+     */
     static SpdxParty person(String name, String email) {
         return new SpdxParty("Person", name, email);
     }
 
+    /**
+     * @return description from an optional party entity or null if none was provided
+     */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     static SpdxParty from(Optional<Party> party) {
         return party.map(SpdxParty::from).orElse(null);
     }
 
+    /**
+     * @return description from a party entity
+     */
     static SpdxParty from(Party party) {
         switch (party.getType()) {
             case PERSON:

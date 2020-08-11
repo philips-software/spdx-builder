@@ -19,6 +19,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
+/**
+ * REST client for the License Scanner Service.
+ *
+ * @see <a href="https://github.com/philips-labs/license-scanner">License Scanner Service</a>
+ */
 public class LicenseScannerClient {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -33,6 +38,15 @@ public class LicenseScannerClient {
         this.licenseServer = licenseServer;
     }
 
+    /**
+     * Queries the licenses for a single package.
+     *
+     * @param namespace namespace of the package
+     * @param name      name of the package within the namespace
+     * @param version   version of the package
+     * @param location  (optional) location of the source code for the package
+     * @return all detected licenses for the package
+     */
     public List<String> scanLicenses(String namespace, String name, String version, URI location) {
         try {
             if (namespace.isEmpty()) {
@@ -64,5 +78,4 @@ public class LicenseScannerClient {
             throw new LicenseScannerException("License scanner is not reachable at " + licenseServer);
         }
     }
-
 }
