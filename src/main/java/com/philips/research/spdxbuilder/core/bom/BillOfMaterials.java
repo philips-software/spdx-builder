@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Composition of a product.
+ * Report on the composition of a product
  */
 public class BillOfMaterials {
     private final List<Package> projects = new ArrayList<>();

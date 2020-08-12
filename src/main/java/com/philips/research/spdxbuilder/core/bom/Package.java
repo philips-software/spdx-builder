@@ -5,6 +5,7 @@
 
 package com.philips.research.spdxbuilder.core.bom;
 
+import javax.swing.text.html.Option;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -107,7 +108,13 @@ public class Package {
     }
 
     public Optional<String> getConcludedLicense() {
-        return Optional.ofNullable(concludedLicense);
+        if (concludedLicense != null) {
+            return Optional.of(concludedLicense);
+        }
+        if (detectedLicenses.stream().allMatch(lic -> lic.equals(declaredLicense))) {
+            return Optional.ofNullable(declaredLicense);
+        }
+        return Optional.empty();
     }
 
     public Package setConcludedLicense(String concludedLicense) {
@@ -168,5 +175,4 @@ public class Package {
         this.attribution = attribution;
         return this;
     }
-
 }

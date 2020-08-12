@@ -23,9 +23,9 @@ This Java application requires Java 11 or higher.
 (Ticked checkboxes indicate topics currently under development.)
 
 Must-have:
-- [ ] Support a list of licenses for a single package (instead of one 
-canonical statement).
-- [ ] Expose hierarchical dependencies between product and packages.
+- [x] Expose hierarchical dependencies between product and packages.
+- [ ] Include CPE and/or purl identifiers.
+- [ ] Mention concluded license.
 - [ ] Pass checksum to scanner and SPDX report.
 - [ ] Support non-SPDX licenses. 
 - [ ] Manual override of license (to support license choices).
