@@ -41,7 +41,7 @@ abstract class PackageBaseJson {
     List<String> declaredLicenses;
     DeclaredLicensesJson declaredLicensesProcessed;
     String description;
-    URL homepage;
+    URL homepageUrl;
 
     public String getType() {
         return idElement(0);

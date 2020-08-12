@@ -5,7 +5,6 @@
 
 package com.philips.research.spdxbuilder.core.bom;
 
-import javax.swing.text.html.Option;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;

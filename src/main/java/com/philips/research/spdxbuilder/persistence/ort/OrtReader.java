@@ -60,7 +60,7 @@ public class OrtReader implements BillOfMaterialsStore {
         result.setSupplier(new Party(Party.Type.ORGANIZATION, pkg.getNamespace()));
         result.setDeclaredLicense(pkg.getSpdxLicense());
         result.setDescription(pkg.description);
-        result.setHomePage(pkg.homepage);
+        result.setHomePage(pkg.homepageUrl);
         if (pkg.getSourceArtifact() != null && !pkg.getSourceArtifact().url.getPath().isEmpty()) {
             result.setLocation(pkg.getSourceArtifact().url);
             if (!pkg.getSourceArtifact().getHash().algorithm.isEmpty()) {
