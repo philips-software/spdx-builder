@@ -42,6 +42,9 @@ public class SpdxWriter implements BillOfMaterialsStore {
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             //TODO where does the product name come from?
             writeDocumentInformation(doc, "product name");
+            for (Package pkg : bom.getProjects()) {
+                writePackage(doc, pkg);
+            }
             for (Package pkg : bom.getDependencies()) {
                 writePackage(doc, pkg);
             }
