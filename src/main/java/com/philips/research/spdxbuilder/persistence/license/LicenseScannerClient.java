@@ -17,7 +17,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
+import java.util.Optional;
 
 /**
  * REST client for the License Scanner Service.
@@ -45,9 +45,9 @@ public class LicenseScannerClient {
      * @param name      name of the package within the namespace
      * @param version   version of the package
      * @param location  (optional) location of the source code for the package
-     * @return all detected licenses for the package
+     * @return detected licenses for the package
      */
-    public List<String> scanLicenses(String namespace, String name, String version, URI location) {
+    public Optional<String> scanLicense(String namespace, String name, String version, URI location) {
         try {
             if (namespace.isEmpty()) {
                 namespace = ".";
@@ -58,7 +58,7 @@ public class LicenseScannerClient {
                 throw new LicenseScannerException("License scanner returned unexpected response: status " + response.statusCode());
             }
             final var result = MAPPER.readValue(response.body(), ResultJson.class);
-            return result.licenses;
+            return Optional.ofNullable(result.license);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("JSON formatting error", e);
         }

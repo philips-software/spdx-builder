@@ -13,7 +13,7 @@ import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
 
 import java.io.File;
 import java.net.URI;
-import java.util.List;
+import java.util.Optional;
 
 /**
  * Persistence implementation for bill-of-material data in various formats.
@@ -38,7 +38,7 @@ public class ConversionPersistence implements ConversionStore {
     }
 
     @Override
-    public List<String> detectLicenses(String namespace, String name, String version, URI location) {
-        return licenseClient.scanLicenses(namespace, name, version, location);
+    public Optional<String> detectLicense(String namespace, String name, String version, URI location) {
+        return licenseClient.scanLicense(namespace, name, version, location);
     }
 }

@@ -13,11 +13,11 @@ import java.util.*;
  * Single bill-of-materials package.
  */
 public class Package {
+    private final String type;
     private final String namespace;
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
-    private final Set<String> detectedLicenses = new HashSet<>();
     private Party originator;
     private Party supplier;
     private String filename;
@@ -25,15 +25,21 @@ public class Package {
     private URL homePage;
     private String concludedLicense;
     private String declaredLicense;
+    private String detectedLicense;
     private String copyright;
     private String summary;
     private String description;
     private String attribution;
 
-    public Package(String namespace, String name, String version) {
+    public Package(String type, String namespace, String name, String version) {
+        this.type = type;
         this.namespace = namespace;
         this.name = name;
         this.version = version;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public String getNamespace() {
@@ -110,8 +116,8 @@ public class Package {
         if (concludedLicense != null) {
             return Optional.of(concludedLicense);
         }
-        if (detectedLicenses.stream().allMatch(lic -> lic.equals(declaredLicense))) {
-            return Optional.ofNullable(declaredLicense);
+        if (declaredLicense == null || Objects.equals(detectedLicense, declaredLicense)) {
+            return Optional.ofNullable(detectedLicense);
         }
         return Optional.empty();
     }
@@ -130,12 +136,12 @@ public class Package {
         return this;
     }
 
-    public Collection<String> getDetectedLicenses() {
-        return detectedLicenses;
+    public Optional<String> getDetectedLicense() {
+        return Optional.ofNullable(detectedLicense);
     }
 
-    public Package addDetectedLicense(String detectedLicense) {
-        detectedLicenses.add(detectedLicense);
+    public Package setDetectedLicense(String license) {
+        this.detectedLicense = license;
         return this;
     }
 

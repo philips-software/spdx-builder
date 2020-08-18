@@ -24,8 +24,9 @@ This Java application requires Java 11 or higher.
 
 Must-have:
 - [x] Expose hierarchical dependencies between product and packages.
-- [ ] Include CPE and/or purl identifiers.
-- [ ] Mention concluded license.
+- [x] Include purl identifiers.
+- [ ] Manually curate concluded license (using ORT config?).
+- [ ] Skip excluded scopes and packages from the ORT Analyzer output.
 - [ ] Pass checksum to scanner and SPDX report.
 - [ ] Support non-SPDX licenses. 
 - [ ] Manual override of license (to support license choices).
@@ -33,6 +34,7 @@ Must-have:
 Should-have:
 - [ ] Support RDF/XML SPDX output format
 - [ ] Support output "flavors" for the purpose of the generated SBOM.
+- [ ] Include CPE identifiers for correlation with CVE/NVD security vulnerabilities.
 
 Others:
 - [ ] Integration with [Quartermaster (QMSTR)](https://qmstr.org/).

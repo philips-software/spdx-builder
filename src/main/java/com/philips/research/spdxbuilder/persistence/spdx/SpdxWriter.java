@@ -88,10 +88,11 @@ public class SpdxWriter implements BillOfMaterialsStore {
         if (pkg.getFilename().isPresent()) {
             doc.addValue("PackageFileName", pkg.getFilename());
         }
+        doc.addValue("ExternalRef", ExternalReference.purl(pkg));
         doc.addValue("PackageSupplier", SpdxParty.from(pkg.getSupplier()));
         doc.addValue("PackageOriginator", SpdxParty.from(pkg.getOriginator()));
         doc.addValue("PackageDownloadLocation", pkg.getLocation());
-        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicenses().isEmpty());
+        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicense().isEmpty());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             final var key = entry.getKey().replaceAll("-", "").toUpperCase();
             if (SUPPORTED_HASH_KEYS.contains(key)) {
@@ -101,9 +102,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         doc.addValue("PackageHomePage", pkg.getHomePage());
         doc.addValue("PackageLicenseConcluded", pkg.getConcludedLicense());
         doc.addValue("PackageLicenseDeclared", pkg.getDeclaredLicense());
-        for (String license : pkg.getDetectedLicenses()) {
-            doc.addValue("PackageLicenseInfoFromFiles", license);
-        }
+        doc.addValue("PackageLicenseInfoFromFiles", pkg.getDetectedLicense());
         doc.addText("PackageCopyrightText", pkg.getCopyright());
         if (pkg.getSummary().isPresent()) {
             doc.addText("PackageSummary", pkg.getSummary());

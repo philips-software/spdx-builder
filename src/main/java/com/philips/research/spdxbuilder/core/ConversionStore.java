@@ -9,7 +9,7 @@ import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 
 import java.io.File;
 import java.net.URI;
-import java.util.List;
+import java.util.Optional;
 
 /**
  * Persistence API for bill-of-materials entities.
@@ -19,7 +19,7 @@ public interface ConversionStore {
 
     void write(BillOfMaterials bom, FileType type, File file);
 
-    List<String> detectLicenses(String namespace, String name, String version, URI location);
+    Optional<String> detectLicense(String namespace, String name, String version, URI location);
 
     enum FileType {ORT, SPDX}
 }

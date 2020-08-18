@@ -6,7 +6,6 @@
 package com.philips.research.spdxbuilder.persistence.license;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -55,13 +54,13 @@ class LicenseScannerClientTest {
         final var request = new JSONObject()
                 .put("location", LOCATION);
         final var response = new JSONObject()
-                .put("licenses", new JSONArray().put(LICENSE));
+                .put("license", LICENSE);
         mockServer.when(request().withMethod("POST")
                 .withPath(String.format("/package/%s/%s/%s", NAMESPACE, NAME, VERSION))
                 .withBody(request.toString()).withContentType(MediaType.APPLICATION_JSON_UTF_8))
                 .respond(response().withStatusCode(200).withBody(response.toString()));
 
-        final var licenses = client.scanLicenses(NAMESPACE, NAME, VERSION, LOCATION);
+        final var licenses = client.scanLicense(NAMESPACE, NAME, VERSION, LOCATION);
 
         assertThat(licenses).contains(LICENSE);
     }
@@ -71,13 +70,13 @@ class LicenseScannerClientTest {
         final var request = new JSONObject()
                 .put("location", LOCATION);
         final var response = new JSONObject()
-                .put("licenses", new JSONArray().put(LICENSE));
+                .put("license", LICENSE);
         mockServer.when(request().withMethod("POST")
                 .withPath(String.format("/package/%s/%s/%s", ".", NAME, VERSION))
                 .withBody(request.toString()).withContentType(MediaType.APPLICATION_JSON_UTF_8))
                 .respond(response().withStatusCode(200).withBody(response.toString()));
 
-        final var licenses = client.scanLicenses("", NAME, VERSION, LOCATION);
+        final var licenses = client.scanLicense("", NAME, VERSION, LOCATION);
 
         assertThat(licenses).contains(LICENSE);
     }
@@ -86,7 +85,7 @@ class LicenseScannerClientTest {
     void ignores_serverNotReachable() {
         var serverlessClient = new LicenseScannerClient(URI.create("http://localhost:1234"));
 
-        assertThatThrownBy(() -> serverlessClient.scanLicenses(NAMESPACE, NAME, VERSION, LOCATION))
+        assertThatThrownBy(() -> serverlessClient.scanLicense(NAMESPACE, NAME, VERSION, LOCATION))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("not reachable");
     }
@@ -94,7 +93,7 @@ class LicenseScannerClientTest {
     @Test
     void throws_unexpectedResponseFromServer() {
         // Default not-found response
-        assertThatThrownBy(() -> client.scanLicenses(NAMESPACE, NAME, VERSION, LOCATION))
+        assertThatThrownBy(() -> client.scanLicense(NAMESPACE, NAME, VERSION, LOCATION))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("unexpected response");
     }

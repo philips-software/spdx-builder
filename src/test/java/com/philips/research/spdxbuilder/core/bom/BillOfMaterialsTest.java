@@ -8,13 +8,14 @@ package com.philips.research.spdxbuilder.core.bom;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class BillOfMaterialsTest {
+    private static final String TYPE = "Type";
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String VERSION = "Version";
@@ -22,28 +23,28 @@ class BillOfMaterialsTest {
     private static final String LICENSE = "MIT";
 
     final BillOfMaterials bom = new BillOfMaterials();
-    final Package pkg = new Package(NAMESPACE, NAME, VERSION);
-    final BillOfMaterials.QueryLicenses mockQuery = mock(BillOfMaterials.QueryLicenses.class);
+    final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
+    final BillOfMaterials.QueryLicense mockQuery = mock(BillOfMaterials.QueryLicense.class);
 
     @Test
     void updatesProjectLicenses() {
-        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION)).thenReturn(List.of(LICENSE));
+        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION)).thenReturn(Optional.of(LICENSE));
         pkg.setLocation(LOCATION);
         bom.addProject(pkg);
 
-        bom.updateLicenses(mockQuery);
+        bom.updateLicense(mockQuery);
 
-        assertThat(pkg.getDetectedLicenses()).contains(LICENSE);
+        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
     }
 
     @Test
     void updatesDependencyLicenses() {
-        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION)).thenReturn(List.of(LICENSE));
+        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION)).thenReturn(Optional.of(LICENSE));
         pkg.setLocation(LOCATION);
         bom.addDependency(pkg);
 
-        bom.updateLicenses(mockQuery);
+        bom.updateLicense(mockQuery);
 
-        assertThat(pkg.getDetectedLicenses()).contains(LICENSE);
+        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
     }
 }

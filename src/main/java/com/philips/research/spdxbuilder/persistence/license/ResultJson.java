@@ -6,12 +6,11 @@
 package com.philips.research.spdxbuilder.persistence.license;
 
 import java.net.URL;
-import java.util.List;
 
 class ResultJson {
     String namespace;
     String name;
     String version;
     URL location;
-    List<String> licenses;
+    String license;
 }

@@ -56,7 +56,7 @@ public class OrtReader implements BillOfMaterialsStore {
     }
 
     private Package readPackageJson(PackageBaseJson pkg) {
-        final var result = new Package(pkg.getNamespace(), pkg.getName(), pkg.getVersion());
+        final var result = new Package(pkg.getType(), pkg.getNamespace(), pkg.getName(), pkg.getVersion());
         result.setSupplier(new Party(Party.Type.ORGANIZATION, pkg.getNamespace()));
         result.setDeclaredLicense(pkg.getSpdxLicense());
         result.setDescription(pkg.description);

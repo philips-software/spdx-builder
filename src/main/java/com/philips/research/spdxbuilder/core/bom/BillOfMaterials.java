@@ -8,6 +8,7 @@ package com.philips.research.spdxbuilder.core.bom;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -35,19 +36,19 @@ public class BillOfMaterials {
         return this;
     }
 
-    public void updateLicenses(QueryLicenses func) {
-        projects.forEach(updatePackageLicenses(func));
-        dependencies.forEach(updatePackageLicenses(func));
+    public void updateLicense(QueryLicense func) {
+        projects.forEach(updatePackageLicense(func));
+        dependencies.forEach(updatePackageLicense(func));
     }
 
-    private Consumer<Package> updatePackageLicenses(QueryLicenses func) {
+    private Consumer<Package> updatePackageLicense(QueryLicense func) {
         return p -> func.query(p.getNamespace(), p.getName(), p.getVersion(), p.getLocation().orElse(null))
-                .forEach(p::addDetectedLicense);
+                .ifPresent(p::setDetectedLicense);
     }
 
     @FunctionalInterface
-    public interface QueryLicenses {
-        List<String> query(String namespace, String name, String version, URI location);
+    public interface QueryLicense {
+        Optional<String> query(String namespace, String name, String version, URI location);
     }
 }
 

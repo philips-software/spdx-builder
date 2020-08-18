@@ -28,7 +28,7 @@ public class ConversionInteractor implements ConversionService {
 
     @Override
     public void scanLicenses() {
-        bom.updateLicenses(store::detectLicenses);
+        bom.updateLicense(store::detectLicense);
     }
 
     @Override
