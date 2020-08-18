@@ -10,11 +10,10 @@ repository:
     url: "https://github.com/jshttp/mime-types.git"
     revision: "7c4ce23d7354fbf64c69d7b7be8413c4ba2add78"
     path: ""
-  # Will only be present if an '.ort.yml' configuration file with scope excludes was provided. Otherwise this is an empty object.
   config:
     excludes:
       scopes:
-        - pattern: "devDependencies"
+        - pattern: "skip"
           reason: "DEV_DEPENDENCY_OF"
           comment: "Packages for development only."
 # The analyzer result.
@@ -61,49 +60,46 @@ analyzer:
         scopes:
           - name: "dependencies"
             dependencies:
-              - id: "NPM::mime-db:1.33.0"
-          - name: "devDependencies"
+              - id: "NPM::dependency:1.0"
+          - name: "skip"
             dependencies:
-              - id: "NPM::eslint-config-standard:10.2.1"
-              - id: "NPM::eslint-plugin-import:2.8.0"
+              - id: "NPM::skip:1.0"
+              - id: "NPM::skip:2.0"
                 dependencies:
-                  - id: "NPM::builtin-modules:1.1.1"
-                  - id: "NPM::contains-path:0.1.0"
+                  - id: "NPM::skip:2.1"
                     # If an issue occurred during the dependency analysis of this package there would be an additional "issues"
                     # array.
     # ...
     # Detailed metadata about each package from the dependency trees.
     packages:
       - package:
-          id: "NPM::abbrev:1.0.9"
-          purl: "pkg://NPM//abbrev@1.0.9"
+          id: "NPM::dependency:1.0"
+          purl: "pkg://NPM//dependency@1.0"
           declared_licenses:
             - "ISC"
           declared_licenses_processed:
             spdx_expression: "ISC"
-          description: "Like ruby's abbrev module, but in js"
-          homepage_url: "https://github.com/isaacs/abbrev-js#readme"
+          description: "Some dependent module"
+          homepage_url: "https://github.com/example"
           binary_artifact:
             url: ""
             hash:
               value: ""
               algorithm: ""
           source_artifact:
-            url: "https://registry.npmjs.org/abbrev/-/abbrev-1.0.9.tgz"
+            url: "https://registry.npmjs.org/dependency/-/dependency-1.0.tgz"
             hash:
               value: "91b4792588a7738c25f35dd6f63752a2f8776135"
               algorithm: "SHA-1"
-          vcs:
-            type: "git"
-            url: "git+ssh://git@github.com/isaacs/abbrev-js.git"
-            revision: "c386cd9dbb1d8d7581718c54d4ba944cc9298d6f"
-            path: ""
-          vcs_processed:
-            type: "git"
-            url: "ssh://git@github.com/isaacs/abbrev-js.git"
-            revision: "c386cd9dbb1d8d7581718c54d4ba944cc9298d6f"
-            path: ""
-        curations: []
+      - package:
+          id: "NPM::skip:1.0"
+          purl: "pkg://NPM//skip@1.0"
+      - package:
+          id: "NPM::skip:2.0"
+          purl: "pkg://NPM//skip@2.0"
+      - package:
+          id: "NPM::skip:2.1"
+          purl: "pkg://NPM//skip@2.1"
     # ...
     # Finally a list of project related issues that happened during dependency analysis. Fortunately empty in this case.
     issues: {}

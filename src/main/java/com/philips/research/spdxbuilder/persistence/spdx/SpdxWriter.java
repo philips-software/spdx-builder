@@ -81,7 +81,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
     }
 
     private void writePackage(TagValueDocument doc, Package pkg) throws IOException {
-        doc.addComment("Start of package " + pkg.getName() + " version " + pkg.getVersion());
+        doc.addComment("Start of " + pkg.getType() + " package '" + pkg.getName() + "' version " + pkg.getVersion());
         doc.addValue("PackageName", pkg.getName());
         doc.addValue("SPDXID", nextIdentifier(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
@@ -101,6 +101,9 @@ public class SpdxWriter implements BillOfMaterialsStore {
         }
         doc.addValue("PackageHomePage", pkg.getHomePage());
         doc.addValue("PackageLicenseConcluded", pkg.getConcludedLicense());
+        if (pkg.getConcludedLicense().isEmpty()) {
+            System.err.println("WARNING: No concluded license for package " + pkg);
+        }
         doc.addValue("PackageLicenseDeclared", pkg.getDeclaredLicense());
         doc.addValue("PackageLicenseInfoFromFiles", pkg.getDetectedLicense());
         doc.addText("PackageCopyrightText", pkg.getCopyright());

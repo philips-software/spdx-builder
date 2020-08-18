@@ -18,6 +18,7 @@ import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 
 /**
  * OSS Review Toolkit (ORT) YAML file reader.
@@ -39,13 +40,18 @@ public class OrtReader implements BillOfMaterialsStore {
     public BillOfMaterials read(File file) {
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
+            final var excludedScopes = yaml.repository.getExcludeScopes();
             final var result = yaml.analyzer.result;
 
+            //TODO Break if Analyzer failed
+
             final var bom = new BillOfMaterials();
-            for (PackageBaseJson project : result.projects) {
+            final var identifiers = new HashSet<String>();
+            for (ProjectJson project : result.projects) {
                 bom.addProject(readPackageJson(project));
+                identifiers.addAll(project.getPackageIdentifiers(excludedScopes));
             }
-            for (PackageBaseJson pkg : result.getPackages()) {
+            for (PackageJson pkg : result.getPackages(identifiers)) {
                 bom.addDependency(readPackageJson(pkg));
             }
             return bom;

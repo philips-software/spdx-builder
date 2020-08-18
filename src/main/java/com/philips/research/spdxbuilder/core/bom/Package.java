@@ -180,4 +180,9 @@ public class Package {
         this.attribution = attribution;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s:%s/%s-%s", type, namespace, name, version);
+    }
 }

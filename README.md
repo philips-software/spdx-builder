@@ -23,13 +23,11 @@ This Java application requires Java 11 or higher.
 (Ticked checkboxes indicate topics currently under development.)
 
 Must-have:
+- [x] Skip excluded scopes and packages from the ORT Analyzer output.
+- [ ] Manually override license to support project-specific license choices.
 - [x] Expose hierarchical dependencies between product and packages.
-- [x] Include purl identifiers.
-- [ ] Manually curate concluded license (using ORT config?).
-- [ ] Skip excluded scopes and packages from the ORT Analyzer output.
 - [ ] Pass checksum to scanner and SPDX report.
 - [ ] Support non-SPDX licenses. 
-- [ ] Manual override of license (to support license choices).
 
 Should-have:
 - [ ] Support RDF/XML SPDX output format

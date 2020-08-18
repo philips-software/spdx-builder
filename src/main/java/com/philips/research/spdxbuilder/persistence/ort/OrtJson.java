@@ -9,11 +9,40 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class OrtJson {
+    RepositoryJson repository;
     AnalyzerJson analyzer;
+}
+
+class RepositoryJson {
+    ConfigJson config;
+
+    Set<String> getExcludeScopes() {
+        if (config.excludes == null) {
+            return Set.of();
+        }
+        return config.excludes.getExcludeScopes();
+    }
+}
+
+class ConfigJson {
+    ExcludeJson excludes;
+}
+
+class ExcludeJson {
+    List<PatternJson> scopes = new ArrayList<>();
+
+    Set<String> getExcludeScopes() {
+        return scopes.stream().map(p -> p.pattern)
+                .collect(Collectors.toSet());
+    }
+}
+
+class PatternJson {
+    String pattern;
 }
 
 class AnalyzerJson {
@@ -25,8 +54,11 @@ class ResultJson {
     List<PackageWrapperJson> packages;
     boolean hasIssues;
 
-    List<PackageJson> getPackages() {
-        return packages.stream().map(pkg -> pkg.pkg).collect(Collectors.toList());
+    List<PackageJson> getPackages(Set<String> packageIdentifiers) {
+        return packages.stream()
+                .map(pkg -> pkg.pkg)
+                .filter(pkg -> packageIdentifiers.contains(pkg.id))
+                .collect(Collectors.toList());
     }
 }
 
@@ -67,6 +99,9 @@ abstract class PackageBaseJson {
     abstract LocationJson getSourceArtifact();
 
     String getSpdxLicense() {
+        if (declaredLicensesProcessed == null) {
+            return null;
+        }
         return declaredLicensesProcessed.spdxExpression;
     }
 }
@@ -77,10 +112,18 @@ class DeclaredLicensesJson {
 
 class ProjectJson extends PackageBaseJson {
     NestedLocationJson sourceArtifact;
+    List<DependencyJson> scopes;
 
     @Override
     LocationJson getSourceArtifact() {
         return sourceArtifact;
+    }
+
+    Set<String> getPackageIdentifiers(Set<String> excludedScopes) {
+        return scopes.stream()
+                .filter(scope -> !excludedScopes.contains(scope.name))
+                .flatMap(scope -> scope.getAllDependencies().stream())
+                .collect(Collectors.toSet());
     }
 }
 
@@ -90,6 +133,21 @@ class PackageJson extends PackageBaseJson {
     @Override
     LocationJson getSourceArtifact() {
         return sourceArtifact;
+    }
+}
+
+class DependencyJson {
+    String id;
+    String name;
+    List<DependencyJson> dependencies = new ArrayList<>();
+
+    Collection<String> getAllDependencies() {
+        Set<String> result = new HashSet<>();
+        for (var dep : dependencies) {
+            result.add(dep.id);
+            result.addAll(dep.getAllDependencies());
+        }
+        return result;
     }
 }
 
