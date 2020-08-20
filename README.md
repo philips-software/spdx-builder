@@ -25,6 +25,7 @@ This Java application requires Java 11 or higher.
 Must-have:
 - [x] Skip excluded scopes and packages from the ORT Analyzer output.
 - [ ] Manually override license to support project-specific license choices.
+- [ ] Abort if ORT Analyzer raised errors.
 - [x] Expose hierarchical dependencies between product and packages.
 - [ ] Pass checksum to scanner and SPDX report.
 - [ ] Support non-SPDX licenses. 
@@ -33,6 +34,7 @@ Should-have:
 - [ ] Support RDF/XML SPDX output format
 - [ ] Support output "flavors" for the purpose of the generated SBOM.
 - [ ] Include CPE identifiers for correlation with CVE/NVD security vulnerabilities.
+- [ ] Include full SBOM copyright information.
 
 Others:
 - [ ] Integration with [Quartermaster (QMSTR)](https://qmstr.org/).

@@ -19,7 +19,10 @@ public class ExternalReference {
     }
 
     public static ExternalReference purl(Package pkg) {
-        final var purl = String.format("pkg:%s/%s/%s@%s", pkg.getType(), pkg.getNamespace(), pkg.getName(), pkg.getVersion());
+        final var namespace = pkg.getNamespace();
+        final var purl = (namespace != null && !namespace.isBlank())
+                ? String.format("pkg:%s/%s/%s@%s", pkg.getType(), pkg.getNamespace(), pkg.getName(), pkg.getVersion())
+                : String.format("pkg:%s/%s@%s", pkg.getType(), pkg.getName(), pkg.getVersion());
 
         return new ExternalReference("PACKAGE-MANAGER", "purl", purl);
     }

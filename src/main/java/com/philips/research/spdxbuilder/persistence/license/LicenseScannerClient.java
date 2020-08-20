@@ -49,9 +49,6 @@ public class LicenseScannerClient {
      */
     public Optional<String> scanLicense(String namespace, String name, String version, URI location) {
         try {
-            if (namespace.isEmpty()) {
-                namespace = ".";
-            }
             final var body = new RequestJson(location);
             final var response = post(body, "/package/%s/%s/%s", namespace, name, version);
             if (response.statusCode() != 200) {

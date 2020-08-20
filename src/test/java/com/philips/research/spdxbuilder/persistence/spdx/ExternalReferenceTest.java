@@ -24,4 +24,13 @@ class ExternalReferenceTest {
 
         assertThat(ref.toString()).isEqualTo("PACKAGE-MANAGER purl pkg:" + TYPE + "/" + NAMESPACE + "/" + NAME + "@" + VERSION);
     }
+
+    @Test
+    void createsPurlFromPackageWithoutNamespace() {
+        final var pkg = new Package(TYPE, "", NAME, VERSION);
+
+        final var ref = ExternalReference.purl(pkg);
+
+        assertThat(ref.toString()).isEqualTo("PACKAGE-MANAGER purl pkg:" + TYPE + "/" + NAME + "@" + VERSION);
+    }
 }
