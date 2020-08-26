@@ -38,7 +38,7 @@ public class ConversionPersistence implements ConversionStore {
     }
 
     @Override
-    public Optional<String> detectLicense(String namespace, String name, String version, URI location) {
+    public Optional<LicenseInfo> detectLicense(String namespace, String name, String version, URI location) {
         return licenseClient.scanLicense(namespace, name, version, location);
     }
 }

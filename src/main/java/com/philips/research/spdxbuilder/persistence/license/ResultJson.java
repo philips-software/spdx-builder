@@ -13,4 +13,5 @@ class ResultJson {
     String version;
     URL location;
     String license;
+    boolean confirmed;
 }

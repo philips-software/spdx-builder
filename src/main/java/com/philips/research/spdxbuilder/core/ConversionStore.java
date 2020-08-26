@@ -19,8 +19,27 @@ public interface ConversionStore {
 
     void write(BillOfMaterials bom, FileType type, File file);
 
-    Optional<String> detectLicense(String namespace, String name, String version, URI location);
+    Optional<LicenseInfo> detectLicense(String namespace, String name, String version, URI location);
 
     enum FileType {ORT, SPDX}
+
+    class LicenseInfo {
+        private final String license;
+
+        private final boolean confirmed;
+
+        public LicenseInfo(String license, boolean confirmed) {
+            this.license = license;
+            this.confirmed = confirmed;
+        }
+
+        public String getLicense() {
+            return license;
+        }
+
+        public boolean isConfirmed() {
+            return confirmed;
+        }
+    }
 }
 

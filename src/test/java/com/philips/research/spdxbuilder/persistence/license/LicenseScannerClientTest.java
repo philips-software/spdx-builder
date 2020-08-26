@@ -54,15 +54,17 @@ class LicenseScannerClientTest {
         final var request = new JSONObject()
                 .put("location", LOCATION);
         final var response = new JSONObject()
-                .put("license", LICENSE);
+                .put("license", LICENSE)
+                .put("confirmed", true);
         mockServer.when(request().withMethod("POST")
-                .withPath(String.format("/package/%s/%s/%s", NAMESPACE, NAME, VERSION))
+                .withPath(String.format("/packages/%s/%s/%s", NAMESPACE, NAME, VERSION))
                 .withBody(request.toString()).withContentType(MediaType.APPLICATION_JSON_UTF_8))
                 .respond(response().withStatusCode(200).withBody(response.toString()));
 
-        final var licenses = client.scanLicense(NAMESPACE, NAME, VERSION, LOCATION);
+        @SuppressWarnings("OptionalGetWithoutIsPresent") final var license = client.scanLicense(NAMESPACE, NAME, VERSION, LOCATION).get();
 
-        assertThat(licenses).contains(LICENSE);
+        assertThat(license.getLicense()).contains(LICENSE);
+        assertThat(license.isConfirmed()).isTrue();
     }
 
     @Test
@@ -72,13 +74,28 @@ class LicenseScannerClientTest {
         final var response = new JSONObject()
                 .put("license", LICENSE);
         mockServer.when(request().withMethod("POST")
-                .withPath(String.format("/package/%s/%s/%s", ".", NAME, VERSION))
+                .withPath(String.format("/packages//%s/%s", NAME, VERSION))
                 .withBody(request.toString()).withContentType(MediaType.APPLICATION_JSON_UTF_8))
                 .respond(response().withStatusCode(200).withBody(response.toString()));
 
-        final var licenses = client.scanLicense("", NAME, VERSION, LOCATION);
+        @SuppressWarnings("OptionalGetWithoutIsPresent") final var licenses = client.scanLicense("", NAME, VERSION, LOCATION).get();
 
-        assertThat(licenses).contains(LICENSE);
+        assertThat(licenses.getLicense()).isEqualTo(LICENSE);
+    }
+
+    @Test
+    void ignoresEmptyLicense() {
+        final var request = new JSONObject()
+                .put("location", LOCATION);
+        final var response = new JSONObject();
+        mockServer.when(request().withMethod("POST")
+                .withPath(String.format("/packages/%s/%s/%s", NAMESPACE, NAME, VERSION))
+                .withBody(request.toString()).withContentType(MediaType.APPLICATION_JSON_UTF_8))
+                .respond(response().withStatusCode(200).withBody(response.toString()));
+
+        @SuppressWarnings("OptionalGetWithoutIsPresent") final var license = client.scanLicense(NAMESPACE, NAME, VERSION, LOCATION);
+
+        assertThat(license).isEmpty();
     }
 
     @Test

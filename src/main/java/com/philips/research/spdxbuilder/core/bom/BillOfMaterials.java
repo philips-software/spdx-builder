@@ -5,6 +5,8 @@
 
 package com.philips.research.spdxbuilder.core.bom;
 
+import com.philips.research.spdxbuilder.core.ConversionStore;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +45,17 @@ public class BillOfMaterials {
 
     private Consumer<Package> updatePackageLicense(QueryLicense func) {
         return p -> func.query(p.getNamespace(), p.getName(), p.getVersion(), p.getLocation().orElse(null))
-                .ifPresent(p::setDetectedLicense);
+                .ifPresent(info -> {
+                    p.setDetectedLicense(info.getLicense());
+                    if (info.isConfirmed()) {
+                        p.setConcludedLicense(info.getLicense());
+                    }
+                });
     }
 
     @FunctionalInterface
     public interface QueryLicense {
-        Optional<String> query(String namespace, String name, String version, URI location);
+        Optional<ConversionStore.LicenseInfo> query(String namespace, String name, String version, URI location);
     }
 }
 

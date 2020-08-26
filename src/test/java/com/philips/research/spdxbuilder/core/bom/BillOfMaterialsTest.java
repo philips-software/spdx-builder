@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.Optional;
 
+import static com.philips.research.spdxbuilder.core.ConversionStore.LicenseInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,24 +28,44 @@ class BillOfMaterialsTest {
     final BillOfMaterials.QueryLicense mockQuery = mock(BillOfMaterials.QueryLicense.class);
 
     @Test
-    void updatesProjectLicenses() {
-        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION)).thenReturn(Optional.of(LICENSE));
-        pkg.setLocation(LOCATION);
-        bom.addProject(pkg);
-
-        bom.updateLicense(mockQuery);
-
-        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
-    }
-
-    @Test
-    void updatesDependencyLicenses() {
-        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION)).thenReturn(Optional.of(LICENSE));
+    void updatesConcludedLicense_noDeclaredLicense() {
+        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION))
+                .thenReturn(Optional.of(new LicenseInfo(LICENSE, false)));
         pkg.setLocation(LOCATION);
         bom.addDependency(pkg);
 
         bom.updateLicense(mockQuery);
 
         assertThat(pkg.getDetectedLicense()).contains(LICENSE);
+        assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+    }
+
+    @Test
+    void updatesOnlyDetectedLicense_conflictWithDeclaredLicense() {
+        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION))
+                .thenReturn(Optional.of(new LicenseInfo(LICENSE, false)));
+        pkg.setLocation(LOCATION);
+        pkg.setDeclaredLicense("Other");
+        bom.addDependency(pkg);
+
+        bom.updateLicense(mockQuery);
+
+        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
+        assertThat(pkg.getConcludedLicense()).isEmpty();
+    }
+
+    @Test
+    void updatesConcludedLicense_detectedLicenseConfirmed() {
+        when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION))
+                .thenReturn(Optional.of(new LicenseInfo(LICENSE, true)));
+        pkg.setLocation(LOCATION);
+        pkg.setDeclaredLicense("Other");
+        bom.addDependency(pkg);
+
+        bom.updateLicense(mockQuery);
+
+        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
+        assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+        assertThat(pkg.getConcludedLicense()).isNotEqualTo(pkg.getDeclaredLicense());
     }
 }
