@@ -9,6 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,7 +23,7 @@ public class OrtJson {
 class RepositoryJson {
     ConfigJson config;
 
-    Set<String> getExcludeScopes() {
+    Set<PathMatcher> getExcludeScopes() {
         if (config.excludes == null) {
             return Set.of();
         }
@@ -35,8 +38,9 @@ class ConfigJson {
 class ExcludeJson {
     List<PatternJson> scopes = new ArrayList<>();
 
-    Set<String> getExcludeScopes() {
-        return scopes.stream().map(p -> p.pattern)
+    Set<PathMatcher> getExcludeScopes() {
+        final var fs = FileSystems.getDefault();
+        return scopes.stream().map(p -> fs.getPathMatcher("glob:" + p.pattern))
                 .collect(Collectors.toSet());
     }
 }
@@ -119,9 +123,10 @@ class ProjectJson extends PackageBaseJson {
         return sourceArtifact;
     }
 
-    Set<String> getPackageIdentifiers(Set<String> excludedScopes) {
+    Set<String> getPackageIdentifiers(Set<PathMatcher> excludedScopes) {
         return scopes.stream()
-                .filter(scope -> !excludedScopes.contains(scope.name))
+                .filter(scope -> excludedScopes.stream()
+                        .noneMatch(glob->glob.matches(Path.of(scope.name))))
                 .flatMap(scope -> scope.getAllDependencies().stream())
                 .collect(Collectors.toSet());
     }

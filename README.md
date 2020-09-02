@@ -15,7 +15,7 @@ projects. (See the ORT documentation.)
 ## Usage
 See the command line help for the exact invocation syntax:
 
-`java -jar convert2spdx.jar --help`
+`java -jar spdx-builder.jar --help`
 
 This Java application requires Java 11 or higher.
 

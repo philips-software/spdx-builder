@@ -13,7 +13,7 @@ repository:
   config:
     excludes:
       scopes:
-        - pattern: "skip"
+        - pattern: "skip*"
           reason: "DEV_DEPENDENCY_OF"
           comment: "Packages for development only."
 # The analyzer result.
@@ -61,7 +61,7 @@ analyzer:
           - name: "dependencies"
             dependencies:
               - id: "NPM::dependency:1.0"
-          - name: "skip"
+          - name: "skipMe"
             dependencies:
               - id: "NPM::skip:1.0"
               - id: "NPM::skip:2.0"
