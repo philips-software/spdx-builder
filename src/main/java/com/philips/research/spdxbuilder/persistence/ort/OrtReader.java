@@ -40,6 +40,7 @@ public class OrtReader implements BillOfMaterialsStore {
     public BillOfMaterials read(File file) {
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
+            final var excludedPaths = yaml.repository.getExcludePaths();
             final var excludedScopes = yaml.repository.getExcludeScopes();
             final var result = yaml.analyzer.result;
 
@@ -47,18 +48,24 @@ public class OrtReader implements BillOfMaterialsStore {
 
             final var bom = new BillOfMaterials();
             final var identifiers = new HashSet<String>();
-            for (ProjectJson project : result.projects) {
-                bom.addProject(readPackageJson(project));
-                identifiers.addAll(project.getPackageIdentifiers(excludedScopes));
-            }
+            result.projects.stream()
+                    .filter(p -> p.definitionFilePath != null)
+                    .filter(p -> excludedPaths.stream()
+                            .noneMatch(glob -> glob.matches(p.definitionFilePath.toPath())))
+                    .forEach(p -> {
+                        bom.addProject(readPackageJson(p));
+                        identifiers.addAll(p.getPackageIdentifiers(excludedScopes));
+                    });
             for (PackageJson pkg : result.getPackages(identifiers)) {
                 bom.addDependency(readPackageJson(pkg));
             }
             return bom;
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             //TODO needs a business exception
             throw new RuntimeException(e);
         }
+
     }
 
     private Package readPackageJson(PackageBaseJson pkg) {

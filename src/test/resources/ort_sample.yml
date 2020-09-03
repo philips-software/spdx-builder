@@ -12,10 +12,14 @@ repository:
     path: ""
   config:
     excludes:
+      paths:
+        - pattern: "subdir/**"
+          reason: "WHATEVER"
+          comment: "Skip projects on excluded paths using glob"
       scopes:
         - pattern: "skip*"
           reason: "DEV_DEPENDENCY_OF"
-          comment: "Packages for development only."
+          comment: "Skip excluded scopes using glob"
 # The analyzer result.
 analyzer:
   # The time when the analyzer was executed.
@@ -69,6 +73,8 @@ analyzer:
                   - id: "NPM::skip:2.1"
                     # If an issue occurred during the dependency analysis of this package there would be an additional "issues"
                     # array.
+      - id: "NPM::skipme:1.2.3"
+        definition_file_path: "subdir/package.json"
     # ...
     # Detailed metadata about each package from the dependency trees.
     packages:

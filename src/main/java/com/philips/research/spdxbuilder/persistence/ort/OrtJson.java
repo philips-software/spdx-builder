@@ -7,8 +7,10 @@ package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -23,11 +25,16 @@ public class OrtJson {
 class RepositoryJson {
     ConfigJson config;
 
+    Set<PathMatcher> getExcludePaths() {
+        return (config.excludes != null)
+                ? config.excludes.getExcludePaths()
+                : Set.of();
+    }
+
     Set<PathMatcher> getExcludeScopes() {
-        if (config.excludes == null) {
-            return Set.of();
-        }
-        return config.excludes.getExcludeScopes();
+        return (config.excludes != null)
+                ? config.excludes.getExcludeScopes()
+                : Set.of();
     }
 }
 
@@ -36,17 +43,30 @@ class ConfigJson {
 }
 
 class ExcludeJson {
+    List<PatternJson> paths = new ArrayList<>();
     List<PatternJson> scopes = new ArrayList<>();
 
+    Set<PathMatcher> getExcludePaths() {
+        return paths.stream()
+                .map(PatternJson::getGlob)
+                .collect(Collectors.toSet());
+    }
+
     Set<PathMatcher> getExcludeScopes() {
-        final var fs = FileSystems.getDefault();
-        return scopes.stream().map(p -> fs.getPathMatcher("glob:" + p.pattern))
+        return scopes.stream()
+                .map(PatternJson::getGlob)
                 .collect(Collectors.toSet());
     }
 }
 
 class PatternJson {
+    private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
+
     String pattern;
+
+    PathMatcher getGlob() {
+        return FILE_SYSTEM.getPathMatcher("glob:" + pattern);
+    }
 }
 
 class AnalyzerJson {
@@ -117,6 +137,7 @@ class DeclaredLicensesJson {
 class ProjectJson extends PackageBaseJson {
     NestedLocationJson sourceArtifact;
     List<DependencyJson> scopes;
+    File definitionFilePath;
 
     @Override
     LocationJson getSourceArtifact() {
@@ -126,7 +147,7 @@ class ProjectJson extends PackageBaseJson {
     Set<String> getPackageIdentifiers(Set<PathMatcher> excludedScopes) {
         return scopes.stream()
                 .filter(scope -> excludedScopes.stream()
-                        .noneMatch(glob->glob.matches(Path.of(scope.name))))
+                        .noneMatch(glob -> glob.matches(Path.of(scope.name))))
                 .flatMap(scope -> scope.getAllDependencies().stream())
                 .collect(Collectors.toSet());
     }
