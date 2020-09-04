@@ -8,9 +8,11 @@ package com.philips.research.spdxbuilder.persistence.license;
 import java.net.URI;
 
 class RequestJson {
-    URI location;
+    String location;
 
     public RequestJson(URI location) {
-        this.location = location;
+        if (location != null) {
+            this.location = location.toASCIIString();
+        }
     }
 }

@@ -5,13 +5,13 @@
 
 package com.philips.research.spdxbuilder.persistence.license;
 
-import java.net.URL;
+import java.net.URI;
 
 class ResultJson {
     String namespace;
     String name;
     String version;
-    URL location;
+    URI location;
     String license;
     boolean confirmed;
 }

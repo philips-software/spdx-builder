@@ -6,10 +6,14 @@
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.bom.Party;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -94,25 +98,21 @@ class PackageWrapperJson {
 abstract class PackageBaseJson {
     String id;
 
-    List<String> declaredLicenses;
     DeclaredLicensesJson declaredLicensesProcessed;
     String description;
     URL homepageUrl;
+    LocationJson sourceArtifact;
 
-    public String getType() {
-        return idElement(0);
-    }
+    public Package createPackage() {
+        final var result = new Package(idElement(0), idElement(1), idElement(2), idElement(3));
 
-    public String getNamespace() {
-        return idElement(1);
-    }
+        result.setSupplier(new Party(Party.Type.ORGANIZATION, result.getNamespace()));
+        result.setDescription(description);
+        result.setHomePage(homepageUrl);
+        addSourceLocation(result);
+        addDeclaredLicense(result);
 
-    public String getName() {
-        return idElement(2);
-    }
-
-    public String getVersion() {
-        return idElement(3);
+        return result;
     }
 
     private String idElement(int index) {
@@ -120,13 +120,16 @@ abstract class PackageBaseJson {
         return (index < split.length) ? split[index] : "";
     }
 
-    abstract LocationJson getSourceArtifact();
-
-    String getSpdxLicense() {
-        if (declaredLicensesProcessed == null) {
-            return null;
+    void addSourceLocation(Package pkg) {
+        if (sourceArtifact != null) {
+            sourceArtifact.addSourceLocation(pkg);
         }
-        return declaredLicensesProcessed.spdxExpression;
+    }
+
+    void addDeclaredLicense(Package pkg) {
+        if (declaredLicensesProcessed != null) {
+            pkg.setDeclaredLicense(declaredLicensesProcessed.spdxExpression);
+        }
     }
 }
 
@@ -135,30 +138,28 @@ class DeclaredLicensesJson {
 }
 
 class ProjectJson extends PackageBaseJson {
-    NestedLocationJson sourceArtifact;
     List<DependencyJson> scopes;
     File definitionFilePath;
-
-    @Override
-    LocationJson getSourceArtifact() {
-        return sourceArtifact;
-    }
 
     Set<String> getPackageIdentifiers(Set<PathMatcher> excludedScopes) {
         return scopes.stream()
                 .filter(scope -> excludedScopes.stream()
                         .noneMatch(glob -> glob.matches(Path.of(scope.name))))
+                .peek(scope -> System.out.println("- Adding scope '" + scope.name + "'"))
                 .flatMap(scope -> scope.getAllDependencies().stream())
                 .collect(Collectors.toSet());
     }
 }
 
 class PackageJson extends PackageBaseJson {
-    NestedLocationJson sourceArtifact;
+    VcsJson vcs_processed;
 
     @Override
-    LocationJson getSourceArtifact() {
-        return sourceArtifact;
+    void addSourceLocation(Package pkg) {
+        super.addSourceLocation(pkg);
+        if (pkg.getLocation().isEmpty() && vcs_processed != null) {
+            vcs_processed.addSourceLocation(pkg);
+        }
     }
 }
 
@@ -177,28 +178,17 @@ class DependencyJson {
     }
 }
 
-abstract class LocationJson {
+class LocationJson {
     URI url;
-
-    abstract HashJson getHash();
-}
-
-class FlatLocationJson extends LocationJson {
-    String hash;
-    String hash_algorithm;
-
-    @Override
-    HashJson getHash() {
-        return new HashJson(hash_algorithm, hash);
-    }
-}
-
-class NestedLocationJson extends LocationJson {
     HashJson hash;
 
-    @Override
-    HashJson getHash() {
-        return hash;
+    public void addSourceLocation(Package pkg) {
+        if (url != null && !url.toString().isEmpty()) {
+            pkg.setLocation(url);
+            if (hash != null) {
+                hash.addHash(pkg);
+            }
+        }
     }
 }
 
@@ -206,12 +196,39 @@ class HashJson {
     String value;
     String algorithm;
 
-    @SuppressWarnings("unused")
-    public HashJson() {
+    void addHash(Package pkg) {
+        if (value != null && !algorithm.isEmpty()) {
+            pkg.addHash(algorithm, value);
+        }
+    }
+}
+
+class VcsJson {
+    String type;
+    URI url;
+    String revision;
+    String path;
+
+    void addSourceLocation(Package pkg) {
+        if (url == null || url.toString().isEmpty()) {
+            return;
+        }
+        var location = url.toASCIIString();
+        if (hasValue(type)) {
+            location = type.toLowerCase() + "+" + location;
+        }
+        if (hasValue(revision)) {
+            location += '@' + URLEncoder.encode(revision, StandardCharsets.UTF_8);
+        } else if (hasValue(pkg.getVersion())) {
+            location += '@' + URLEncoder.encode(pkg.getVersion(), StandardCharsets.UTF_8);
+        }
+        if (hasValue(path)) {
+            location += '#' + URLEncoder.encode(path, StandardCharsets.UTF_8);
+        }
+        pkg.setLocation(URI.create(location));
     }
 
-    public HashJson(String algorithm, String value) {
-        this.algorithm = algorithm;
-        this.value = value;
+    private boolean hasValue(String string) {
+        return (string != null && !string.isEmpty());
     }
 }

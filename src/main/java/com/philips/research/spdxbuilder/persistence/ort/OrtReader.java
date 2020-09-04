@@ -12,8 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
-import com.philips.research.spdxbuilder.core.bom.Party;
 import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;
@@ -52,35 +50,21 @@ public class OrtReader implements BillOfMaterialsStore {
                     .filter(p -> p.definitionFilePath != null)
                     .filter(p -> excludedPaths.stream()
                             .noneMatch(glob -> glob.matches(p.definitionFilePath.toPath())))
+                    .peek(p -> System.out.println("Adding project from '" + p.definitionFilePath + "'"))
                     .forEach(p -> {
-                        bom.addProject(readPackageJson(p));
+                        bom.addProject(p.createPackage());
                         identifiers.addAll(p.getPackageIdentifiers(excludedScopes));
                     });
             for (PackageJson pkg : result.getPackages(identifiers)) {
-                bom.addDependency(readPackageJson(pkg));
+                bom.addDependency(pkg.createPackage());
             }
+            System.out.println("Found " + bom.getDependencies().size() + " unique packages");
             return bom;
-        } catch (
-                IOException e) {
+        } catch ( IOException e) {
             //TODO needs a business exception
             throw new RuntimeException(e);
         }
 
-    }
-
-    private Package readPackageJson(PackageBaseJson pkg) {
-        final var result = new Package(pkg.getType(), pkg.getNamespace(), pkg.getName(), pkg.getVersion());
-        result.setSupplier(new Party(Party.Type.ORGANIZATION, pkg.getNamespace()));
-        result.setDeclaredLicense(pkg.getSpdxLicense());
-        result.setDescription(pkg.description);
-        result.setHomePage(pkg.homepageUrl);
-        if (pkg.getSourceArtifact() != null && !pkg.getSourceArtifact().url.getPath().isEmpty()) {
-            result.setLocation(pkg.getSourceArtifact().url);
-            if (!pkg.getSourceArtifact().getHash().algorithm.isEmpty()) {
-                result.addHash(pkg.getSourceArtifact().getHash().algorithm, pkg.getSourceArtifact().getHash().value);
-            }
-        }
-        return result;
     }
 
     public void write(File file, BillOfMaterials bom) {
