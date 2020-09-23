@@ -6,11 +6,10 @@
 package com.philips.research.spdxbuilder.core.bom;
 
 import com.philips.research.spdxbuilder.core.ConversionStore;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -18,7 +17,8 @@ import java.util.function.Consumer;
  */
 public class BillOfMaterials {
     private final List<Package> projects = new ArrayList<>();
-    private final List<Package> dependencies = new ArrayList<>();
+    private final List<Package> packages = new ArrayList<>();
+    private final Set<Relation> relations = new HashSet<>();
 
     public List<Package> getProjects() {
         return projects;
@@ -29,18 +29,18 @@ public class BillOfMaterials {
         return this;
     }
 
-    public List<Package> getDependencies() {
-        return dependencies;
+    public List<Package> getPackages() {
+        return packages;
     }
 
-    public BillOfMaterials addDependency(Package dependency) {
-        dependencies.add(dependency);
+    public BillOfMaterials addPackage(Package pkg) {
+        packages.add(pkg);
         return this;
     }
 
     public void updateLicense(QueryLicense func) {
 //        projects.forEach(updatePackageLicense(func));
-        dependencies.forEach(updatePackageLicense(func));
+        packages.forEach(updatePackageLicense(func));
     }
 
     private Consumer<Package> updatePackageLicense(QueryLicense func) {
@@ -53,9 +53,18 @@ public class BillOfMaterials {
                 });
     }
 
+    public BillOfMaterials addRelation(Package from, Package to, Relation.Type type) {
+        relations.add(new Relation(from, to, type));
+        return this;
+    }
+
+    public Collection<Relation> getRelations() {
+        return relations;
+    }
+
     @FunctionalInterface
     public interface QueryLicense {
-        Optional<ConversionStore.LicenseInfo> query(String namespace, String name, String version, URI location);
+        Optional<ConversionStore.LicenseInfo> query(String namespace, String name, String version, @NullOr URI location);
     }
 }
 

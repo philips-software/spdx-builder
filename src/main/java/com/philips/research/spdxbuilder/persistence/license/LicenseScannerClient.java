@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.IOException;
 import java.net.URI;
@@ -49,7 +50,7 @@ public class LicenseScannerClient {
      * @param location  (optional) location of the source code for the package
      * @return detected license for the package
      */
-    public Optional<LicenseInfo> scanLicense(String namespace, String name, String version, URI location) {
+    public Optional<LicenseInfo> scanLicense(String namespace, String name, String version, @NullOr URI location) {
         try {
             final var body = new RequestJson(location);
             final var response = post(body, "/packages/%s/%s/%s", namespace, name, version);
@@ -66,7 +67,7 @@ public class LicenseScannerClient {
         }
     }
 
-    private HttpResponse<String> post(Object body, String path, String... params) {
+    private HttpResponse<String> post(Object body, String path, Object... params) {
         try {
             final var json = MAPPER.writeValueAsString(body);
             final var url = String.format(path, params);

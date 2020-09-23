@@ -10,6 +10,7 @@ import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerClient;
 import com.philips.research.spdxbuilder.persistence.ort.OrtReader;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
@@ -19,10 +20,12 @@ import java.util.Optional;
  * Persistence implementation for bill-of-material data in various formats.
  */
 public class ConversionPersistence implements ConversionStore {
-    private final LicenseScannerClient licenseClient;
+    private final @NullOr LicenseScannerClient licenseClient;
 
-    public ConversionPersistence(URI licenseScannerUri) {
-        licenseClient = new LicenseScannerClient(licenseScannerUri);
+    public ConversionPersistence(@NullOr URI licenseScannerUri) {
+        licenseClient = (licenseScannerUri != null)
+                ? new LicenseScannerClient(licenseScannerUri)
+                : null;
     }
 
     @Override
@@ -38,7 +41,10 @@ public class ConversionPersistence implements ConversionStore {
     }
 
     @Override
-    public Optional<LicenseInfo> detectLicense(String namespace, String name, String version, URI location) {
+    public Optional<LicenseInfo> detectLicense(String namespace, String name, String version, @NullOr URI location) {
+        if (licenseClient == null) {
+            return Optional.empty();
+        }
         return licenseClient.scanLicense(namespace, name, version, location);
     }
 }

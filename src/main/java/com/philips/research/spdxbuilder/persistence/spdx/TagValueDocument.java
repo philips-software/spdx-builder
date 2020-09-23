@@ -5,6 +5,8 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
+import pl.tlinkowski.annotation.basic.NullOr;
+
 import java.io.*;
 import java.util.Optional;
 
@@ -12,14 +14,13 @@ import java.util.Optional;
  * SPDX Tag-value format implementation.
  */
 public class TagValueDocument implements Closeable {
+    @SuppressWarnings("SpellCheckingInspection")
     private static final String NO_ASSERTION = "NOASSERTION";
 
     private final Writer writer;
 
     /**
      * Starts a new tag-value document.
-     *
-     * @param stream
      */
     public TagValueDocument(OutputStream stream) {
         writer = new OutputStreamWriter(stream);
@@ -27,11 +28,8 @@ public class TagValueDocument implements Closeable {
 
     /**
      * Writes a tag with a (single line) plain value.
-     *
-     * @param tag
-     * @param value
      */
-    public void addValue(String tag, Object value) throws IOException {
+    public void addValue(String tag, @NullOr Object value) throws IOException {
         if (value instanceof Optional) {
             value = ((Optional<?>) value).orElse(null);
         }
@@ -45,9 +43,6 @@ public class TagValueDocument implements Closeable {
 
     /**
      * Writes a tag with a (multi line) delimited text value.
-     *
-     * @param tag
-     * @param text
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public void addText(String tag, Optional<String> text) throws IOException {
@@ -56,11 +51,8 @@ public class TagValueDocument implements Closeable {
 
     /**
      * Writes a tag with a (multi line) delimited text value.
-     *
-     * @param tag
-     * @param text
      */
-    public void addText(String tag, String text) throws IOException {
+    public void addText(String tag, @NullOr String text) throws IOException {
         addValue(tag, "<text>" + ((text != null) ? text : NO_ASSERTION) + "</text>");
     }
 
@@ -73,8 +65,6 @@ public class TagValueDocument implements Closeable {
 
     /**
      * Writes a comment line.
-     *
-     * @param comment
      */
     public void addComment(String comment) throws IOException {
         writeLine("## " + comment);

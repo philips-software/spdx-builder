@@ -26,7 +26,7 @@ public class ExternalReference {
         final var namespace = encode(pkg.getNamespace());
         final var name = encode(pkg.getName());
         final var version = encode(pkg.getVersion());
-        final var purl = (namespace != null && !namespace.isBlank())
+        final var purl = !namespace.isBlank()
                 ? String.format("pkg:%s/%s/%s@%s", type, namespace, name, version)
                 : String.format("pkg:%s/%s@%s", type, name, version);
 
@@ -34,9 +34,7 @@ public class ExternalReference {
     }
 
     private static String encode(String string) {
-        return (string != null)
-                ? URLEncoder.encode(string, StandardCharsets.UTF_8).replaceAll("\\+", "%20")
-                : null;
+        return URLEncoder.encode(string, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
     }
 
     @Override

@@ -5,12 +5,14 @@
 
 package com.philips.research.spdxbuilder.persistence.license;
 
+import pl.tlinkowski.annotation.basic.NullOr;
+
 import java.net.URI;
 
 class RequestJson {
-    String location;
+    @NullOr String location;
 
-    public RequestJson(URI location) {
+    public RequestJson(@NullOr URI location) {
         if (location != null) {
             this.location = location.toASCIIString();
         }

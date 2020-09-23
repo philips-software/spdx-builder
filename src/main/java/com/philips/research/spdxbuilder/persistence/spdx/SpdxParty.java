@@ -6,6 +6,7 @@
 package com.philips.research.spdxbuilder.persistence.spdx;
 
 import com.philips.research.spdxbuilder.core.bom.Party;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -16,13 +17,13 @@ import java.util.Optional;
 final class SpdxParty {
     private final String type;
     private final String name;
-    private final String email;
+    private final @NullOr String email;
 
     private SpdxParty(String type, String name) {
         this(type, name, null);
     }
 
-    private SpdxParty(String type, String name, String email) {
+    private SpdxParty(String type, String name, @NullOr String email) {
         this.type = type;
         this.name = name;
         this.email = email;
@@ -31,7 +32,7 @@ final class SpdxParty {
     /**
      * @return tool description
      */
-    static SpdxParty tool(String name, String version) {
+    static SpdxParty tool(String name, @NullOr String version) {
         if (version != null) {
             name += '-' + version;
         }
@@ -48,7 +49,7 @@ final class SpdxParty {
     /**
      * @return individual description
      */
-    static SpdxParty person(String name, String email) {
+    static SpdxParty person(String name, @NullOr String email) {
         return new SpdxParty("Person", name, email);
     }
 
@@ -56,14 +57,14 @@ final class SpdxParty {
      * @return description from an optional party entity or null if none was provided
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    static SpdxParty from(Optional<Party> party) {
+    static @NullOr SpdxParty from(Optional<Party> party) {
         return party.map(SpdxParty::from).orElse(null);
     }
 
     /**
      * @return description from a party entity
      */
-    static SpdxParty from(Party party) {
+    static @NullOr SpdxParty from(Party party) {
         switch (party.getType()) {
             case PERSON:
                 return person(party.getName(), null);

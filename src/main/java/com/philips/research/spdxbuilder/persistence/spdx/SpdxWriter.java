@@ -7,10 +7,10 @@ package com.philips.research.spdxbuilder.persistence.spdx;
 
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.bom.Relation;
 import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -32,7 +32,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
 
     public BillOfMaterials read(File file) {
         // Not implemented
-        return null;
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -42,18 +42,23 @@ public class SpdxWriter implements BillOfMaterialsStore {
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             //TODO where does the product name come from?
             writeDocumentInformation(doc, "product name");
+            generatePackageIdentifiers(bom);
             for (Package pkg : bom.getProjects()) {
-                writePackage(doc, pkg);
+                writePackage(doc, pkg, bom);
             }
-            for (Package pkg : bom.getDependencies()) {
-                writePackage(doc, pkg);
+            for (Package pkg : bom.getPackages()) {
+                writePackage(doc, pkg, bom);
             }
             //TODO Add non-SPDX license information
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
+            //TODO Catch exceptions
             e.printStackTrace();
         }
+    }
+
+    private void generatePackageIdentifiers(BillOfMaterials bom) {
+        bom.getProjects().forEach(this::identifierFor);
+        bom.getPackages().forEach(this::identifierFor);
     }
 
     private void writeDocumentInformation(TagValueDocument doc, String name) throws IOException {
@@ -80,10 +85,10 @@ public class SpdxWriter implements BillOfMaterialsStore {
         doc.addEmptyLine();
     }
 
-    private void writePackage(TagValueDocument doc, Package pkg) throws IOException {
+    private void writePackage(TagValueDocument doc, Package pkg, BillOfMaterials bom) throws IOException {
         doc.addComment("Start of " + pkg.getType() + " package '" + pkg.getName() + "' version " + pkg.getVersion());
         doc.addValue("PackageName", pkg.getName());
-        doc.addValue("SPDXID", nextIdentifier(pkg));
+        doc.addValue("SPDXID", identifierFor(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
         if (pkg.getFilename().isPresent()) {
             doc.addValue("PackageFileName", pkg.getFilename());
@@ -92,7 +97,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         doc.addValue("PackageSupplier", SpdxParty.from(pkg.getSupplier()));
         doc.addValue("PackageOriginator", SpdxParty.from(pkg.getOriginator()));
         doc.addValue("PackageDownloadLocation", pkg.getLocation());
-        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicense().isEmpty());
+        doc.addValue("FilesAnalyzed", pkg.getDetectedLicense().isPresent());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             final var key = entry.getKey().replaceAll("-", "").toUpperCase();
             if (SUPPORTED_HASH_KEYS.contains(key)) {
@@ -116,7 +121,33 @@ public class SpdxWriter implements BillOfMaterialsStore {
         if (pkg.getAttribution().isPresent()) {
             doc.addText("packageAttributionText", pkg.getAttribution());
         }
+        addPackageRelationships(doc, pkg, bom);
         doc.addEmptyLine();
+    }
+
+    private void addPackageRelationships(TagValueDocument doc, Package pkg, BillOfMaterials bom) throws IOException {
+        for (Relation rel : bom.getRelations()) {
+            if (rel.getFrom() == pkg) {
+                String value = String.format("%s %s %s", identifierFor(rel.getFrom()),
+                        mappedRelationType(rel.getType()),
+                        identifierFor(rel.getTo()));
+                doc.addValue("Relationship", value);
+            }
+        }
+    }
+
+    private String mappedRelationType(Relation.Type type) {
+        switch (type) {
+            case DESCENDANT_OF:
+                return "DESCENDANT_OF";
+            case DYNAMIC_LINK:
+                return "DYNAMIC_LINK";
+            case STATIC_LINK:
+                return "STATIC_LINK";
+            case DEPENDS_ON:
+            default:
+                return "DEPENDS_ON";
+        }
     }
 
     private void writeLicense(TagValueDocument doc) throws IOException {
@@ -126,11 +157,8 @@ public class SpdxWriter implements BillOfMaterialsStore {
 //       doc.addValue("LicenseCrossReference", );
     }
 
-    private SpdxRef nextIdentifier(Object object) {
-        final var ref = new SpdxRef(Integer.toString(nextId));
-        identifiers.put(object, ref);
-        nextId++;
-        return ref;
+    private SpdxRef identifierFor(Object object) {
+        return identifiers.computeIfAbsent(object, (o) -> new SpdxRef(Integer.toString(nextId++)));
     }
 }
 

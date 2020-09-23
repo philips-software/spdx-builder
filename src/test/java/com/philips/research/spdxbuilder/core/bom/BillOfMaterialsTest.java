@@ -25,14 +25,24 @@ class BillOfMaterialsTest {
 
     final BillOfMaterials bom = new BillOfMaterials();
     final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
+    final Package other = new Package(TYPE, NAMESPACE, "Other", VERSION);
     final BillOfMaterials.QueryLicense mockQuery = mock(BillOfMaterials.QueryLicense.class);
+
+    @Test
+    void addsUniqueRelationOnlyOnce() {
+        bom.addRelation(pkg, other, Relation.Type.DEPENDS_ON);
+        bom.addRelation(pkg, other, Relation.Type.DEPENDS_ON);
+
+        assertThat(bom.getRelations()).hasSize(1);
+        assertThat(bom.getRelations()).containsExactly(new Relation(pkg, other, Relation.Type.DEPENDS_ON));
+    }
 
     @Test
     void updatesConcludedLicense_noDeclaredLicense() {
         when(mockQuery.query(NAMESPACE, NAME, VERSION, LOCATION))
                 .thenReturn(Optional.of(new LicenseInfo(LICENSE, false)));
         pkg.setLocation(LOCATION);
-        bom.addDependency(pkg);
+        bom.addPackage(pkg);
 
         bom.updateLicense(mockQuery);
 
@@ -46,7 +56,7 @@ class BillOfMaterialsTest {
                 .thenReturn(Optional.of(new LicenseInfo(LICENSE, false)));
         pkg.setLocation(LOCATION);
         pkg.setDeclaredLicense("Other");
-        bom.addDependency(pkg);
+        bom.addPackage(pkg);
 
         bom.updateLicense(mockQuery);
 
@@ -60,7 +70,7 @@ class BillOfMaterialsTest {
                 .thenReturn(Optional.of(new LicenseInfo(LICENSE, true)));
         pkg.setLocation(LOCATION);
         pkg.setDeclaredLicense("Other");
-        bom.addDependency(pkg);
+        bom.addPackage(pkg);
 
         bom.updateLicense(mockQuery);
 

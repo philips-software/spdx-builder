@@ -6,8 +6,11 @@
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.bom.Package;
 import com.philips.research.spdxbuilder.core.bom.Party;
+import com.philips.research.spdxbuilder.core.bom.Relation;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
@@ -18,32 +21,36 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OrtJson {
-    RepositoryJson repository;
-    AnalyzerJson analyzer;
+    @NullOr RepositoryJson repository;
+    @NullOr AnalyzerJson analyzer;
 }
 
 class RepositoryJson {
-    ConfigJson config;
+    @NullOr ConfigJson config;
 
     Set<PathMatcher> getExcludePaths() {
-        return (config.excludes != null)
+        return (config != null && config.excludes != null)
                 ? config.excludes.getExcludePaths()
                 : Set.of();
     }
 
     Set<PathMatcher> getExcludeScopes() {
-        return (config.excludes != null)
+        return (config != null && config.excludes != null)
                 ? config.excludes.getExcludeScopes()
                 : Set.of();
     }
 }
 
 class ConfigJson {
-    ExcludeJson excludes;
+    @NullOr ExcludeJson excludes;
 }
 
 class ExcludeJson {
@@ -66,7 +73,7 @@ class ExcludeJson {
 class PatternJson {
     private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
 
-    String pattern;
+    @NullOr String pattern;
 
     PathMatcher getGlob() {
         return FILE_SYSTEM.getPathMatcher("glob:" + pattern);
@@ -74,37 +81,39 @@ class PatternJson {
 }
 
 class AnalyzerJson {
-    ResultJson result;
+    @NullOr ResultJson result;
 }
 
 class ResultJson {
-    List<ProjectJson> projects;
-    List<PackageWrapperJson> packages;
+    List<ProjectJson> projects = new ArrayList<>();
+    List<PackageWrapperJson> packages = new ArrayList<>();
     boolean hasIssues;
 
-    List<PackageJson> getPackages(Set<String> packageIdentifiers) {
-        return packages.stream()
-                .map(pkg -> pkg.pkg)
-                .filter(pkg -> packageIdentifiers.contains(pkg.id))
-                .collect(Collectors.toList());
+    Stream<PackageJson> packages() {
+        return packages.stream().map(wrap -> wrap.pkg);
+    }
+
+    void removeProjects(Set<PathMatcher> excludedPaths) {
+        projects.removeIf(p -> p.definitionFilePath == null
+                || excludedPaths.stream()
+                .anyMatch(glob -> glob.matches(p.definitionFilePath.toPath())));
     }
 }
 
 class PackageWrapperJson {
     @JsonProperty("package")
-    PackageJson pkg;
+    @NullOr PackageJson pkg;
 }
 
 abstract class PackageBaseJson {
-    String id;
+    @NullOr String id;
+    @NullOr DeclaredLicensesJson declaredLicensesProcessed;
+    @NullOr String description;
+    @NullOr URL homepageUrl;
+    @NullOr LocationJson sourceArtifact;
 
-    DeclaredLicensesJson declaredLicensesProcessed;
-    String description;
-    URL homepageUrl;
-    LocationJson sourceArtifact;
-
-    public Package createPackage() {
-        final var result = new Package(idElement(0), idElement(1), idElement(2), idElement(3));
+    Package createPackage() {
+        final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
 
         result.setSupplier(new Party(Party.Type.ORGANIZATION, result.getNamespace()));
         result.setDescription(description);
@@ -116,6 +125,9 @@ abstract class PackageBaseJson {
     }
 
     private String idElement(int index) {
+        if (id == null) {
+            return "";
+        }
         final var split = id.split(":");
         return (index < split.length) ? split[index] : "";
     }
@@ -134,25 +146,21 @@ abstract class PackageBaseJson {
 }
 
 class DeclaredLicensesJson {
-    String spdxExpression;
+    @NullOr String spdxExpression;
 }
 
 class ProjectJson extends PackageBaseJson {
-    List<DependencyJson> scopes;
-    File definitionFilePath;
+    List<DependencyJson> scopes = new ArrayList<>();
+    @NullOr File definitionFilePath;
 
-    Set<String> getPackageIdentifiers(Set<PathMatcher> excludedScopes) {
-        return scopes.stream()
-                .filter(scope -> excludedScopes.stream()
-                        .noneMatch(glob -> glob.matches(Path.of(scope.name))))
-                .peek(scope -> System.out.println("- Adding scope '" + scope.name + "'"))
-                .flatMap(scope -> scope.getAllDependencies().stream())
-                .collect(Collectors.toSet());
+    public void removeScopes(Set<PathMatcher> excludedScopes) {
+        scopes.removeIf(scope -> excludedScopes.stream()
+                .anyMatch(glob -> glob.matches(Path.of(scope.name))));
     }
 }
 
 class PackageJson extends PackageBaseJson {
-    VcsJson vcs_processed;
+    @NullOr VcsJson vcs_processed;
 
     @Override
     void addSourceLocation(Package pkg) {
@@ -164,23 +172,38 @@ class PackageJson extends PackageBaseJson {
 }
 
 class DependencyJson {
-    String id;
-    String name;
+    @NullOr String id;
+    @NullOr String name;
     List<DependencyJson> dependencies = new ArrayList<>();
 
-    Collection<String> getAllDependencies() {
-        Set<String> result = new HashSet<>();
-        for (var dep : dependencies) {
-            result.add(dep.id);
-            result.addAll(dep.getAllDependencies());
+    void putAllDependencies(Map<String, Package> dictionary) {
+        for (DependencyJson dep : dependencies) {
+            if (dep.id != null) {
+                //noinspection ConstantConditions
+                dictionary.put(dep.id, null);
+                dep.putAllDependencies(dictionary);
+            }
         }
-        return result;
+    }
+
+    void registerRelations(BillOfMaterials bom, Package from, Map<String, Package> dictionary) {
+        final var me = dictionary.get(id);
+        if (me == null) {
+            return;
+        }
+        //noinspection ConstantConditions
+        if (from != null) {
+            bom.addRelation(from, me, Relation.Type.DYNAMIC_LINK);
+        }
+        for (var dep : dependencies) {
+            dep.registerRelations(bom, me, dictionary);
+        }
     }
 }
 
 class LocationJson {
-    URI url;
-    HashJson hash;
+    @NullOr URI url;
+    @NullOr HashJson hash;
 
     public void addSourceLocation(Package pkg) {
         if (url != null && !url.toString().isEmpty()) {
@@ -193,21 +216,21 @@ class LocationJson {
 }
 
 class HashJson {
-    String value;
-    String algorithm;
+    @NullOr String value;
+    @NullOr String algorithm;
 
     void addHash(Package pkg) {
-        if (value != null && !algorithm.isEmpty()) {
+        if (value != null && algorithm != null && !algorithm.isEmpty()) {
             pkg.addHash(algorithm, value);
         }
     }
 }
 
 class VcsJson {
-    String type;
-    URI url;
-    String revision;
-    String path;
+    @NullOr String type;
+    @NullOr URI url;
+    @NullOr String revision;
+    @NullOr String path;
 
     void addSourceLocation(Package pkg) {
         if (url == null || url.toString().isEmpty()) {
@@ -228,7 +251,7 @@ class VcsJson {
         pkg.setLocation(URI.create(location));
     }
 
-    private boolean hasValue(String string) {
+    private boolean hasValue(@NullOr String string) {
         return (string != null && !string.isEmpty());
     }
 }

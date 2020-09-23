@@ -33,7 +33,7 @@ analyzer:
       SHELL: "/bin/bash"
       TERM: "xterm-256color"
       JAVA_HOME: "/usr/lib/jvm/java-8-oracle"
-    tool_versions: {}
+    tool_versions: { }
   # Configuration options of the analyzer.
   config:
     ignore_tool_versions: false
@@ -108,6 +108,6 @@ analyzer:
           purl: "pkg://NPM//skip@2.1"
     # ...
     # Finally a list of project related issues that happened during dependency analysis. Fortunately empty in this case.
-    issues: {}
+    issues: { }
     # A field to quickly check if the analyzer result contains any issues.
     has_issues: false

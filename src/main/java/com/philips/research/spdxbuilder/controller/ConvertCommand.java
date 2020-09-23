@@ -9,6 +9,7 @@ import com.philips.research.spdxbuilder.core.ConversionInteractor;
 import com.philips.research.spdxbuilder.persistence.ConversionPersistence;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
@@ -19,12 +20,12 @@ import java.net.URI;
 @CommandLine.Command(name = "spdx-builder", mixinStandardHelpOptions = true, version = "1.0")
 public class ConvertCommand implements Runnable {
     @Option(names = "--ort", description = "Read ORT Analyzer YAML file", descriptionKey = "file")
-    File ortFile;
+    @NullOr File ortFile;
 
     File spdxFile = new File("bom.spdx");
 
     @Option(names = "--scanner", description = "Add licenses from license scanner service", descriptionKey = "server url")
-    URI licenseScanner;
+    @NullOr URI licenseScanner;
 
     @Override
     public void run() {

@@ -37,7 +37,7 @@ class OrtJsonTest {
         void createsPackage() {
             final var result = pkg.createPackage();
 
-            assertThat(result.getType()).isEqualTo(TYPE);
+            assertThat(result.getType()).isEqualTo(TYPE.toLowerCase());
             assertThat(result.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(result.getName()).isEqualTo(NAME);
             assertThat(result.getVersion()).isEqualTo(VERSION);

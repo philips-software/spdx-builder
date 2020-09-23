@@ -6,6 +6,7 @@
 package com.philips.research.spdxbuilder.core;
 
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
@@ -19,13 +20,12 @@ public interface ConversionStore {
 
     void write(BillOfMaterials bom, FileType type, File file);
 
-    Optional<LicenseInfo> detectLicense(String namespace, String name, String version, URI location);
+    Optional<LicenseInfo> detectLicense(String namespace, String name, String version, @NullOr URI location);
 
     enum FileType {ORT, SPDX}
 
     class LicenseInfo {
         private final String license;
-
         private final boolean confirmed;
 
         public LicenseInfo(String license, boolean confirmed) {

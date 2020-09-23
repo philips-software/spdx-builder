@@ -5,6 +5,7 @@
 
 package com.philips.research.spdxbuilder.core.bom;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,13 @@ class PackageTest {
         assertThat(pkg.getName()).isEqualTo(NAME);
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
         assertThat(pkg.getConcludedLicense()).isEmpty();
+    }
+
+    @Test
+    void implementsEquals() {
+        EqualsVerifier.forClass(Package.class)
+                .withOnlyTheseFields("type", "namespace", "name", "version")
+                .verify();
     }
 
     @Nested
