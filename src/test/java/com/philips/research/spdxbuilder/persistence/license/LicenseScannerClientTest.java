@@ -112,6 +112,6 @@ class LicenseScannerClientTest {
         // Default not-found response
         assertThatThrownBy(() -> client.scanLicense(NAMESPACE, NAME, VERSION, LOCATION))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("unexpected response");
+                .hasMessageContaining("status 404");
     }
 }

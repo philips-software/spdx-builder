@@ -39,7 +39,7 @@ public class BillOfMaterials {
     }
 
     public void updateLicense(QueryLicense func) {
-//        projects.forEach(updatePackageLicense(func));
+        projects.forEach(updatePackageLicense(func));
         packages.forEach(updatePackageLicense(func));
     }
 
