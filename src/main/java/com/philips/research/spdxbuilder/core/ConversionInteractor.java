@@ -6,6 +6,7 @@
 package com.philips.research.spdxbuilder.core;
 
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.bom.Package;
 
 import java.io.File;
 
@@ -28,7 +29,18 @@ public class ConversionInteractor implements ConversionService {
 
     @Override
     public void scanLicenses() {
-        bom.updateLicense(store::detectLicense);
+        bom.getProjects().forEach(this::updateLicense);
+        bom.getPackages().forEach(this::updateLicense);
+    }
+
+    private void updateLicense(Package pkg) {
+        store.detectLicense(pkg)
+                .ifPresent(l -> {
+                    pkg.setDetectedLicense(l.getLicense());
+                    if (l.isConfirmed()) {
+                        pkg.setConcludedLicense(l.getLicense());
+                    }
+                });
     }
 
     @Override

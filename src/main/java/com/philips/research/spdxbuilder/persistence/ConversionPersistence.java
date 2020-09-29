@@ -7,7 +7,9 @@ package com.philips.research.spdxbuilder.persistence;
 
 import com.philips.research.spdxbuilder.core.ConversionStore;
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.bom.Package;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerClient;
+import com.philips.research.spdxbuilder.persistence.license.LicenseScannerException;
 import com.philips.research.spdxbuilder.persistence.ort.OrtReader;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -41,10 +43,15 @@ public class ConversionPersistence implements ConversionStore {
     }
 
     @Override
-    public Optional<LicenseInfo> detectLicense(String namespace, String name, String version, @NullOr URI location) {
-        if (licenseClient == null) {
+    public Optional<LicenseInfo> detectLicense(Package pkg) {
+        try {
+            if (licenseClient == null) {
+                return Optional.empty();
+            }
+            return licenseClient.scanLicense(pkg.getNamespace(), pkg.getName(), pkg.getVersion(), pkg.getLocation().orElse(null));
+        } catch (LicenseScannerException e) {
+            System.err.println("ERROR: " + e.getMessage());
             return Optional.empty();
         }
-        return licenseClient.scanLicense(namespace, name, version, location);
     }
 }

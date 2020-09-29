@@ -123,12 +123,10 @@ public final class Package {
     public Optional<String> getConcludedLicense() {
         if (concludedLicense != null) {
             return Optional.of(concludedLicense);
-        }
-        if (declaredLicense == null || Objects.equals(detectedLicense, declaredLicense)) {
-            //noinspection ConstantConditions
+        } else if (declaredLicense == null) {
             return Optional.ofNullable(detectedLicense);
         }
-        return Optional.empty();
+        return Optional.ofNullable(declaredLicense);
     }
 
     public Package setConcludedLicense(@NullOr String concludedLicense) {

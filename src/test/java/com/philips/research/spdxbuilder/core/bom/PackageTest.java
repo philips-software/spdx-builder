@@ -39,32 +39,32 @@ class PackageTest {
     @Nested
     class Licenses {
         @Test
-        void concludesLicenseForMatchingDetectedLicenses() {
-            pkg.setDeclaredLicense(LICENSE);
-            pkg.setDetectedLicense(LICENSE);
-
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        }
-
-        @Test
-        void concludesLicenseIfNoDeclaredLicense() {
-            pkg.setDetectedLicense(LICENSE);
-
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        }
-
-        @Test
-        void concludesUnknownLicenseForMismatch() {
-            pkg.setDeclaredLicense(LICENSE);
-            pkg.setDetectedLicense("Other");
-
+        void licensesAreOptional() {
+            assertThat(pkg.getDetectedLicense()).isEmpty();
+            assertThat(pkg.getDeclaredLicense()).isEmpty();
             assertThat(pkg.getConcludedLicense()).isEmpty();
         }
 
         @Test
-        void overridesConcludedLicense() {
+        void concludedLicenseDefaultsToDeclaredLicense() {
+            pkg.setDeclaredLicense(LICENSE);
+
+            assertThat(pkg.getDeclaredLicense()).contains(LICENSE);
+            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+        }
+
+        @Test
+        void concludedLicenseDefaultsToConcluded_noDeclaredLicense() {
+            pkg.setDetectedLicense(LICENSE);
+
+            assertThat(pkg.getDetectedLicense()).contains(LICENSE);
+            assertThat(pkg.getDeclaredLicense()).isEmpty();
+            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+        }
+
+        @Test
+        void concludedLicenseOverridesDeclaredLicense() {
             pkg.setDeclaredLicense("Other");
-            pkg.setDetectedLicense("Other");
             pkg.setConcludedLicense(LICENSE);
 
             assertThat(pkg.getConcludedLicense()).contains(LICENSE);

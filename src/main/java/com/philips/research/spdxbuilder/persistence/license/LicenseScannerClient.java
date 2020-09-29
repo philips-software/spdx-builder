@@ -11,14 +11,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import org.yaml.snakeyaml.util.UriEncoder;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -60,7 +61,8 @@ public class LicenseScannerClient {
             }
             final var response = post(body, "/packages/%s/%s/%s", namespace, name, version);
             if (response.statusCode() != 200) {
-                throw new LicenseScannerException("License scanner responded to "+response.request().uri() + " with status " + response.statusCode());
+                throw new LicenseScannerException("License scanner responded to " + response.request().uri()
+                        + " with status " + response.statusCode());
             }
             final var result = MAPPER.readValue(response.body(), ResultJson.class);
             if (result.license == null) {
@@ -74,7 +76,10 @@ public class LicenseScannerClient {
 
     private HttpResponse<String> post(Object body, String path, Object... params) {
         try {
-            params = Arrays.stream(params).map(p-> UriEncoder.encode(p.toString())).toArray();
+            params = Arrays.stream(params)
+                    .map(p -> URLEncoder.encode(p.toString(), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20"))
+                    .toArray();
             final var json = MAPPER.writeValueAsString(body);
             final var url = String.format(path, params);
             final var request = HttpRequest.newBuilder(licenseServer.resolve(url))

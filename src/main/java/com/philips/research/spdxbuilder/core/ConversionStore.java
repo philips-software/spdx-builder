@@ -6,21 +6,29 @@
 package com.philips.research.spdxbuilder.core;
 
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import pl.tlinkowski.annotation.basic.NullOr;
+import com.philips.research.spdxbuilder.core.bom.Package;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Optional;
 
 /**
  * Persistence API for bill-of-materials entities.
  */
 public interface ConversionStore {
+    /**
+     * Reads a bill-of-materials for the indicated file type.
+     */
     BillOfMaterials read(FileType type, File file);
 
+    /**
+     * Write a bill-of-materials for the indicated file type.
+     */
     void write(BillOfMaterials bom, FileType type, File file);
 
-    Optional<LicenseInfo> detectLicense(String namespace, String name, String version, @NullOr URI location);
+    /**
+     * @return the scanned license for a package
+     */
+    Optional<LicenseInfo> detectLicense(Package pkg);
 
     enum FileType {ORT, SPDX}
 
