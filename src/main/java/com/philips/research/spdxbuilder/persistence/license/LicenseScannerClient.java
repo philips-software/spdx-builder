@@ -12,15 +12,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import pl.tlinkowski.annotation.basic.NullOr;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static com.philips.research.spdxbuilder.core.ConversionStore.LicenseInfo;
@@ -35,13 +35,17 @@ public class LicenseScannerClient {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
             .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-    private static final String MEDIA_TYPE_APPLICATION_JSON = "application/json; charset=utf-8";
 
     private final URI licenseServer;
-    private final HttpClient client = HttpClient.newBuilder().build();
+    private final RestClient rest;
 
     public LicenseScannerClient(URI licenseServer) {
         this.licenseServer = licenseServer;
+        final var retrofit = new Retrofit.Builder()
+                .baseUrl(licenseServer.toASCIIString())
+                .addConverterFactory(JacksonConverterFactory.create(MAPPER))
+                .build();
+        rest = retrofit.create(RestClient.class);
     }
 
     /**
@@ -59,37 +63,37 @@ public class LicenseScannerClient {
             if (version.isEmpty()) {
                 version = " ";
             }
-            final var response = post(body, "/packages/%s/%s/%s", namespace, name, version);
-            if (response.statusCode() != 200) {
-                throw new LicenseScannerException("License scanner responded to " + response.request().uri()
-                        + " with status " + response.statusCode());
+            final var resp = rest.scan(namespace, name, version, body).execute();
+            if (!resp.isSuccessful()) {
+                throw new LicenseScannerException("License scanner responded with status " + resp.code());
             }
-            final var result = MAPPER.readValue(response.body(), ResultJson.class);
-            if (result.license == null) {
+
+            final @NullOr ResultJson result = resp.body();
+            if (result == null || result.license == null) {
                 return Optional.empty();
             }
             return Optional.of(new LicenseInfo(result.license, result.confirmed));
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("JSON formatting error", e);
+        } catch (IOException e) {
+            throw new LicenseScannerException("The license scanner is not reachable at " + licenseServer);
         }
     }
 
-    private HttpResponse<String> post(Object body, String path, Object... params) {
-        try {
-            params = Arrays.stream(params)
-                    .map(p -> URLEncoder.encode(p.toString(), StandardCharsets.UTF_8)
-                            .replaceAll("\\+", "%20"))
-                    .toArray();
-            final var json = MAPPER.writeValueAsString(body);
-            final var url = String.format(path, params);
-            final var request = HttpRequest.newBuilder(licenseServer.resolve(url))
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .header("Content-Type", MEDIA_TYPE_APPLICATION_JSON)
-                    .header("Accept", MEDIA_TYPE_APPLICATION_JSON)
-                    .build();
-            return client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (InterruptedException | IOException e) {
-            throw new LicenseScannerException("License scanner is not reachable at " + licenseServer);
-        }
+    /**
+     * Retrofit REST API declaration.
+     */
+    interface RestClient {
+        /**
+         * Start scanning a package or retrieve result from an earlier scan.
+         *
+         * @return scan result with or without a concluded license
+         */
+        @POST("/packages/{namespace}/{name}/{version}")
+        Call<ResultJson> scan(@Path("namespace") String namespace,
+                              @Path("name") String name,
+                              @Path("version") String version,
+                              @Body RequestJson body);
     }
 }
+
