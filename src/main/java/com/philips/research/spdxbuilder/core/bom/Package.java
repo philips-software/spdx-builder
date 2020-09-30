@@ -57,7 +57,6 @@ public final class Package {
     }
 
     public Optional<Party> getOriginator() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(originator);
     }
 
@@ -67,7 +66,6 @@ public final class Package {
     }
 
     public Optional<Party> getSupplier() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(supplier);
     }
 
@@ -77,7 +75,6 @@ public final class Package {
     }
 
     public Optional<String> getFilename() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(filename);
     }
 
@@ -87,7 +84,6 @@ public final class Package {
     }
 
     public Optional<URI> getLocation() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(location);
     }
 
@@ -97,7 +93,6 @@ public final class Package {
     }
 
     public Optional<String> getHash(String format) {
-        //noinspection ConstantConditions
         return Optional.ofNullable(hash.get(format.toUpperCase()));
     }
 
@@ -111,7 +106,6 @@ public final class Package {
     }
 
     public Optional<URL> getHomePage() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(homePage);
     }
 
@@ -126,36 +120,39 @@ public final class Package {
         } else if (declaredLicense == null) {
             return Optional.ofNullable(detectedLicense);
         }
-        return Optional.ofNullable(declaredLicense);
+        return Optional.of(declaredLicense);
     }
 
     public Package setConcludedLicense(@NullOr String concludedLicense) {
-        this.concludedLicense = concludedLicense;
+        this.concludedLicense = nullIfEmpty(concludedLicense);
         return this;
     }
 
     public Optional<String> getDeclaredLicense() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(declaredLicense);
     }
 
     public Package setDeclaredLicense(@NullOr String license) {
-        this.declaredLicense = license;
+        this.declaredLicense = nullIfEmpty(license);
         return this;
     }
 
     public Optional<String> getDetectedLicense() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(detectedLicense);
     }
 
-    public Package setDetectedLicense(String license) {
-        this.detectedLicense = license;
+    public Package setDetectedLicense(@NullOr String license) {
+        this.detectedLicense = nullIfEmpty(license);
         return this;
     }
 
+    private @NullOr String nullIfEmpty(@NullOr String string) {
+        return (string != null && !string.isBlank())
+                ? string
+                : null;
+    }
+
     public Optional<String> getCopyright() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(copyright);
     }
 
@@ -165,7 +162,6 @@ public final class Package {
     }
 
     public Optional<String> getSummary() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(summary);
     }
 
@@ -175,7 +171,6 @@ public final class Package {
     }
 
     public Optional<String> getDescription() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(description);
     }
 
@@ -185,7 +180,6 @@ public final class Package {
     }
 
     public Optional<String> getAttribution() {
-        //noinspection ConstantConditions
         return Optional.ofNullable(attribution);
     }
 

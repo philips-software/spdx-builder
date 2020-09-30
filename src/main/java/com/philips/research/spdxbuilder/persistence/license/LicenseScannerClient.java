@@ -65,17 +65,18 @@ public class LicenseScannerClient {
                 return Optional.empty();
             }
 
-            final @NullOr String declaredLicense = pkg.getDeclaredLicense().orElse(null);
-            if (!result.confirmed && result.id != null && !result.license.equals(declaredLicense)) {
-                contest(result.id);
-            }
+            pkg.getDeclaredLicense()
+                    .filter(l -> !result.confirmed && !l.equals(result.license))
+                    .ifPresent(l -> contest(result.id));
 
             return Optional.of(new LicenseInfo(result.license, result.confirmed));
         });
     }
 
-    private void contest(UUID scanId) {
-        query(() -> rest.contest(scanId).execute());
+    private void contest(@NullOr UUID scanId) {
+        if (scanId != null) {
+            query(() -> rest.contest(scanId).execute());
+        }
     }
 
     private <R> R query(Request<R> supplier) {
