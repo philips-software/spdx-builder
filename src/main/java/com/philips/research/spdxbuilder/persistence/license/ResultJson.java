@@ -7,13 +7,10 @@ package com.philips.research.spdxbuilder.persistence.license;
 
 import pl.tlinkowski.annotation.basic.NullOr;
 
-import java.net.URI;
+import java.util.UUID;
 
 class ResultJson {
-    @NullOr String namespace;
-    @NullOr String name;
-    @NullOr String version;
-    @NullOr URI location;
+    @NullOr UUID id;
     @NullOr String license;
     boolean confirmed;
 }

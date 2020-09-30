@@ -30,6 +30,10 @@ public class ConversionPersistence implements ConversionStore {
                 : null;
     }
 
+    ConversionPersistence(LicenseScannerClient client) {
+        licenseClient = client;
+    }
+
     @Override
     public BillOfMaterials read(FileType type, File file) {
         //TODO switch on file type
@@ -45,10 +49,7 @@ public class ConversionPersistence implements ConversionStore {
     @Override
     public Optional<LicenseInfo> detectLicense(Package pkg) {
         try {
-            if (licenseClient == null) {
-                return Optional.empty();
-            }
-            return licenseClient.scanLicense(pkg.getNamespace(), pkg.getName(), pkg.getVersion(), pkg.getLocation().orElse(null));
+            return (licenseClient != null) ? licenseClient.scanLicense(pkg) : Optional.empty();
         } catch (LicenseScannerException e) {
             System.err.println("ERROR: " + e.getMessage());
             return Optional.empty();
