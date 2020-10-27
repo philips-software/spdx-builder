@@ -77,16 +77,6 @@ class TagValueDocumentTest {
 
     @Test
     void writesTextValue() throws Exception {
-        assertOutput(TAG_TEXT, (doc) -> doc.addText("Tag", "Value"));
-    }
-
-    @Test
-    void noAssertionEmptyOptionalTagText() throws Exception {
-        assertOutput(NO_ASSERTION_TEXT, (doc) -> doc.addText(TAG, Optional.empty()));
-    }
-
-    @Test
-    void noAssertionNullTagText() throws Exception {
-        assertOutput(NO_ASSERTION_TEXT, (doc) -> doc.addText(TAG, (String) null));
+        assertOutput("Tag: <text>a\nb</text>\n", (doc) -> doc.addValue("Tag", "a\nb"));
     }
 }

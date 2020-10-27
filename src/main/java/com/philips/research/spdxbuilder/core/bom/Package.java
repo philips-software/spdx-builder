@@ -14,6 +14,8 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -24,6 +26,7 @@ public final class Package {
     private final String namespace;
     private final String name;
     private final String version;
+    private @NullOr URI purl;
     private final Map<String, String> hash = new HashMap<>();
     private @NullOr Party originator;
     private @NullOr Party supplier;
@@ -59,6 +62,26 @@ public final class Package {
 
     public String getVersion() {
         return version;
+    }
+
+    public URI getPurl() {
+        if (purl == null) {
+            var path = encoded(name);
+            if (!namespace.isBlank()) {
+                path = encoded(namespace) + '/' + path;
+            }
+            return URI.create("pkg:" + type + '/' + path + "@" + encoded(version));
+        }
+        return purl;
+    }
+
+    private static String encoded(String string) {
+        return URLEncoder.encode(string, StandardCharsets.UTF_8);
+    }
+
+    public Package setPurl(URI purl) {
+        this.purl = purl;
+        return this;
     }
 
     public Optional<Party> getOriginator() {
@@ -213,4 +236,5 @@ public final class Package {
     public String toString() {
         return String.format("%s:%s/%s-%s", type, namespace, name, version);
     }
+
 }

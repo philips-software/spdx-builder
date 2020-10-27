@@ -166,6 +166,7 @@ class ProjectJson extends PackageBaseJson {
 
 class PackageJson extends PackageBaseJson {
     @NullOr VcsJson vcs_processed;
+    @NullOr URI purl;
 
     @Override
     void addSourceLocation(Package pkg) {

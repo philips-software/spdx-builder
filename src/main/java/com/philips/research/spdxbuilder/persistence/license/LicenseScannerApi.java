@@ -26,11 +26,8 @@ interface LicenseScannerApi {
      *
      * @return scan result with or without a concluded license
      */
-    @POST("/packages/{namespace}/{name}/{version}")
-    Call<ResultJson> scan(@Path("namespace") String namespace,
-                          @Path("name") String name,
-                          @Path("version") String version,
-                          @Body RequestJson body);
+    @POST("/packages/{purl}")
+    Call<ResultJson> scan(@Path("purl") String purl, @Body RequestJson body);
 
     /**
      * Contests an existing scan.

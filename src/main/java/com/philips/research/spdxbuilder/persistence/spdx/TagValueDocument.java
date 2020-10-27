@@ -43,22 +43,8 @@ public class TagValueDocument implements Closeable {
             value = NO_ASSERTION;
         }
 
-        writeLine(tag + ": " + value);
-    }
-
-    /**
-     * Writes a tag with a (multi line) delimited text value.
-     */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public void addText(String tag, Optional<String> text) throws IOException {
-        addText(tag, text.orElse(null));
-    }
-
-    /**
-     * Writes a tag with a (multi line) delimited text value.
-     */
-    public void addText(String tag, @NullOr String text) throws IOException {
-        addValue(tag, "<text>" + ((text != null) ? text : NO_ASSERTION) + "</text>");
+        final var string = value.toString();
+        writeLine(tag + ": " + (string.contains("\n") ? "<text>" + value + "</text>" : value));
     }
 
     /**

@@ -23,6 +23,8 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,9 +60,10 @@ public class LicenseScannerClient {
      */
     public Optional<LicenseInfo> scanLicense(Package pkg) {
         return query(() -> {
-            String v = (!pkg.getVersion().isEmpty()) ? pkg.getVersion() : " ";
             final var body = new RequestJson(pkg.getLocation().orElse(null));
-            final var resp = rest.scan(pkg.getNamespace(), pkg.getName(), v, body).execute();
+            final var purl = pkg.getPurl().toString();
+
+            final var resp = rest.scan(encoded(purl), body).execute();
             if (!resp.isSuccessful()) {
                 throw new LicenseScannerException("License scanner responded with status " + resp.code());
             }
@@ -76,6 +79,10 @@ public class LicenseScannerClient {
 
             return Optional.of(new LicenseInfo(result.license, result.confirmed));
         });
+    }
+
+    static private String encoded(String string) {
+        return URLEncoder.encode(string, StandardCharsets.UTF_8);
     }
 
     private void contest(@NullOr UUID scanId) {

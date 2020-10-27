@@ -1,30 +1,54 @@
 # SPDX-Builder
 
-## Introduction
-This command line tool converts package information from 
-[OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT) Analyzer 
-YAML files together with curated license scan results from a
+**Description**: Converts dependencies for many package managers into a standard
+[SPDX](https://spdx.github.io/spdx-spec) tag-value Software Bill-of-Materials file, 
+optionally integrating externally detected and curated license details.
+
+Inputs for the SBOM are:
+* Package information by YAML files from 
+[OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT) Analyzer.
+* Curated license scan results from the REST API of a 
 [License Scanning Service](https://github.com/philips-labs/license-scanner)
-backend service into an [SPDX 2.2](https://spdx.github.io/spdx-spec/) software 
-bill-of-material (SBOM) file.
+backend service.
 
-This tool can be used in combination with the ORT Analyzer in CI/CD pipelines 
-to automatically generate an SPDX 2.2 SBOM for a many types of package manager-based 
-projects. (See the ORT documentation.)
+**Status**: Research prototype
 
-## License scanner
-The SBOM includes scanned licenses as "detected", and only overrides the "declared" 
-license from the package manager when the scanner indicates it was "confirmed", or
-the package manager did not provide a declared license.
+This is an experimental application for generating reference data in the context
+of [investigations into Bill-of-Materials and open source licensing](https://gitlab.ta.philips.com/swat/bom/comparison).
+
+## Dependencies
+
+This software requires Java 11 (or later) to run.
+
+## Installation
+
+Build the application using the standard Maven command:
+```
+mvn clean install
+```
+Then copy the resulting JAR file from the `target` directory.
+
+## Configuration
+
+All configuration is available through command line parameters.
 
 ## Usage
+
 See the command line help for the exact invocation syntax:
+```
+java -jar spdx-builder.jar --help
+```
 
-`java -jar spdx-builder.jar --help`
+This application requires Java 11 or higher.
 
-This Java application requires Java 11 or higher.
+## How to test the software
 
-## TO DO List
+The unit test suite is run via the standard Maven command:
+```
+maven clean test
+```
+
+## Known issues
 (Ticked checkboxes indicate topics currently under development.)
 
 Must-have:
@@ -42,3 +66,18 @@ Should-have:
 Others:
 - [ ] Support RDF/XML SPDX output format
 - [ ] Integration with [Quartermaster (QMSTR)](https://qmstr.org/).
+
+## Contact / Getting help
+
+Submit tickets to the [issue tracker](https://github.com/philips-labs/spdx-builder/issues).
+
+## License
+
+See [LICENSE.md](LICENSE.md).
+
+## Credits and references
+
+1. [The SPDX Specification](https://spdx.github.io/spdx-spec) documents the SPDX file
+standard.
+2. [The ORT Project](https://github.com/oss-review-toolkit) provides a toolset for
+generating and analyzing various aspects of the Bill-of-Materials.
