@@ -22,11 +22,11 @@ This software requires Java 11 (or later) to run.
 
 ## Installation
 
-Build the application using the standard Maven command:
+Build the application using the standard gradle command:
 ```
-mvn clean install
+./gradlew clean build
 ```
-Then copy the resulting JAR file from the `target` directory.
+Then copy the resulting JAR file from the `build/libs` directory.
 
 ## Configuration
 
@@ -34,18 +34,23 @@ All configuration is available through command line parameters.
 
 ## Usage
 
-See the command line help for the exact invocation syntax:
+See the command line help for the exact invocation syntax, with the exact right java version installed:
 ```
 java -jar spdx-builder.jar --help
 ```
 
 This application requires Java 11 or higher.
 
+You can also use gradle to provide you with the proper java environment:
+```
+./gradlew -q run --args='--help'
+```
+
 ## How to test the software
 
-The unit test suite is run via the standard Maven command:
+The unit test suite is run via the standard Gradle command:
 ```
-maven clean test
+./gradlew clean test
 ```
 
 ## Known issues
