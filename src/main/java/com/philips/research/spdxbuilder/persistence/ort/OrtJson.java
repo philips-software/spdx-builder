@@ -114,12 +114,14 @@ abstract class PackageBaseJson {
     @NullOr String id;
     @NullOr DeclaredLicensesJson declaredLicensesProcessed;
     @NullOr String description;
+    @NullOr URI purl;
     @NullOr URL homepageUrl;
     @NullOr LocationJson sourceArtifact;
 
     Package createPackage() {
         final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
 
+        result.setPurl(purl);
         result.setSupplier(new Party(Party.Type.ORGANIZATION, result.getNamespace()));
         result.setDescription(description);
         result.setHomePage(homepageUrl);
@@ -166,7 +168,6 @@ class ProjectJson extends PackageBaseJson {
 
 class PackageJson extends PackageBaseJson {
     @NullOr VcsJson vcs_processed;
-    @NullOr URI purl;
 
     @Override
     void addSourceLocation(Package pkg) {

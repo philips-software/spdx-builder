@@ -24,13 +24,16 @@ import java.net.URI;
  */
 @CommandLine.Command(name = "spdx-builder", mixinStandardHelpOptions = true, version = "1.0")
 public class ConvertCommand implements Runnable {
-    @Option(names = "--ort", description = "Read ORT Analyzer YAML file", descriptionKey = "file")
+    @Option(names = {"--ort", "-i"}, description = "Read ORT Analyzer YAML file", descriptionKey = "file")
     @NullOr File ortFile;
 
-    File spdxFile = new File("bom.spdx");
 
-    @Option(names = "--scanner", description = "Add licenses from license scanner service", descriptionKey = "server url")
+    @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", descriptionKey = "server url")
     @NullOr URI licenseScanner;
+
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", descriptionKey = "file", defaultValue = "bom.spdx")
+    File spdxFile;
 
     @Override
     public void run() {
@@ -42,6 +45,9 @@ public class ConvertCommand implements Runnable {
         }
         if (licenseScanner != null) {
             service.scanLicenses();
+        }
+        if (!spdxFile.getName().contains(".")) {
+            spdxFile = new File(spdxFile.getPath() + ".spdx");
         }
         service.writeBillOfMaterials(spdxFile);
     }

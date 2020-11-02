@@ -5,5 +5,5 @@ target/
 .idea/
 *.iml
 
-### Just to be sure
-bom.spdx
+### Ignore all generated SPDX files
+*.spdx
