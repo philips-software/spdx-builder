@@ -56,6 +56,10 @@ class LicenseScannerClientTest {
         mockServer.stop();
     }
 
+    static private String encoded(String string) {
+        return URLEncoder.encode(URLEncoder.encode(string, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+    }
+
     @AfterEach
     void afterEach() {
         mockServer.reset();
@@ -122,9 +126,5 @@ class LicenseScannerClientTest {
         assertThatThrownBy(() -> client.scanLicense(pkg))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("status 404");
-    }
-
-    static private String encoded(String string) {
-        return URLEncoder.encode(URLEncoder.encode(string, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
 }

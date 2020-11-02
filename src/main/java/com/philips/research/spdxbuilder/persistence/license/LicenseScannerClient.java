@@ -53,6 +53,10 @@ public class LicenseScannerClient {
         rest = retrofit.create(LicenseScannerApi.class);
     }
 
+    static private String encoded(String string) {
+        return URLEncoder.encode(string, StandardCharsets.UTF_8);
+    }
+
     /**
      * Queries the licenses for a single package.
      *
@@ -79,10 +83,6 @@ public class LicenseScannerClient {
 
             return Optional.of(new LicenseInfo(result.license, result.confirmed));
         });
-    }
-
-    static private String encoded(String string) {
-        return URLEncoder.encode(string, StandardCharsets.UTF_8);
     }
 
     private void contest(@NullOr UUID scanId) {

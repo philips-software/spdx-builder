@@ -26,8 +26,8 @@ public final class Package {
     private final String namespace;
     private final String name;
     private final String version;
-    private @NullOr URI purl;
     private final Map<String, String> hash = new HashMap<>();
+    private @NullOr URI purl;
     private @NullOr Party originator;
     private @NullOr Party supplier;
     private @NullOr String filename;
@@ -46,6 +46,10 @@ public final class Package {
         this.namespace = namespace;
         this.name = name;
         this.version = version;
+    }
+
+    private static String encoded(String string) {
+        return URLEncoder.encode(string, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
     }
 
     public String getType() {
@@ -70,13 +74,9 @@ public final class Package {
             if (!namespace.isBlank()) {
                 path = encoded(namespace) + '/' + path;
             }
-            return URI.create("pkg:" + type + '/' + path + "@" + encoded(version));
+            return URI.create("pkg:" + encoded(type) + '/' + path + "@" + encoded(version));
         }
         return purl;
-    }
-
-    private static String encoded(String string) {
-        return URLEncoder.encode(string, StandardCharsets.UTF_8);
     }
 
     public Package setPurl(URI purl) {
