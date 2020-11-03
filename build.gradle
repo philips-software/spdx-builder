@@ -1,0 +1,59 @@
+plugins {
+    id 'application'
+    id 'com.adarshr.test-logger' version '2.1.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    jacksonVersion = '2.11.0'
+    junitVersion = '5.6.2'
+    mockServerVersion = '5.11.0'
+    retrofitVersion = '2.9.0'
+}
+
+dependencies {
+    compile "info.picocli:picocli:4.4.0"
+    compile "pl.tlinkowski.annotation:pl.tlinkowski.annotation.basic:0.2.0"
+    compile "com.squareup.retrofit2:retrofit:${retrofitVersion}"
+    compile "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+
+    testCompile "org.mock-server:mockserver-netty:${mockServerVersion}"
+    testCompile "org.json:json:20200518"
+    testCompile "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testCompile "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    testCompile "org.assertj:assertj-core:3.16.1"
+    testCompile "org.mockito:mockito-core:3.4.0"
+    testCompile "nl.jqno.equalsverifier:equalsverifier:3.5"
+}
+
+testlogger {
+    theme 'mocha'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = 'com.philips.research.spdxbuilder.Application'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.philips.research.spdxbuilder.Application'
+        )
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
