@@ -26,10 +26,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -179,8 +176,18 @@ class PackageJson extends PackageBaseJson {
 }
 
 class DependencyJson {
+    static final Map<String, Relation.Type> LINKAGE = new HashMap<>();
+
+    static {
+        LINKAGE.put("DYNAMIC", Relation.Type.DYNAMIC_LINK);
+        LINKAGE.put("STATIC", Relation.Type.STATIC_LINK);
+        LINKAGE.put("PROJECT_DYNAMIC", Relation.Type.DYNAMIC_LINK);
+        LINKAGE.put("PROJECT_STATIC", Relation.Type.STATIC_LINK);
+    }
+
     @NullOr String id;
     @NullOr String name;
+    String linkage = "DYNAMIC";
     List<DependencyJson> dependencies = new ArrayList<>();
 
     void putAllDependencies(Map<String, Package> dictionary) {
@@ -200,7 +207,7 @@ class DependencyJson {
         }
         //noinspection ConstantConditions
         if (from != null) {
-            bom.addRelation(from, me, Relation.Type.DYNAMIC_LINK);
+            bom.addRelation(from, me, LINKAGE.getOrDefault(linkage, Relation.Type.DEPENDS_ON));
         }
         for (var dep : dependencies) {
             dep.registerRelations(bom, me, dictionary);

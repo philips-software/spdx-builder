@@ -65,6 +65,8 @@ analyzer:
           - name: "dependencies"
             dependencies:
               - id: "NPM::dependency:1.0"
+              - id: "NPM::static_dependency:2.0"
+                linkage: "STATIC"
           - name: "skipMe"
             dependencies:
               - id: "NPM::skip:1.0"
@@ -97,6 +99,8 @@ analyzer:
             hash:
               value: "91b4792588a7738c25f35dd6f63752a2f8776135"
               algorithm: "SHA-1"
+      - package:
+          id: "NPM::static_dependency:2.0"
       - package:
           id: "NPM::skip:1.0"
           purl: "pkg://NPM//skip@1.0"

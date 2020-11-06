@@ -10,6 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.ort;
 
+import com.philips.research.spdxbuilder.core.bom.Package;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -26,6 +27,6 @@ class OrtReaderTest {
         final var bom = new OrtReader().read(ORT_SAMPLE);
 
         assertThat(bom.getProjects()).hasSize(1);
-        assertThat(bom.getPackages()).hasSize(1);
+        assertThat(bom.getPackages()).hasSize(2);
     }
 }
