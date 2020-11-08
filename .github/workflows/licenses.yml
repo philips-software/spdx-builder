@@ -9,15 +9,14 @@ jobs:
   scan:
 
     runs-on: [self-hosted, research] 
-    container: philipssoftware/openjdk
 
     steps:
     - uses: actions/checkout@v2
     - name: Run ORT scan 
-      run: docker run -v /home/runner/work/spdx-builder/spdx-builder:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
+      uses: docker run -v /home/runner/work/spdx-builder/spdx-builder:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
     - name: Create SPDX file
       run: |
-        curl https://github.com/philips-internal/spdx-builder/releases/download/0.1.0/spdx-builder.jar
+        wget https://artifactory-ehv.ta.philips.com/artifactory/dl-innersource-mvn-release/com/philips/research/spdxbuilder/spdx-builder/refs/tags/0.1.1/spdx-builder-refs/tags/0.1.1.jar -O spdx-builder.jar
         java -jar spdx-builder.jar -i ort/analyzer/analyzer-result.json -o spdx-builder.spdx
     - uses: actions/upload-artifact@v2
       with:
