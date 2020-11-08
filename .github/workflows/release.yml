@@ -15,10 +15,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Build project
         run: ./gradlew build -x test
-     # Upload artifacts
-      - name: Rename jar
-        run: |
-          cp build/libs/spdx-builder*.jar build/libs/spdx-builder.jar
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
