@@ -1,0 +1,42 @@
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+version = System.getenv()['VERSION'] ?: version
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            if (Boolean.valueOf(project.findProperty('publishSources') ?: false)) {
+                artifact sourceJar
+            }
+        }
+    }
+}
+
+artifactory {
+    contextUrl = repoBaseUrl
+    publish {
+        String publishRepoKey = version.endsWith('SNAPSHOT') ? repoKeySnapshot : repoKeyRelease
+        repository {
+            repoKey = publishRepoKey // The Artifactory repository key to publish to
+            username = System.getenv()['ARTIFACTORY_USERNAME'] // The publisher user name
+            password = System.getenv()['ARTIFACTORY_PASSWORD'] // The publisher password
+        }
+        defaults {
+            publications('mavenJava')
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+    resolve {
+        repoKey = repoKey
+    }
+}
+

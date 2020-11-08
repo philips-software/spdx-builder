@@ -38,3 +38,8 @@ jobs:
           asset_path: ./build/libs/spdx-builder.jar
           asset_name: spdx-builder.jar
           asset_content_type: application/java-archive
+      - name: Push to artifactory
+        run: ./gradlew publish
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
