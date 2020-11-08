@@ -14,8 +14,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run ORT scan 
       run: docker run -v /home/runner/work/spdx-builder/spdx-builder:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
-    - name: Show results
-      run: ls -lah ort/analyzer
     - name: Create SPDX file
       run: |
         curl https://github.com/philips-labs/spdx-builder/releases/download/0.1.0/spdx-builder.jar
