@@ -13,6 +13,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run ORT scan 
-      run: docker run -v $ {{ GITHUB_WORKSPACE }}:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
+      run: docker run -v /home/runner/work/spdx-builder/spdx-builder:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
     - name: Show results
-      run: ls project/ort/analyser
+      run: ls ./project/ort/analyser
