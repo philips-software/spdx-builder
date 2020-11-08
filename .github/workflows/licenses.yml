@@ -16,7 +16,7 @@ jobs:
       run: docker run -v /home/runner/work/spdx-builder/spdx-builder:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
     - name: Create SPDX file
       run: |
-        curl https://github.com/philips-labs/spdx-builder/releases/download/0.1.0/spdx-builder.jar
+        curl https://github.com/philips-internal/spdx-builder/releases/download/0.1.0/spdx-builder.jar
         java -jar spdx-builder.jar -i ort/analyzer/analyzer-result.json -o spdx-builder.spdx
     - uses: actions/upload-artifact@v2
       with:
