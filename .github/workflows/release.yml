@@ -9,7 +9,10 @@ name: Upload Release Asset
 jobs:
   build:
     name: Upload Release Asset
-    runs-on: ubuntu-latest
+
+    runs-on: [self-hosted, research] 
+    container: philipssoftware/openjdk
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
