@@ -250,7 +250,7 @@ class VcsJson {
         final var version = hasValue(revision)
                 ? '@' + encoded(revision)
                 : (hasValue(pkg.getVersion()) ? '@' + encoded(pkg.getVersion()) : "");
-        final var subDirectory = (path != null) ? '#' + encoded(path) : "";
+        final var subDirectory = hasValue(path) ? '#' + encoded(path) : "";
         final var vcsUri = URI.create(scheme + ':' + location + version + subDirectory);
         pkg.setLocation(vcsUri);
     }
