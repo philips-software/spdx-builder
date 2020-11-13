@@ -89,6 +89,7 @@ class AnalyzerJson {
 class ResultJson {
     List<ProjectJson> projects = new ArrayList<>();
     List<PackageWrapperJson> packages = new ArrayList<>();
+    // TODO At least warn for incomplete results
     boolean hasIssues;
 
     Stream<PackageJson> packages() {
@@ -107,13 +108,15 @@ class PackageWrapperJson {
     @NullOr PackageJson pkg;
 }
 
-abstract class PackageBaseJson {
+class PackageJson {
     @NullOr String id;
     @NullOr DeclaredLicensesJson declaredLicensesProcessed;
     @NullOr String description;
     @NullOr URI purl;
     @NullOr URL homepageUrl;
     @NullOr LocationJson sourceArtifact;
+    @JsonProperty("vcs_processed")
+    @NullOr VcsJson vcsProcessed;
 
     Package createPackage() {
         final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
@@ -140,6 +143,9 @@ abstract class PackageBaseJson {
         if (sourceArtifact != null) {
             sourceArtifact.addSourceLocation(pkg);
         }
+        if (pkg.getLocation().isEmpty() && vcsProcessed != null) {
+            vcsProcessed.addSourceLocation(pkg);
+        }
     }
 
     void addDeclaredLicense(Package pkg) {
@@ -153,25 +159,13 @@ class DeclaredLicensesJson {
     @NullOr String spdxExpression;
 }
 
-class ProjectJson extends PackageBaseJson {
+class ProjectJson extends PackageJson {
     List<DependencyJson> scopes = new ArrayList<>();
     @NullOr File definitionFilePath;
 
     public void removeScopes(Set<PathMatcher> excludedScopes) {
         scopes.removeIf(scope -> excludedScopes.stream()
                 .anyMatch(glob -> glob.matches(Path.of(scope.name))));
-    }
-}
-
-class PackageJson extends PackageBaseJson {
-    @NullOr VcsJson vcs_processed;
-
-    @Override
-    void addSourceLocation(Package pkg) {
-        super.addSourceLocation(pkg);
-        if (pkg.getLocation().isEmpty() && vcs_processed != null) {
-            vcs_processed.addSourceLocation(pkg);
-        }
     }
 }
 
@@ -250,19 +244,19 @@ class VcsJson {
         if (url == null || url.toString().isEmpty()) {
             return;
         }
-        var location = url.toASCIIString();
-        if (hasValue(type)) {
-            location = type.toLowerCase() + "+" + location;
-        }
-        if (hasValue(revision)) {
-            location += '@' + URLEncoder.encode(revision, StandardCharsets.UTF_8);
-        } else if (hasValue(pkg.getVersion())) {
-            location += '@' + URLEncoder.encode(pkg.getVersion(), StandardCharsets.UTF_8);
-        }
-        if (hasValue(path)) {
-            location += '#' + URLEncoder.encode(path, StandardCharsets.UTF_8);
-        }
-        pkg.setLocation(URI.create(location));
+
+        final var scheme = (hasValue(type) ? type.toLowerCase() + '+' : "") + url.getScheme();
+        final var location = url.getSchemeSpecificPart().replaceAll("@", "%40");
+        final var version = hasValue(revision)
+                ? '@' + encoded(revision)
+                : (hasValue(pkg.getVersion()) ? '@' + encoded(pkg.getVersion()) : "");
+        final var subDirectory = (path != null) ? '#' + encoded(path) : "";
+        final var vcsUri = URI.create(scheme + ':' + location + version + subDirectory);
+        pkg.setLocation(vcsUri);
+    }
+
+    private String encoded(String string) {
+        return URLEncoder.encode(string, StandardCharsets.UTF_8);
     }
 
     private boolean hasValue(@NullOr String string) {
