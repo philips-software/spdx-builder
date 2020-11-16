@@ -78,7 +78,8 @@ public class LicenseScannerClient {
             }
 
             pkg.getDeclaredLicense()
-                    .filter(l -> !result.confirmed && !l.equals(result.license))
+                    .filter(l -> !l.equals(result.license))
+                    .filter(l -> !result.confirmed)
                     .ifPresent(l -> contest(result.id));
 
             return Optional.of(new LicenseInfo(result.license, result.confirmed));
