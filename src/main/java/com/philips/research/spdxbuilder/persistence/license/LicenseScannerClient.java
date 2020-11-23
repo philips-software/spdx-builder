@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.ContestJson;
+import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.RequestJson;
 import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -80,15 +82,15 @@ public class LicenseScannerClient {
             pkg.getDeclaredLicense()
                     .filter(l -> !l.equals(result.license))
                     .filter(l -> !result.confirmed)
-                    .ifPresent(l -> contest(result.id));
+                    .ifPresent(l -> contest(result.id, l));
 
             return Optional.of(new LicenseInfo(result.license, result.confirmed));
         });
     }
 
-    private void contest(@NullOr UUID scanId) {
+    private void contest(@NullOr UUID scanId, String license) {
         if (scanId != null) {
-            query(() -> rest.contest(scanId).execute());
+            query(() -> rest.contest(scanId, new ContestJson(license)).execute());
         }
     }
 

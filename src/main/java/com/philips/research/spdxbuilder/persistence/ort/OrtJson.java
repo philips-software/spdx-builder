@@ -236,23 +236,32 @@ class HashJson {
 
 class VcsJson {
     @NullOr String type;
-    @NullOr URI url;
+    @NullOr String url;
     @NullOr String revision;
     @NullOr String path;
 
     void addSourceLocation(Package pkg) {
-        if (url == null || url.toString().isEmpty()) {
+        if (url == null || url.isEmpty()) {
             return;
         }
 
-        final var scheme = (hasValue(type) ? type.toLowerCase() + '+' : "") + url.getScheme();
-        final var location = url.getSchemeSpecificPart().replaceAll("@", "%40");
+        final var vcsUrl = vcsUrlFrom(url);
+        final var scheme = (hasValue(type) ? type.toLowerCase() + '+' : "") + vcsUrl.getScheme();
+        final var location = vcsUrl.getSchemeSpecificPart().replaceAll("@", "%40");
         final var version = hasValue(revision)
                 ? '@' + encoded(revision)
                 : (hasValue(pkg.getVersion()) ? '@' + encoded(pkg.getVersion()) : "");
         final var subDirectory = hasValue(path) ? '#' + encoded(path) : "";
         final var vcsUri = URI.create(scheme + ':' + location + version + subDirectory);
         pkg.setLocation(vcsUri);
+    }
+
+    private URI vcsUrlFrom(String url) {
+        try {
+            return URI.create(url);
+        } catch (Exception e) {
+            return URI.create("ssh:" + url);
+        }
     }
 
     private String encoded(String string) {

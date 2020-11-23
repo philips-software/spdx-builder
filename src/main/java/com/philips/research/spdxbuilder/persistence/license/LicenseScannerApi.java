@@ -10,11 +10,13 @@
 
 package com.philips.research.spdxbuilder.persistence.license;
 
+import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
+import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -35,5 +37,25 @@ interface LicenseScannerApi {
      * @param scanId UUID of the scan.
      */
     @POST("/scans/{scan}/contest")
-    Call<Void> contest(@Path("scan") UUID scanId);
+    Call<Void> contest(@Path("scan") UUID scanId, @Body ContestJson body);
+
+
+    class RequestJson {
+        @NullOr String location;
+
+        public RequestJson(@NullOr URI location) {
+            if (location != null) {
+                this.location = location.toASCIIString();
+            }
+        }
+    }
+
+    class ContestJson {
+        String license;
+
+        public ContestJson(String license) {
+            this.license = license;
+        }
+    }
 }
+

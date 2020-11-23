@@ -92,7 +92,7 @@ class OrtJsonTest {
         void vcsLocationWithRevisionAndPath() {
             final var json = new VcsJson();
             json.type = "Git";
-            json.url = URI.create(VALID_URL);
+            json.url = VALID_URL;
             json.path = "the?path";
             json.revision = "the?revision";
 
@@ -104,7 +104,7 @@ class OrtJsonTest {
         @Test
         void vcsLocationWithProvidedVersion() {
             final var json = new VcsJson();
-            json.url = URI.create(VALID_URL);
+            json.url = VALID_URL;
 
             json.addSourceLocation(result);
 
