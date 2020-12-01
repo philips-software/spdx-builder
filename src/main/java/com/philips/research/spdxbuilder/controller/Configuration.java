@@ -30,12 +30,14 @@ class Configuration {
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
 
     Document document = new Document();
-    @NullOr List<Project> projects;
-    @NullOr List<Curation> curations;
+    List<Project> projects = new ArrayList<>();
+    List<Curation> curations = new ArrayList<>();
 
     static Configuration parse(InputStream stream) {
         try (final var reader = new InputStreamReader(stream)) {
-            return cleaned(MAPPER.readValue(reader, Configuration.class));
+            final Configuration configuration = MAPPER.readValue(reader, Configuration.class);
+            validate(configuration);
+            return configuration;
         } catch (MismatchedInputException e) {
             final var location = e.getLocation();
             throw new IllegalArgumentException("Configuration format error at line " + location.getLineNr()
@@ -45,21 +47,24 @@ class Configuration {
         }
     }
 
-    private static Configuration cleaned(@NullOr Configuration configuration) {
+    @SuppressWarnings("ConstantConditions")
+    private static void validate(Configuration configuration) {
         if (configuration == null) {
-            configuration = new Configuration();
+            throw new IllegalArgumentException("Configuration is empty");
+        }
+        if (configuration.document == null) {
+            throw new IllegalArgumentException("Configuration contains empty 'document' section");
         }
         if (configuration.projects == null) {
-            configuration.projects = new ArrayList<>();
+            throw new IllegalArgumentException("Configuration contains empty 'projects' section");
         }
         if (configuration.curations == null) {
-            configuration.curations = new ArrayList<>();
+            throw new IllegalArgumentException("Configuration contains empty 'curations' section");
         }
-        return configuration;
     }
 
     static String example() {
-        final var config = cleaned(null);
+        final var config = new Configuration();
         config.document.title = "<Document title>";
         config.document.comment = "<Document comment>";
         config.document.namespace = URI.create("http://document/namespace/uri");
@@ -69,14 +74,12 @@ class Configuration {
         final var project = new Project();
         project.id = "<ORT project identifier>";
         project.purl = URI.create("pkg:type/namespace/name@version");
-        //noinspection ConstantConditions
         config.projects.add(project);
 
         final var curation = new Curation();
         curation.purl = URI.create("pkg:type/namespace/name@version");
         curation.source = URI.create("https://source/location/uri");
         curation.license = "<License>";
-        //noinspection ConstantConditions
         config.curations.add(curation);
 
         try {

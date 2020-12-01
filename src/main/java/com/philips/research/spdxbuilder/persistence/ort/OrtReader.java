@@ -92,7 +92,7 @@ public class OrtReader implements BillOfMaterialsStore {
             if (p.id == null) {
                 return;
             }
-            System.out.println("Adding project '" + p.id + "' from " + p.definitionFilePath +":");
+            System.out.println("Adding project '" + p.id + "' from " + p.definitionFilePath + ":");
             var project = p.createPackage();
             dictionary.put(p.id, project);
             bom.addPackage(project);

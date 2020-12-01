@@ -20,8 +20,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ConfigurationTest {
     @Test
-    void readsDefaultConfiguration() {
-        final var config = read("---");
+    void readsMinimalConfiguration() {
+        final var config = read("---\n" +
+                "document:\n" +
+                "  title: Title");
 
         assertThat(config.document).isNotNull();
         assertThat(config.projects).isEmpty();
@@ -33,6 +35,13 @@ class ConfigurationTest {
         assertThatThrownBy(() -> read("Not a valid file"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("format error");
+    }
+
+    @Test
+    void throws_emptyConfiguration() {
+        assertThatThrownBy(() -> read("---\n"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("is empty");
     }
 
     @Test
