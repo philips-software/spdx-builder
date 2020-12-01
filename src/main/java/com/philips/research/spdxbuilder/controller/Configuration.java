@@ -30,14 +30,12 @@ class Configuration {
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
 
     Document document = new Document();
-    List<Project> projects = new ArrayList<>();
-    List<Curation> curations = new ArrayList<>();
+    @NullOr List<Project> projects;
+    @NullOr List<Curation> curations;
 
     static Configuration parse(InputStream stream) {
         try (final var reader = new InputStreamReader(stream)) {
-            final var config = MAPPER.readValue(reader, Configuration.class);
-            //noinspection ConstantConditions
-            return (config != null) ? config : new Configuration();
+            return cleaned(MAPPER.readValue(reader, Configuration.class));
         } catch (MismatchedInputException e) {
             final var location = e.getLocation();
             throw new IllegalArgumentException("Configuration format error at line " + location.getLineNr()
@@ -47,8 +45,21 @@ class Configuration {
         }
     }
 
+    private static Configuration cleaned(@NullOr Configuration configuration) {
+        if (configuration == null) {
+            configuration = new Configuration();
+        }
+        if (configuration.projects == null) {
+            configuration.projects = new ArrayList<>();
+        }
+        if (configuration.curations == null) {
+            configuration.curations = new ArrayList<>();
+        }
+        return configuration;
+    }
+
     static String example() {
-        final var config = new Configuration();
+        final var config = cleaned(null);
         config.document.title = "<Document title>";
         config.document.comment = "<Document comment>";
         config.document.namespace = URI.create("http://document/namespace/uri");
@@ -58,12 +69,14 @@ class Configuration {
         final var project = new Project();
         project.id = "<ORT project identifier>";
         project.purl = URI.create("pkg:type/namespace/name@version");
+        //noinspection ConstantConditions
         config.projects.add(project);
 
         final var curation = new Curation();
         curation.purl = URI.create("pkg:type/namespace/name@version");
         curation.source = URI.create("https://source/location/uri");
         curation.license = "<License>";
+        //noinspection ConstantConditions
         config.curations.add(curation);
 
         try {

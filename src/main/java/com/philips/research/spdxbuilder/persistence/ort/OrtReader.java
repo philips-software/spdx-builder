@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.bom.Package;
 import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
@@ -53,6 +54,7 @@ public class OrtReader implements BillOfMaterialsStore {
             }
             final var result = yaml.analyzer.result;
 
+            printProjects(result);
             cleanupYaml(yaml, projectPackages);
             registerProjects(result, bom, dictionary);
             registerPackages(result, bom, dictionary);
@@ -60,9 +62,13 @@ public class OrtReader implements BillOfMaterialsStore {
 
             System.out.println("Found " + bom.getPackages().size() + " unique packages");
         } catch (IOException e) {
-            //TODO needs a business exception
-            throw new RuntimeException(e);
+            throw new BusinessException("Failed to read ORT file: " + e);
         }
+    }
+
+    private void printProjects(ResultJson result) {
+        System.out.println("Detected projects:");
+        result.projects.forEach(project -> System.out.println("- '" + project.id + "' in " + project.definitionFilePath));
     }
 
     private void cleanupYaml(OrtJson yaml, Map<String, URI> projectPackages) {
@@ -86,7 +92,7 @@ public class OrtReader implements BillOfMaterialsStore {
             if (p.id == null) {
                 return;
             }
-            System.out.println("Adding project from '" + p.definitionFilePath + "'");
+            System.out.println("Adding project '" + p.id + "' from " + p.definitionFilePath +":");
             var project = p.createPackage();
             dictionary.put(p.id, project);
             bom.addPackage(project);
