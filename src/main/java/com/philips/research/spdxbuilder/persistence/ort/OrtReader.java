@@ -22,7 +22,9 @@ import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * OSS Review Toolkit (ORT) YAML file reader.
@@ -37,37 +39,33 @@ public class OrtReader implements BillOfMaterialsStore {
 
     /**
      * Parses the ORT YAML file that was output by the ORT Analyzer.
-     *
-     * @return reconstructed bill-of-materials
      */
-    public BillOfMaterials read(File file) {
+    @Override
+    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages) {
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
 
             //TODO Break if Analyzer reported failures
 
-            final var bom = new BillOfMaterials();
             final var dictionary = new HashMap<String, Package>();
             if (yaml.analyzer == null || yaml.analyzer.result == null) {
                 throw new OrtReaderException("ORT file does not include an 'analyzer.result' section");
             }
             final var result = yaml.analyzer.result;
 
-            cleanupYaml(yaml);
+            cleanupYaml(yaml, projectPackages);
             registerProjects(result, bom, dictionary);
             registerPackages(result, bom, dictionary);
             registerRelations(result, bom, dictionary);
 
             System.out.println("Found " + bom.getPackages().size() + " unique packages in " + bom.getProjects().size() + " projects");
-
-            return bom;
         } catch (IOException e) {
             //TODO needs a business exception
             throw new RuntimeException(e);
         }
     }
 
-    private void cleanupYaml(OrtJson yaml) {
+    private void cleanupYaml(OrtJson yaml, Map<String, URI> projectPackages) {
         if (yaml.repository == null) {
             return;
         }
@@ -78,6 +76,8 @@ public class OrtReader implements BillOfMaterialsStore {
 
         assert result != null;
         result.removeProjects(excludedPaths);
+        result.keepProjects(projectPackages.keySet());
+        result.updateProjectPackages(projectPackages);
         result.projects.forEach(p -> p.removeScopes(excludedScopes));
     }
 
@@ -119,6 +119,7 @@ public class OrtReader implements BillOfMaterialsStore {
         });
     }
 
+    @Override
     public void write(File file, BillOfMaterials bom) {
         // Not implemented
     }

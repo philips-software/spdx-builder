@@ -57,6 +57,18 @@ public interface ConversionService {
     void defineProjectPackage(String id, @NullOr URI purl);
 
     /**
+     * Reads the result of an OSS Review Toolkit analysis.
+     *
+     * @param file YAML file
+     */
+    void readOrtAnalysis(File file);
+
+    /**
+     * Scans licenses for all bill-of-material items.
+     */
+    void scanLicenses();
+
+    /**
      * Set alternative license for a package.
      *
      * @param purl    identification of the package
@@ -71,18 +83,6 @@ public interface ConversionService {
      * @param source source location
      */
     void curatePackageSource(URI purl, URI source);
-
-    /**
-     * Reads the result of an OSS Review Toolkit analysis.
-     *
-     * @param file YAML file
-     */
-    void readOrtAnalysis(File file);
-
-    /**
-     * Scans licenses for all bill-of-material items.
-     */
-    void scanLicenses();
 
     /**
      * Writes an SPDX bill-of-materials.

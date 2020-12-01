@@ -13,6 +13,8 @@ package com.philips.research.spdxbuilder.persistence;
 import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 
 import java.io.File;
+import java.net.URI;
+import java.util.Map;
 
 /**
  * File I/O API for a bill-of-materials.
@@ -21,7 +23,7 @@ public interface BillOfMaterialsStore {
     /**
      * @return the bill-of-materials stored in a file
      */
-    BillOfMaterials read(File file);
+    void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages);
 
     /**
      * Writes the bill-of-material to a file.

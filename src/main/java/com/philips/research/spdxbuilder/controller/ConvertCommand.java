@@ -46,40 +46,20 @@ public class ConvertCommand implements Runnable {
 
     @Override
     public void run() {
-        readConfiguration();
+        final var config = readConfiguration();
 
-        if (ortFile != null) {
-            service.readOrtAnalysis(ortFile);
-        }
-        if (licenseScanner != null) {
-            service.scanLicenses();
-        }
-        if (!spdxFile.getName().contains(".")) {
-            spdxFile = new File(spdxFile.getPath() + ".spdx");
-        }
-        service.writeBillOfMaterials(spdxFile);
+        prepare(config);
+        readInput();
+        scan();
+        curate(config);
+        writeResult();
     }
 
-    private void readConfiguration() {
+
+    private Configuration readConfiguration() {
         try (final var stream = new FileInputStream(configFile)) {
-            final var config = Configuration.parse(stream);
-            service.setDocument(config.document.title, config.document.organization);
-            service.setComment(config.document.comment);
-            if (config.document.spdxId != null) {
-                service.setDocReference(config.document.spdxId);
-            }
-            if (config.document.namespace != null) {
-                service.setDocNamespace(config.document.namespace);
-            }
-            config.projects.forEach(project -> service.defineProjectPackage(project.id, project.purl));
-            config.curations.forEach(curation -> {
-                if (curation.license != null) {
-                    service.curatePackageLicense(curation.purl, curation.license);
-                }
-                if (curation.source != null) {
-                    service.curatePackageSource(curation.purl, curation.source);
-                }
-            });
+            return Configuration.parse(stream);
+
         } catch (IOException e) {
             System.out.println("Configuration error: " + e.getMessage());
             System.out.println("Supported YAML configuration file format is:");
@@ -87,5 +67,48 @@ public class ConvertCommand implements Runnable {
 
             throw new BusinessException("Failed to read configuration");
         }
+    }
+
+    private void prepare(Configuration config) {
+        service.setDocument(config.document.title, config.document.organization);
+        service.setComment(config.document.comment);
+        if (config.document.spdxId != null) {
+            service.setDocReference(config.document.spdxId);
+        }
+        if (config.document.namespace != null) {
+            service.setDocNamespace(config.document.namespace);
+        }
+
+        config.projects.forEach(project -> service.defineProjectPackage(project.id, project.purl));
+    }
+
+    private void readInput() {
+        if (ortFile != null) {
+            service.readOrtAnalysis(ortFile);
+        }
+    }
+
+    private void scan() {
+        if (licenseScanner != null) {
+            service.scanLicenses();
+        }
+    }
+
+    private void curate(Configuration config) {
+        config.curations.forEach(curation -> {
+            if (curation.license != null) {
+                service.curatePackageLicense(curation.purl, curation.license);
+            }
+            if (curation.source != null) {
+                service.curatePackageSource(curation.purl, curation.source);
+            }
+        });
+    }
+
+    private void writeResult() {
+        if (!spdxFile.getName().contains(".")) {
+            spdxFile = new File(spdxFile.getPath() + ".spdx");
+        }
+        service.writeBillOfMaterials(spdxFile);
     }
 }

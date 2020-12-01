@@ -14,6 +14,8 @@ import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.bom.Package;
 
 import java.io.File;
+import java.net.URI;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -23,7 +25,7 @@ public interface ConversionStore {
     /**
      * Reads a bill-of-materials for the indicated file type.
      */
-    BillOfMaterials read(FileType type, File file);
+    void read(BillOfMaterials bom, Map<String, URI> projectPackages, FileType type, File file);
 
     /**
      * Write a bill-of-materials for the indicated file type.

@@ -101,6 +101,14 @@ class ResultJson {
                 || excludedPaths.stream()
                 .anyMatch(glob -> glob.matches(p.definitionFilePath.toPath())));
     }
+
+    public void keepProjects(Set<String> projectIds) {
+        projects.removeIf(project -> !projectIds.contains(project.id));
+    }
+
+    public void updateProjectPackages(Map<String, URI> projectPackages) {
+        projects.forEach(project -> project.purl = projectPackages.get(project.id));
+    }
 }
 
 class PackageWrapperJson {
@@ -122,7 +130,7 @@ class PackageJson {
         final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
 
         result.setPurl(purl);
-        result.setSupplier(new Party(Party.Type.ORGANIZATION, result.getNamespace()));
+        result.setSupplier(new Party(Party.Type.ORGANIZATION, result.getGroup()));
         result.setDescription(description);
         result.setHomePage(homepageUrl);
         addSourceLocation(result);

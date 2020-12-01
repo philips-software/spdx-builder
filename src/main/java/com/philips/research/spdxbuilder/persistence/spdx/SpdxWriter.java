@@ -35,7 +35,8 @@ public class SpdxWriter implements BillOfMaterialsStore {
 
     private int nextId = 1;
 
-    public BillOfMaterials read(File file) {
+    @Override
+    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages) {
         // Can not read SPDX as input
         throw new RuntimeException("Not implemented");
     }
@@ -43,6 +44,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
     /**
      * Writes the bill-of-materials to an SPDX file.
      */
+    @Override
     public void write(File file, BillOfMaterials bom) {
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             writeDocumentInformation(doc, bom);

@@ -10,10 +10,13 @@
 
 package com.philips.research.spdxbuilder.persistence.ort;
 
+import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,9 +24,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OrtReaderTest {
     private static final File ORT_SAMPLE = Path.of("src", "test", "resources", "ort_sample.yml").toFile();
 
+    private final BillOfMaterials bom = new BillOfMaterials();
+
     @Test
     void loadsOrtSample() {
-        final var bom = new OrtReader().read(ORT_SAMPLE);
+        new OrtReader().read(ORT_SAMPLE, bom, Map.of("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18")));
 
         assertThat(bom.getProjects()).hasSize(1);
         assertThat(bom.getPackages()).hasSize(2);

@@ -28,12 +28,13 @@ public class BillOfMaterials {
     private @NullOr String identifier;
     private @NullOr URI namespace;
 
+    // TODO Are we sure we need Projects in a BOM ???
     public List<Package> getProjects() {
         return projects;
     }
 
-    public BillOfMaterials addProject(Package product) {
-        projects.add(product);
+    public BillOfMaterials addProject(Package project) {
+        projects.add(project);
         return this;
     }
 
