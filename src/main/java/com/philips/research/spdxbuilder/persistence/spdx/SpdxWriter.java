@@ -59,7 +59,6 @@ public class SpdxWriter implements BillOfMaterialsStore {
     }
 
     private void generatePackageIdentifiers(BillOfMaterials bom) {
-        bom.getProjects().forEach(this::identifierFor);
         bom.getPackages().forEach(this::identifierFor);
     }
 

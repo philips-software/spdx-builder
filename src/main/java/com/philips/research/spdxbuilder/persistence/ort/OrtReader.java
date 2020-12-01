@@ -58,7 +58,7 @@ public class OrtReader implements BillOfMaterialsStore {
             registerPackages(result, bom, dictionary);
             registerRelations(result, bom, dictionary);
 
-            System.out.println("Found " + bom.getPackages().size() + " unique packages in " + bom.getProjects().size() + " projects");
+            System.out.println("Found " + bom.getPackages().size() + " unique packages");
         } catch (IOException e) {
             //TODO needs a business exception
             throw new RuntimeException(e);
@@ -89,7 +89,7 @@ public class OrtReader implements BillOfMaterialsStore {
             System.out.println("Adding project from '" + p.definitionFilePath + "'");
             var project = p.createPackage();
             dictionary.put(p.id, project);
-            bom.addProject(project);
+            bom.addPackage(project);
             p.scopes.forEach(scope -> {
                 System.out.println("- Adding scope '" + scope.name + "'");
                 scope.putAllDependencies(dictionary);

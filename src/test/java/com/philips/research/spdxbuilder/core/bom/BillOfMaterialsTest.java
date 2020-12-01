@@ -44,7 +44,7 @@ class BillOfMaterialsTest {
 
     @Test
     void defaultsTitleToFirstProject() {
-        bom.addProject(pkg);
+        bom.addPackage(pkg);
 
         assertThat(bom.getTitle()).isEqualTo(NAME);
     }

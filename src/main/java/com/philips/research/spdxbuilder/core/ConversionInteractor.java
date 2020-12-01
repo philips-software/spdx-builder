@@ -72,7 +72,6 @@ public class ConversionInteractor implements ConversionService {
 
     @Override
     public void scanLicenses() {
-        bom.getProjects().forEach(this::updateLicense);
         bom.getPackages().forEach(this::updateLicense);
     }
 

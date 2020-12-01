@@ -19,7 +19,6 @@ import java.util.*;
  * Report on the composition of a product
  */
 public class BillOfMaterials {
-    private final List<Package> projects = new ArrayList<>();
     private final List<Package> packages = new ArrayList<>();
     private final Set<Relation> relations = new HashSet<>();
     private @NullOr String title;
@@ -27,16 +26,6 @@ public class BillOfMaterials {
     private @NullOr String organization;
     private @NullOr String identifier;
     private @NullOr URI namespace;
-
-    // TODO Are we sure we need Projects in a BOM ???
-    public List<Package> getProjects() {
-        return projects;
-    }
-
-    public BillOfMaterials addProject(Package project) {
-        projects.add(project);
-        return this;
-    }
 
     public List<Package> getPackages() {
         return packages;
@@ -58,7 +47,7 @@ public class BillOfMaterials {
 
     public String getTitle() {
         if (title == null) {
-            return projects.stream()
+            return packages.stream()
                     .findFirst().map(Package::getName)
                     .orElse("");
         }

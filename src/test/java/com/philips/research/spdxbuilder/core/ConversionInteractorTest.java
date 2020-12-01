@@ -82,7 +82,7 @@ class ConversionInteractorTest {
     class LicenseScanner {
         @Test
         void scansProjectAndPackageLicenses() {
-            bom.addProject(project);
+            bom.addPackage(project);
             bom.addPackage(pkg.setLocation(LOCATION));
             final var licenseInfo = new ConversionStore.LicenseInfo(LICENSE, false);
             when(store.detectLicense(project)).thenReturn(Optional.of(licenseInfo));
