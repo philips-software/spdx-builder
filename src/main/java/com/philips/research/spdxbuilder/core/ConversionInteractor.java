@@ -14,6 +14,7 @@ import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.bom.Package;
 
 import java.io.File;
+import java.net.URI;
 
 /**
  * Implementation of the conversion use cases.
@@ -25,6 +26,41 @@ public class ConversionInteractor implements ConversionService {
 
     public ConversionInteractor(ConversionStore store) {
         this.store = store;
+    }
+
+    @Override
+    public void setDocument(String title, String organization) {
+
+    }
+
+    @Override
+    public void setComment(String comment) {
+
+    }
+
+    @Override
+    public void setDocReference(String spdxId) {
+
+    }
+
+    @Override
+    public void setDocNamespace(URI namespace) {
+
+    }
+
+    @Override
+    public void defineProjectPackage(String id, URI purl) {
+        // TODO Implement me!
+    }
+
+    @Override
+    public void curatePackageLicense(URI purl, String license) {
+
+    }
+
+    @Override
+    public void curatePackageSource(URI purl, URI source) {
+
     }
 
     @Override
