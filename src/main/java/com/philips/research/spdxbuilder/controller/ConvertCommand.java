@@ -10,6 +10,7 @@
 
 package com.philips.research.spdxbuilder.controller;
 
+import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.ConversionInteractor;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.ConversionStore;
@@ -28,7 +29,6 @@ import java.net.URI;
  */
 @CommandLine.Command(name = "spdx-builder", mixinStandardHelpOptions = true, version = "1.0")
 public class ConvertCommand implements Runnable {
-    final ConversionService service = new ConversionInteractor(store);
     @Option(names = {"--ort", "-i"}, description = "Read ORT Analyzer YAML file", descriptionKey = "file")
     @NullOr File ortFile;
     @Option(names = {"--config", "-c"}, description = "Configuration YAML file", descriptionKey = "file", defaultValue = ".spdx.yml")
@@ -36,10 +36,13 @@ public class ConvertCommand implements Runnable {
     File configFile;
     @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", descriptionKey = "server url")
     @NullOr URI licenseScanner;
-    final ConversionStore store = new ConversionPersistence(licenseScanner);
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", descriptionKey = "file", defaultValue = "bom.spdx")
     File spdxFile;
+
+    @SuppressWarnings("ConstantConditions")
+    final ConversionStore store = new ConversionPersistence(licenseScanner);
+    final ConversionService service = new ConversionInteractor(store);
 
     @Override
     public void run() {
@@ -78,12 +81,11 @@ public class ConvertCommand implements Runnable {
                 }
             });
         } catch (IOException e) {
-            System.out.println("Error reading configuration file " + configFile);
-            System.out.println("Cause is: " + e.getMessage());
-            System.out.println("Configuration file format is:");
+            System.out.println("Configuration error: " + e.getMessage());
+            System.out.println("Supported YAML configuration file format is:");
             System.out.println(Configuration.example());
 
-            throw new IllegalArgumentException("Failed to read configuration");
+            throw new BusinessException("Failed to read configuration");
         }
     }
 }

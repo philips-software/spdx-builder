@@ -16,7 +16,12 @@ import picocli.CommandLine;
 public class Application {
     public static void main(String... args) {
         try {
-            new CommandLine(new ConvertCommand()).execute(args);
+            new CommandLine(new ConvertCommand())
+                    .setExecutionExceptionHandler((e, cmd, result) -> {
+                        cmd.getErr().println(cmd.getColorScheme().errorText(e.getMessage()));
+                        return 1;
+                    })
+                    .execute(args);
         } catch (Exception e) {
             System.err.println("Conversion failed: " + e.getMessage());
             System.exit(1);
