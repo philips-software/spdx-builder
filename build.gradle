@@ -58,7 +58,7 @@ jar {
         attributes(
                 'Main-Class': 'com.philips.research.spdxbuilder.Application',
                 'Implementation-Title': 'SPDX-Builder',
-                'Implementation-Version': '0.3'
+                'Implementation-Version': '0.2.0'
         )
     }
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
