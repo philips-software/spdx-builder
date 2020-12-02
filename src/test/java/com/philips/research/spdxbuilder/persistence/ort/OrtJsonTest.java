@@ -43,7 +43,7 @@ class OrtJsonTest {
             final var result = pkg.createPackage();
 
             assertThat(result.getType()).isEqualTo(TYPE.toLowerCase());
-            assertThat(result.getNamespace()).isEqualTo(NAMESPACE);
+            assertThat(result.getGroup()).isEqualTo(NAMESPACE);
             assertThat(result.getName()).isEqualTo(NAME);
             assertThat(result.getVersion()).isEqualTo(VERSION);
         }
@@ -92,7 +92,7 @@ class OrtJsonTest {
         void vcsLocationWithRevisionAndPath() {
             final var json = new VcsJson();
             json.type = "Git";
-            json.url = URI.create(VALID_URL);
+            json.url = VALID_URL;
             json.path = "the?path";
             json.revision = "the?revision";
 
@@ -104,7 +104,7 @@ class OrtJsonTest {
         @Test
         void vcsLocationWithProvidedVersion() {
             final var json = new VcsJson();
-            json.url = URI.create(VALID_URL);
+            json.url = VALID_URL;
 
             json.addSourceLocation(result);
 

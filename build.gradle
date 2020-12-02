@@ -1,3 +1,13 @@
+/*
+ * This software and associated documentation files are
+ *
+ * Copyright © 2020-2020 Koninklijke Philips N.V.
+ *
+ * and is made available for use within Philips and/or within Philips products.
+ *
+ * All Rights Reserved
+ */
+
 plugins {
     id 'application'
     id 'com.adarshr.test-logger' version '2.1.1'
@@ -46,7 +56,9 @@ application {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.philips.research.spdxbuilder.Application'
+                'Main-Class': 'com.philips.research.spdxbuilder.Application',
+                'Implementation-Title': 'SPDX-Builder',
+                'Implementation-Version': '0.2.0'
         )
     }
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }

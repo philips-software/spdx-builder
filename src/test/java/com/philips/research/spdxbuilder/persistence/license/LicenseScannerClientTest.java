@@ -18,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
 
 import java.net.URI;
@@ -107,8 +108,10 @@ class LicenseScannerClientTest {
 
         System.out.println(mockServer.retrieveLogMessages(request));
 
+        final var body = new JSONObject().put("license", "Other");
         mockServer.verify(request().withMethod("POST")
-                .withPath(String.format("/scans/%s/contest", SCAN_ID)));
+                .withPath(String.format("/scans/%s/contest", SCAN_ID))
+                .withBody(new JsonBody(body.toString())));
     }
 
     @Test
