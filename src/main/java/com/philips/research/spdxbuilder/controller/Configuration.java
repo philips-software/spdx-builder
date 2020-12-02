@@ -65,21 +65,22 @@ class Configuration {
 
     static String example() {
         final var config = new Configuration();
-        config.document.title = "<Document title>";
-        config.document.comment = "<Document comment>";
-        config.document.namespace = URI.create("http://document/namespace/uri");
-        config.document.organization = "<Authoring organization name>";
-        config.document.spdxId = "<Document SPDX identifier>";
+        config.document.title = "<(Optional) Document title>";
+        config.document.comment = "<(Optional) Document comment>";
+        config.document.namespace = URI.create("http://optional/document/namespace/uri");
+        config.document.organization = "<(Optional) Organization name>";
+        config.document.key = "<(Optional) Document key>";
 
         final var project = new Project();
-        project.id = "<ORT project identifier>";
+        project.id = "<Input project identifier>";
         project.purl = URI.create("pkg:type/namespace/name@version");
+        project.excluded = List.of("scope", "test*");
         config.projects.add(project);
 
         final var curation = new Curation();
         curation.purl = URI.create("pkg:type/namespace/name@version");
-        curation.source = URI.create("https://source/location/uri");
-        curation.license = "<License>";
+        curation.source = URI.create("https://optional/source/location/uri");
+        curation.license = "<(Optional) License>";
         config.curations.add(curation);
 
         try {
@@ -93,13 +94,14 @@ class Configuration {
         String title = "";
         String organization = "";
         String comment = "";
-        @NullOr String spdxId = "";
+        @NullOr String key = "";
         @NullOr URI namespace;
     }
 
     static class Project {
         String id;
         @NullOr URI purl;
+        @NullOr List<String> excluded;
     }
 
     static class Curation {

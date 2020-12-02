@@ -14,6 +14,7 @@ import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
 
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +24,7 @@ public interface BillOfMaterialsStore {
     /**
      * @return the bill-of-materials stored in a file
      */
-    void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages);
+    void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes);
 
     /**
      * Writes the bill-of-material to a file.

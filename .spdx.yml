@@ -1,0 +1,16 @@
+document:
+  title: "SPDX-Builder command line tool"
+  organization: "Philips Research"
+  comment:
+  key:
+  namespace: "https://research.philips.com/spdx-builder"
+projects:
+  - id: "Gradle::spdx-builder:"
+    purl: "pkg:maven/philips/spdx-builder@0.3"
+    excluded:
+      - "annotation*"
+      - "archives"
+#curations:
+#  - purl: "pkg:type/namespace/name@version"
+#    source: "https://optional/source/location/uri"
+#    license: "<(Optional) License>"

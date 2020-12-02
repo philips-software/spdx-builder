@@ -21,6 +21,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,9 +42,9 @@ public class ConversionPersistence implements ConversionStore {
     }
 
     @Override
-    public void read(BillOfMaterials bom, Map<String, URI> projectPackages, FileType type, File file) {
+    public void read(BillOfMaterials bom, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes, FileType type, File file) {
         //TODO switch on file type
-        new OrtReader().read(file, bom, projectPackages);
+        new OrtReader().read(file, bom, projectPackages, projectExcludes);
     }
 
     @Override

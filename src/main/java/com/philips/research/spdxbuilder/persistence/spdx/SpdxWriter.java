@@ -36,7 +36,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
     private int nextId = 1;
 
     @Override
-    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages) {
+    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes) {
         // Can not read SPDX as input
         throw new RuntimeException("Not implemented");
     }

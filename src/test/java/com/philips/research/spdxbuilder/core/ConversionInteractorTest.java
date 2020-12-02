@@ -73,9 +73,8 @@ class ConversionInteractorTest {
 
         @Test
         void processesOrtAnalysisFile() {
-            verify(store).read(bom, Map.of(), ConversionStore.FileType.ORT, ORT_FILE);
+            verify(store).read(bom, Map.of(), Map.of(), ConversionStore.FileType.ORT, ORT_FILE);
         }
-
     }
 
     @Nested

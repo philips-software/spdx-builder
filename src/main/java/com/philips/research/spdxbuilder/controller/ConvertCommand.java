@@ -27,17 +27,22 @@ import java.net.URI;
 /**
  * CLI command to generate an SPDX file from an ORT Analyzer YAML.
  */
-@CommandLine.Command(name = "spdx-builder", mixinStandardHelpOptions = true, version = "1.0")
+@CommandLine.Command(name = "spdx-builder")
 public class ConvertCommand implements Runnable {
-    @Option(names = {"--ort", "-i"}, description = "Read ORT Analyzer YAML file", descriptionKey = "file")
+    @Option(names = {"--version", "-V"}, description = "Show version info and exit")
+    boolean showVersion;
+    @Option(names = {"--help", "-H"}, usageHelp = true, description = "Show this message exit")
+    @SuppressWarnings("unused")
+    boolean showUsage;
+    @Option(names = {"--ort", "-i"}, description = "Read ORT Analyzer YAML file", paramLabel = "FILE")
     @NullOr File ortFile;
-    @Option(names = {"--config", "-c"}, description = "Configuration YAML file", descriptionKey = "file", defaultValue = ".spdx.yml")
+    @Option(names = {"--config", "-c"}, description = "Configuration YAML file", paramLabel = "FILE", defaultValue = ".spdx.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")
     File configFile;
-    @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", descriptionKey = "server url")
+    @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", paramLabel = "SERVER_URL")
     @NullOr URI licenseScanner;
     @SuppressWarnings("NotNullFieldNotInitialized")
-    @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", descriptionKey = "file", defaultValue = "bom.spdx")
+    @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
 
     @SuppressWarnings("ConstantConditions")
@@ -46,8 +51,14 @@ public class ConvertCommand implements Runnable {
 
     @Override
     public void run() {
-        final var config = readConfiguration();
+        if (showVersion) {
+            final var app = getClass().getPackage().getImplementationTitle();
+            final var version = getClass().getPackage().getImplementationVersion();
+            System.out.println(app + ", Version " + version);
+            return;
+        }
 
+        final var config = readConfiguration();
         prepare(config);
         readInput();
         scan();
@@ -72,14 +83,19 @@ public class ConvertCommand implements Runnable {
     private void prepare(Configuration config) {
         service.setDocument(config.document.title, config.document.organization);
         service.setComment(config.document.comment);
-        if (config.document.spdxId != null) {
-            service.setDocReference(config.document.spdxId);
+        if (config.document.key != null) {
+            service.setDocReference(config.document.key);
         }
         if (config.document.namespace != null) {
             service.setDocNamespace(config.document.namespace);
         }
 
-        config.projects.forEach(project -> service.defineProjectPackage(project.id, project.purl));
+        config.projects.forEach(project -> {
+            service.defineProjectPackage(project.id, project.purl);
+            if (project.excluded != null) {
+                service.excludeScopes(project.id, project.excluded);
+            }
+        });
     }
 
     private void readInput() {

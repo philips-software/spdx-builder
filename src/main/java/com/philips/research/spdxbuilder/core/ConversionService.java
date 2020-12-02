@@ -14,6 +14,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 
 /**
  * Conversion use cases.
@@ -55,6 +56,14 @@ public interface ConversionService {
      * @param purl (Optional) Package URL
      */
     void defineProjectPackage(String id, @NullOr URI purl);
+
+    /**
+     * Adds excluded scopes to ORT.
+     *
+     * @param id       ORT identifier for the project
+     * @param excluded (optionally wild-carded) scope names
+     */
+    void excludeScopes(String id, List<String> excluded);
 
     /**
      * Reads the result of an OSS Review Toolkit analysis.

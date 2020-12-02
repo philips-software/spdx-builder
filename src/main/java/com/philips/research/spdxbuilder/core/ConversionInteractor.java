@@ -17,6 +17,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -28,6 +29,7 @@ public class ConversionInteractor implements ConversionService {
     private final ConversionStore store;
     private final BillOfMaterials bom;
     private final Map<String, @NullOr URI> projectPackages = new HashMap<>();
+    private final Map<String, List<String>> projectExcludes = new HashMap<>();
 
     public ConversionInteractor(ConversionStore store) {
         this(store, new BillOfMaterials());
@@ -66,8 +68,13 @@ public class ConversionInteractor implements ConversionService {
     }
 
     @Override
+    public void excludeScopes(String id, List<String> excluded) {
+        projectExcludes.put(id, excluded);
+    }
+
+    @Override
     public void readOrtAnalysis(File file) {
-        store.read(bom, projectPackages, ConversionStore.FileType.ORT, file);
+        store.read(bom, projectPackages, projectExcludes, ConversionStore.FileType.ORT, file);
     }
 
     @Override

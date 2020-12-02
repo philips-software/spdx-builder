@@ -28,7 +28,7 @@ class OrtReaderTest {
 
     @Test
     void loadsOrtSample() {
-        new OrtReader().read(ORT_SAMPLE, bom, Map.of("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18")));
+        new OrtReader().read(ORT_SAMPLE, bom, Map.of("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18")), Map.of());
 
         assertThat(bom.getPackages()).hasSize(1 + 2);
     }

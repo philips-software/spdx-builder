@@ -49,14 +49,14 @@ class ConfigurationTest {
         final var config = read("---\n"
                 + "document:\n"
                 + "  title: Title\n"
-                + "  spdxId: SpdxId\n"
+                + "  key: Key\n"
                 + "  namespace: http://name/space\n"
                 + "  comment: Comment\n"
                 + "  organization: Organization\n"
         );
 
         assertThat(config.document.title).isEqualTo("Title");
-        assertThat(config.document.spdxId).isEqualTo("SpdxId");
+        assertThat(config.document.key).isEqualTo("Key");
         assertThat(config.document.namespace).isEqualTo(URI.create("http://name/space"));
         assertThat(config.document.comment).isEqualTo("Comment");
         assertThat(config.document.organization).isEqualTo("Organization");

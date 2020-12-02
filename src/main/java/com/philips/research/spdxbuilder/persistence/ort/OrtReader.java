@@ -24,8 +24,9 @@ import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.util.*;
 
 /**
  * OSS Review Toolkit (ORT) YAML file reader.
@@ -33,6 +34,7 @@ import java.util.Map;
  * @see <a href="https://github.com/oss-review-toolkit/ort">OSS Review Toolkit</a>
  */
 public class OrtReader implements BillOfMaterialsStore {
+    private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
@@ -42,7 +44,7 @@ public class OrtReader implements BillOfMaterialsStore {
      * Parses the ORT YAML file that was output by the ORT Analyzer.
      */
     @Override
-    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages) {
+    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes) {
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
 
@@ -54,8 +56,8 @@ public class OrtReader implements BillOfMaterialsStore {
             }
             final var result = yaml.analyzer.result;
 
-            printProjects(result);
-            cleanupYaml(yaml, projectPackages);
+            printProjects(result, projectPackages.keySet());
+            cleanupYaml(yaml, projectPackages, projectExcludes);
             registerProjects(result, bom, dictionary);
             registerPackages(result, bom, dictionary);
             registerRelations(result, bom, dictionary);
@@ -66,12 +68,16 @@ public class OrtReader implements BillOfMaterialsStore {
         }
     }
 
-    private void printProjects(ResultJson result) {
+    private void printProjects(ResultJson result, Set<String> projectIds) {
         System.out.println("Detected projects:");
-        result.projects.forEach(project -> System.out.println("- '" + project.id + "' in " + project.definitionFilePath));
+        result.projects.forEach(project -> {
+            final var tick = projectIds.contains(project.id) ? "+" : "-";
+            final var from = (project.definitionFilePath != null) ? " from '" + project.definitionFilePath + "'" : "";
+            System.out.println(tick + " '" + project.id + "'" + from);
+        });
     }
 
-    private void cleanupYaml(OrtJson yaml, Map<String, URI> projectPackages) {
+    private void cleanupYaml(OrtJson yaml, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes) {
         if (yaml.repository == null) {
             return;
         }
@@ -84,7 +90,13 @@ public class OrtReader implements BillOfMaterialsStore {
         result.removeProjects(excludedPaths);
         result.keepProjects(projectPackages.keySet());
         result.updateProjectPackages(projectPackages);
-        result.projects.forEach(p -> p.removeScopes(excludedScopes));
+        result.projects.forEach(p -> {
+            final var globs = new HashSet<>(excludedScopes);
+            projectExcludes.getOrDefault(p.id, List.of()).stream()
+                    .map(pattern -> FILE_SYSTEM.getPathMatcher("glob:" + pattern))
+                    .forEach(globs::add);
+            p.removeScopes(globs);
+        });
     }
 
     private void registerProjects(ResultJson result, BillOfMaterials bom, HashMap<String, Package> dictionary) {
