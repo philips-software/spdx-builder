@@ -14,5 +14,5 @@ target/
 # Ignore Gradle build output directory
 build
 
-# Ort
+# Ignore ORT results
 ort

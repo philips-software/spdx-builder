@@ -9,7 +9,10 @@ name: Upload Release Asset
 jobs:
   build:
     name: Upload Release Asset
-    runs-on: ubuntu-latest
+
+    runs-on: [self-hosted, research] 
+    container: philipssoftware/openjdk
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -35,3 +38,9 @@ jobs:
           asset_path: ./build/libs/spdx-builder.jar
           asset_name: spdx-builder.jar
           asset_content_type: application/java-archive
+      - name: Push to artifactory
+        run: ./gradlew artifactoryPublish
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          VERSION: ${{ github.ref }}
