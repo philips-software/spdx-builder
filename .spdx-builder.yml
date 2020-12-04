@@ -6,7 +6,7 @@ document:
   namespace: "https://research.philips.com/spdx-builder"
 projects:
   - id: "Gradle::spdx-builder:"
-    purl: "pkg:maven/philips/spdx-builder@0.3"
+    purl: "pkg:maven/philips/spdx-builder@0.2.0"
     excluded:
       - "annotation*"
       - "archives"
