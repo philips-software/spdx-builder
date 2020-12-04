@@ -10,6 +10,8 @@ projects:
     excluded:
       - "annotation*"
       - "archives"
+      - "runtime*"
+      - "test*"
 #curations:
 #  - purl: "pkg:type/namespace/name@version"
 #    source: "https://optional/source/location/uri"

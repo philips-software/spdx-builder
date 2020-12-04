@@ -1,8 +1,0 @@
-excludes:
-  scopes:
-    - pattern: "runtime*"
-      reason: "PROVIDED_DEPENDENCY_OF"
-      comment: "Packages provided at runtime by the JDK or container only."
-    - pattern: "test*"
-      reason: "TEST_DEPENDENCY_OF"
-      comment: "Packages for testing only."
