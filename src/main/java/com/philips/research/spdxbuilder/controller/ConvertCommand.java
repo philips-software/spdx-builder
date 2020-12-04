@@ -36,7 +36,7 @@ public class ConvertCommand implements Runnable {
     boolean showUsage;
     @Option(names = {"--ort", "-i"}, description = "Read ORT Analyzer YAML file", paramLabel = "FILE")
     @NullOr File ortFile;
-    @Option(names = {"--config", "-c"}, description = "Configuration YAML file", paramLabel = "FILE", defaultValue = ".spdx.yml")
+    @Option(names = {"--config", "-c"}, description = "Configuration YAML file", paramLabel = "FILE", defaultValue = ".spdx-builder.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")
     File configFile;
     @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", paramLabel = "SERVER_URL")
