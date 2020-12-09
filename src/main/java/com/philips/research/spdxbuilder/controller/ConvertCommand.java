@@ -17,6 +17,7 @@ import com.philips.research.spdxbuilder.core.ConversionStore;
 import com.philips.research.spdxbuilder.persistence.ConversionPersistence;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
@@ -34,8 +35,6 @@ public class ConvertCommand implements Runnable {
     @Option(names = {"--help", "-H"}, usageHelp = true, description = "Show this message exit")
     @SuppressWarnings("unused")
     boolean showUsage;
-    @Option(names = {"--ort", "-i"}, description = "Read ORT Analyzer YAML file", paramLabel = "FILE")
-    @NullOr File ortFile;
     @Option(names = {"--config", "-c"}, description = "Configuration YAML file", paramLabel = "FILE", defaultValue = ".spdx-builder.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")
     File configFile;
@@ -44,6 +43,9 @@ public class ConvertCommand implements Runnable {
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
+    File ortFile;
 
     @SuppressWarnings("ConstantConditions")
     final ConversionStore store = new ConversionPersistence(licenseScanner);
@@ -99,9 +101,7 @@ public class ConvertCommand implements Runnable {
     }
 
     private void readInput() {
-        if (ortFile != null) {
-            service.readOrtAnalysis(ortFile);
-        }
+        service.readOrtAnalysis(ortFile);
     }
 
     private void scan() {
