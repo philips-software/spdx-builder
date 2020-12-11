@@ -104,6 +104,15 @@ class ResultJson {
 
     public void keepProjects(Set<String> projectIds) {
         projects.removeIf(project -> !projectIds.contains(project.id));
+        final var missing = projectIds.stream()
+                .filter(id -> projects.stream().noneMatch(p -> id.equals(p.id)))
+                .peek(id -> {
+                    System.out.println("ERROR: Project '" + id + "' is not found in the ORT file");
+                })
+                .count();
+        if (missing != 0) {
+            throw new OrtReaderException("Missing " + missing + " project(s) in ORT file");
+        }
     }
 
     public void updateProjectPackages(Map<String, URI> projectPackages) {

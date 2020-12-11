@@ -24,7 +24,7 @@ This software requires Java 11 (or later) to run.
 
 Build the application using the standard gradle command:
 ```
-./gradlew clean install
+./gradlew clean build
 ```
 Then make the resulting files from the `build/install/bin` directory available
 in the path.

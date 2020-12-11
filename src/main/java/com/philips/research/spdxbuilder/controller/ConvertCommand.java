@@ -47,10 +47,6 @@ public class ConvertCommand implements Runnable {
     @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
     File ortFile;
 
-    @SuppressWarnings("ConstantConditions")
-    final ConversionStore store = new ConversionPersistence(licenseScanner);
-    final ConversionService service = new ConversionInteractor(store);
-
     @Override
     public void run() {
         if (showVersion) {
@@ -60,71 +56,79 @@ public class ConvertCommand implements Runnable {
             return;
         }
 
-        final var config = readConfiguration();
-        prepare(config);
-        readInput();
-        scan();
-        curate(config);
-        writeResult();
+        new Runner().run();
     }
 
+    private class Runner {
+        final ConversionStore store = new ConversionPersistence(licenseScanner);
+        final ConversionService service = new ConversionInteractor(store);
 
-    private Configuration readConfiguration() {
-        try (final var stream = new FileInputStream(configFile)) {
-            return Configuration.parse(stream);
-
-        } catch (IOException e) {
-            System.out.println("Configuration error: " + e.getMessage());
-            System.out.println("Supported YAML configuration file format is:");
-            System.out.println(Configuration.example());
-
-            throw new BusinessException("Failed to read configuration");
-        }
-    }
-
-    private void prepare(Configuration config) {
-        service.setDocument(config.document.title, config.document.organization);
-        service.setComment(config.document.comment);
-        if (config.document.key != null) {
-            service.setDocReference(config.document.key);
-        }
-        if (config.document.namespace != null) {
-            service.setDocNamespace(config.document.namespace);
+        void run() {
+            final var config = readConfiguration();
+            prepare(config);
+            readInput();
+            scan();
+            curate(config);
+            writeResult();
         }
 
-        config.projects.forEach(project -> {
-            service.defineProjectPackage(project.id, project.purl);
-            if (project.excluded != null) {
-                service.excludeScopes(project.id, project.excluded);
+        private Configuration readConfiguration() {
+            try (final var stream = new FileInputStream(configFile)) {
+                return Configuration.parse(stream);
+
+            } catch (IOException e) {
+                System.out.println("Configuration error: " + e.getMessage());
+                System.out.println("Supported YAML configuration file format is:");
+                System.out.println(Configuration.example());
+
+                throw new BusinessException("Failed to read configuration");
             }
-        });
-    }
-
-    private void readInput() {
-        service.readOrtAnalysis(ortFile);
-    }
-
-    private void scan() {
-        if (licenseScanner != null) {
-            service.scanLicenses();
         }
-    }
 
-    private void curate(Configuration config) {
-        config.curations.forEach(curation -> {
-            if (curation.license != null) {
-                service.curatePackageLicense(curation.purl, curation.license);
+        private void prepare(Configuration config) {
+            service.setDocument(config.document.title, config.document.organization);
+            service.setComment(config.document.comment);
+            if (config.document.key != null) {
+                service.setDocReference(config.document.key);
             }
-            if (curation.source != null) {
-                service.curatePackageSource(curation.purl, curation.source);
+            if (config.document.namespace != null) {
+                service.setDocNamespace(config.document.namespace);
             }
-        });
-    }
 
-    private void writeResult() {
-        if (!spdxFile.getName().contains(".")) {
-            spdxFile = new File(spdxFile.getPath() + ".spdx");
+            config.projects.forEach(project -> {
+                service.defineProjectPackage(project.id, project.purl);
+                if (project.excluded != null) {
+                    service.excludeScopes(project.id, project.excluded);
+                }
+            });
         }
-        service.writeBillOfMaterials(spdxFile);
+
+        private void readInput() {
+            service.readOrtAnalysis(ortFile);
+        }
+
+        private void scan() {
+            if (licenseScanner != null) {
+                service.scanLicenses();
+            }
+        }
+
+        private void curate(Configuration config) {
+            config.curations.forEach(curation -> {
+                if (curation.license != null) {
+                    service.curatePackageLicense(curation.purl, curation.license);
+                }
+                if (curation.source != null) {
+                    service.curatePackageSource(curation.purl, curation.source);
+                }
+            });
+        }
+
+        private void writeResult() {
+            if (!spdxFile.getName().contains(".")) {
+                spdxFile = new File(spdxFile.getPath() + ".spdx");
+            }
+            service.writeBillOfMaterials(spdxFile);
+        }
     }
 }

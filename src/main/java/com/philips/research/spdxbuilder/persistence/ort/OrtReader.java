@@ -62,6 +62,7 @@ public class OrtReader implements BillOfMaterialsStore {
             registerPackages(result, bom, dictionary);
             registerRelations(result, bom, dictionary);
 
+            System.out.println();
             System.out.println("Found " + bom.getPackages().size() + " unique packages");
         } catch (IOException e) {
             throw new BusinessException("Failed to read ORT file: " + e);
@@ -69,7 +70,7 @@ public class OrtReader implements BillOfMaterialsStore {
     }
 
     private void printProjects(ResultJson result, Set<String> projectIds) {
-        System.out.println("Detected projects:");
+        System.out.println("Detected " + result.projects.size() + " project(s):");
         result.projects.forEach(project -> {
             final var tick = projectIds.contains(project.id) ? "+" : "-";
             final var from = (project.definitionFilePath != null) ? " from '" + project.definitionFilePath + "'" : "";
@@ -104,12 +105,13 @@ public class OrtReader implements BillOfMaterialsStore {
             if (p.id == null) {
                 return;
             }
-            System.out.println("Adding project '" + p.id + "' from " + p.definitionFilePath + ":");
+            System.out.println();
+            System.out.println("Adding project '" + p.id + "':");
             var project = p.createPackage();
             dictionary.put(p.id, project);
             bom.addPackage(project);
             p.scopes.forEach(scope -> {
-                System.out.println("- Adding scope '" + scope.name + "'");
+                System.out.println("+ Adding scope '" + scope.name + "'");
                 scope.putAllDependencies(dictionary);
             });
         });

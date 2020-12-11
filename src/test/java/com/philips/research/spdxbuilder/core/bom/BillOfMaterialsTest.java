@@ -34,6 +34,13 @@ class BillOfMaterialsTest {
     }
 
     @Test
+    void blankDocumentReferenceIsIgnored() {
+        bom.setIdentifier("  ");
+
+        assertThat(bom.getIdentifier()).isEmpty();
+    }
+
+    @Test
     void addsUniqueRelationOnlyOnce() {
         bom.addRelation(pkg, other, Relation.Type.DEPENDS_ON);
         bom.addRelation(pkg, other, Relation.Type.DEPENDS_ON);

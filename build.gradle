@@ -36,20 +36,21 @@ ext {
 }
 
 dependencies {
-    compile "info.picocli:picocli:4.4.0"
-    compile "pl.tlinkowski.annotation:pl.tlinkowski.annotation.basic:0.2.0"
-    compile "com.squareup.retrofit2:retrofit:${retrofitVersion}"
-    compile "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    implementation "info.picocli:picocli:4.4.0"
+    implementation "pl.tlinkowski.annotation:pl.tlinkowski.annotation.basic:0.2.0"
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
+    implementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
-    testCompile "org.mock-server:mockserver-netty:${mockServerVersion}"
-    testCompile "org.json:json:20200518"
-    testCompile "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-    testCompile "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-    testCompile "org.assertj:assertj-core:3.16.1"
-    testCompile "org.mockito:mockito-core:3.4.0"
-    testCompile "nl.jqno.equalsverifier:equalsverifier:3.5"
+    testImplementation "org.mock-server:mockserver-netty:${mockServerVersion}"
+    testImplementation "org.json:json:20200518"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    testImplementation "org.assertj:assertj-core:3.16.1"
+    testImplementation "org.mockito:mockito-core:3.4.0"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.5"
 }
 
 testlogger {
@@ -80,3 +81,5 @@ java {
         languageVersion = JavaLanguageVersion.of(11)
     }
 }
+
+version = '0.2.0'

@@ -81,8 +81,8 @@ public class BillOfMaterials {
         return Optional.ofNullable(identifier);
     }
 
-    public BillOfMaterials setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public BillOfMaterials setIdentifier(@NullOr String identifier) {
+        this.identifier = (identifier != null && !identifier.isBlank()) ? identifier : null;
         return this;
     }
 

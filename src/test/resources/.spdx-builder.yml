@@ -1,0 +1,6 @@
+document:
+  title: "Sample file"
+  organization: "SPDX-Builder development"
+  comment: "Test file of SPDX-Builder"
+projects:
+  - id: 'NPM::mime-types:2.1.18'
