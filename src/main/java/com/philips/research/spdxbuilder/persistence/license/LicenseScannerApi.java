@@ -10,6 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.license;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -17,7 +18,6 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 import java.net.URI;
-import java.util.UUID;
 
 /**
  * Retrofit REST API declaration.
@@ -28,22 +28,25 @@ interface LicenseScannerApi {
      *
      * @return scan result with or without a concluded license
      */
-    @POST("/packages/{purl}")
-    Call<ResultJson> scan(@Path("purl") String purl, @Body RequestJson body);
+    @POST("/packages")
+    Call<ResultJson> scan(@Body RequestJson body);
 
     /**
      * Contests an existing scan.
      *
      * @param scanId UUID of the scan.
      */
-    @POST("/scans/{scan}/contest")
-    Call<Void> contest(@Path("scan") UUID scanId, @Body ContestJson body);
+    @POST("/scans/{scanId}/contest")
+    Call<Void> contest(@Path("scanId") String scanId, @Body ContestJson body);
 
 
     class RequestJson {
+        URI purl;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         @NullOr String location;
 
-        public RequestJson(@NullOr URI location) {
+        public RequestJson(URI purl, @NullOr URI location) {
+            this.purl = purl;
             if (location != null) {
                 this.location = location.toASCIIString();
             }

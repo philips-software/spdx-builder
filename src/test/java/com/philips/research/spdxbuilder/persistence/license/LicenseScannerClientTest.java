@@ -19,12 +19,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.JsonBody;
-import org.mockserver.model.MediaType;
 
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,12 +36,12 @@ class LicenseScannerClientTest {
     private static final String VERSION = "My/#?Version";
     private static final URI LOCATION = URI.create("http://example.com");
     private static final String LICENSE = "Apache-2.0";
-    private static final UUID SCAN_ID = UUID.randomUUID();
+    private static final String SCAN_ID = "ScanId";
 
     private static ClientAndServer mockServer;
 
     private final LicenseScannerClient client = new LicenseScannerClient(URI.create("http://localhost:" + PORT));
-    private final Package pkg = new Package("Type", NAMESPACE, NAME, VERSION);
+    private final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
 
     @BeforeAll
     static void beforeAll() {
@@ -55,10 +51,6 @@ class LicenseScannerClientTest {
     @AfterAll
     static void afterAll() {
         mockServer.stop();
-    }
-
-    static private String encoded(String string) {
-        return URLEncoder.encode(URLEncoder.encode(string, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
 
     @AfterEach
@@ -71,9 +63,8 @@ class LicenseScannerClientTest {
     void queriesLicense() {
         pkg.setLocation(LOCATION);
         mockServer.when(request().withMethod("POST")
-                .withPath("/packages/" + encoded(pkg.getPurl().toString()))
-                .withBody(new JSONObject().put("location", LOCATION).toString())
-                .withContentType(MediaType.APPLICATION_JSON_UTF_8))
+                .withPath("/packages")
+                .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).put("location", LOCATION).toString())))
                 .respond(response().withStatusCode(200).withBody(new JSONObject()
                         .put("license", LICENSE)
                         .put("confirmed", true).toString()));
@@ -87,18 +78,21 @@ class LicenseScannerClientTest {
     @Test
     void ignoresEmptyLicense() {
         mockServer.when(request().withMethod("POST")
-                .withPath("/packages/" + encoded(pkg.getPurl().toString())))
+                .withPath("/packages")
+                .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).toString())))
                 .respond(response().withStatusCode(200).withBody("{}"));
 
-        assertThat(client.scanLicense(pkg)).isEmpty();
+        final var license = client.scanLicense(pkg);
+
+        assertThat(license).isEmpty();
     }
 
     @Test
     void contestsScan_differentFromDeclaredLicense() {
         pkg.setDeclaredLicense("Other");
-        var request = request().withMethod("POST")
-                .withPath("/packages/" + encoded(pkg.getPurl().toString()));
-        mockServer.when(request)
+        mockServer.when(request().withMethod("POST")
+                .withPath("/packages")
+                .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).toString())))
                 .respond(response().withStatusCode(200)
                         .withBody(new JSONObject()
                                 .put("id", SCAN_ID)
@@ -106,7 +100,9 @@ class LicenseScannerClientTest {
 
         client.scanLicense(pkg);
 
-        System.out.println(mockServer.retrieveLogMessages(request));
+        System.out.println(mockServer.retrieveLogMessages(request().withMethod("POST")
+                .withPath("/packages")
+                .withBody(new JSONObject().put("purl", pkg.getPurl()).toString())));
 
         final var body = new JSONObject().put("license", "Other");
         mockServer.verify(request().withMethod("POST")

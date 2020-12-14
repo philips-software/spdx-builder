@@ -12,10 +12,8 @@ package com.philips.research.spdxbuilder.persistence.license;
 
 import pl.tlinkowski.annotation.basic.NullOr;
 
-import java.util.UUID;
-
 class ResultJson {
-    @NullOr UUID id;
+    String id;
     @NullOr String license;
     boolean confirmed;
 }

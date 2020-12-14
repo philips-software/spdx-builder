@@ -25,10 +25,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.philips.research.spdxbuilder.core.ConversionStore.LicenseInfo;
 
@@ -55,10 +52,6 @@ public class LicenseScannerClient {
         rest = retrofit.create(LicenseScannerApi.class);
     }
 
-    static private String encoded(String string) {
-        return URLEncoder.encode(string, StandardCharsets.UTF_8);
-    }
-
     /**
      * Queries the licenses for a single package.
      *
@@ -66,10 +59,8 @@ public class LicenseScannerClient {
      */
     public Optional<LicenseInfo> scanLicense(Package pkg) {
         return query(() -> {
-            final var body = new RequestJson(pkg.getLocation().orElse(null));
-            final var purl = pkg.getPurl().toString();
-
-            final var resp = rest.scan(encoded(purl), body).execute();
+            final var body = new RequestJson(pkg.getPurl(), pkg.getLocation().orElse(null));
+            final var resp = rest.scan(body).execute();
             if (!resp.isSuccessful()) {
                 throw new LicenseScannerException("License scanner responded with status " + resp.code());
             }
@@ -88,10 +79,8 @@ public class LicenseScannerClient {
         });
     }
 
-    private void contest(@NullOr UUID scanId, String license) {
-        if (scanId != null) {
-            query(() -> rest.contest(scanId, new ContestJson(license)).execute());
-        }
+    private void contest(String scanId, String license) {
+        query(() -> rest.contest(scanId, new ContestJson(license)).execute());
     }
 
     private <R> R query(Request<R> supplier) {
