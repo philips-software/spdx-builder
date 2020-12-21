@@ -70,7 +70,7 @@ jar {
         attributes(
                 'Main-Class': 'com.philips.research.spdxbuilder.Application',
                 'Implementation-Title': 'SPDX-Builder',
-                'Implementation-Version': '0.2.0'
+                'Implementation-Version': 'v0.2.1'
         )
     }
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
@@ -82,4 +82,4 @@ java {
     }
 }
 
-version = '0.2.0'
+version = '0.2.1'
