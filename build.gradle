@@ -73,7 +73,7 @@ jar {
                 'Implementation-Version': 'v0.3.0'
         )
     }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
 java {
