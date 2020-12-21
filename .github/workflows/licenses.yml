@@ -12,7 +12,7 @@ on:
       - develop
 
 env:
-  SPDX_BUILDER_VERSION: v0.2.0
+  SPDX_BUILDER_VERSION: 0.2.1
 
 jobs:
   scan:
