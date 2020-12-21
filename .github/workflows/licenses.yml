@@ -12,7 +12,7 @@ on:
       - develop
 
 env:
-  SPDX_BUILDER_VERSION: 0.2.1
+  SPDX_BUILDER_VERSION: v0.3.0
 
 jobs:
   scan:
@@ -30,7 +30,7 @@ jobs:
       continue-on-error: true
     - name: Create SPDX file
       run: |
-        wget https://artifactory-ehv.ta.philips.com/artifactory/dl-innersource-mvn-release/com/philips/research/spdxbuilder/spdx-builder/refs/tags/${SPDX_BUILDER_VERSION}/spdx-builder-refs/tags/${SPDX_BUILDER_VERSION}.jar -O spdx-builder.jar
+        wget https://artifactory-ehv.ta.philips.com/artifactory/dl-innersource-mvn/com/philips/research/spdxbuilder/spdx-builder/${SPDX_BUILDER_VERSION}/spdx-builder-${SPDX_BUILDER_VERSION}.jar -O spdx-builder.jar
         java -jar spdx-builder.jar -i ort/analyzer-result.json -o spdx-builder.spdx
     - uses: actions/upload-artifact@v2
       with:
