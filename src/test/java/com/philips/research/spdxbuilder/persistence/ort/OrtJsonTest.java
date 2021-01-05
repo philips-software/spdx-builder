@@ -25,11 +25,11 @@ class OrtJsonTest {
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String VERSION = "Version";
-    private static final String VALID_URL = "http://example.com";
+    private static final String FILENAME = "file.name";
+    private static final String VALID_URL = "http://example.com/path/to/" + FILENAME;
 
     @Nested
     class PackageJsonTest {
-        private static final String HASH_TYPE = "SHA-1";
         private static final String HASH_VALUE = "abc123";
         private final PackageJson pkg = new PackageJson();
 
@@ -59,19 +59,19 @@ class OrtJsonTest {
         }
 
         @Test
-        void addsSourceHash() {
+        void addsBinaryFileHash() {
             var locationJson = new LocationJson();
             var hashJson = new HashJson();
-            hashJson.algorithm = HASH_TYPE;
+            hashJson.algorithm = "SHA-1";
             hashJson.value = HASH_VALUE;
             locationJson.hash = hashJson;
             locationJson.url = URI.create(VALID_URL);
-            pkg.sourceArtifact = locationJson;
+            pkg.binaryArtifact= locationJson;
 
             final var result = pkg.createPackage();
 
-            assertThat(result.getSourceLocation()).contains(URI.create(VALID_URL));
-            assertThat(result.getHash(HASH_TYPE)).contains(HASH_VALUE);
+            assertThat(result.getFilename()).contains(FILENAME);
+            assertThat(result.getHashes()).containsEntry("SHA1", HASH_VALUE);
         }
     }
 

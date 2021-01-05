@@ -241,7 +241,7 @@ class LocationJson {
     }
 
     Optional<URI> getLocation() {
-        if (url == null || url.getPath().isBlank()) {
+        if (url == null || url.toString().isBlank()) {
             return Optional.empty();
         }
         return Optional.of(url);

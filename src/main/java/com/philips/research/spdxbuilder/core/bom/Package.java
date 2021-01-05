@@ -120,10 +120,6 @@ public final class Package {
         return this;
     }
 
-    public Optional<String> getHash(String format) {
-        return Optional.ofNullable(hash.get(format.toUpperCase()));
-    }
-
     public Map<String, String> getHashes() {
         return Collections.unmodifiableMap(hash);
     }
