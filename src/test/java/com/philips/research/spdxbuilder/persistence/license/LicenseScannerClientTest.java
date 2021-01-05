@@ -61,7 +61,7 @@ class LicenseScannerClientTest {
     @Test
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     void queriesLicense() {
-        pkg.setLocation(LOCATION);
+        pkg.setSourceLocation(LOCATION);
         mockServer.when(request().withMethod("POST")
                 .withPath("/packages")
                 .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).put("location", LOCATION).toString())))

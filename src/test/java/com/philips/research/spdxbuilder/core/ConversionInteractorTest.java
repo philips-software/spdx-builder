@@ -82,7 +82,7 @@ class ConversionInteractorTest {
         @Test
         void scansProjectAndPackageLicenses() {
             bom.addPackage(project);
-            bom.addPackage(pkg.setLocation(LOCATION));
+            bom.addPackage(pkg.setSourceLocation(LOCATION));
             final var licenseInfo = new ConversionStore.LicenseInfo(LICENSE, false);
             when(store.detectLicense(project)).thenReturn(Optional.of(licenseInfo));
             when(store.detectLicense(pkg)).thenReturn(Optional.of(licenseInfo));
@@ -131,8 +131,8 @@ class ConversionInteractorTest {
         void curatesPackageSource() {
             interactor.curatePackageSource(PURL, LOCATION);
 
-            assertThat(pkg.getLocation()).contains(LOCATION);
-            assertThat(otherPkg.getLocation()).isEmpty();
+            assertThat(pkg.getSourceLocation()).contains(LOCATION);
+            assertThat(otherPkg.getSourceLocation()).isEmpty();
         }
     }
 }

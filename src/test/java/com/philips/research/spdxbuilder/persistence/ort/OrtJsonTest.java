@@ -55,7 +55,7 @@ class OrtJsonTest {
 
             final var result = pkg.createPackage();
 
-            assertThat(result.getLocation()).contains(URI.create(VALID_URL));
+            assertThat(result.getSourceLocation()).contains(URI.create(VALID_URL));
         }
 
         @Test
@@ -70,7 +70,7 @@ class OrtJsonTest {
 
             final var result = pkg.createPackage();
 
-            assertThat(result.getLocation()).contains(URI.create(VALID_URL));
+            assertThat(result.getSourceLocation()).contains(URI.create(VALID_URL));
             assertThat(result.getHash(HASH_TYPE)).contains(HASH_VALUE);
         }
     }
@@ -85,7 +85,7 @@ class OrtJsonTest {
 
             json.addSourceLocation(result);
 
-            assertThat(result.getLocation()).isEmpty();
+            assertThat(result.getSourceLocation()).isEmpty();
         }
 
         @Test
@@ -98,7 +98,7 @@ class OrtJsonTest {
 
             json.addSourceLocation(result);
 
-            assertThat(result.getLocation()).contains(URI.create("git+" + VALID_URL + "@the%3Frevision#the%3Fpath"));
+            assertThat(result.getSourceLocation()).contains(URI.create("git+" + VALID_URL + "@the%3Frevision#the%3Fpath"));
         }
 
         @Test
@@ -108,7 +108,7 @@ class OrtJsonTest {
 
             json.addSourceLocation(result);
 
-            assertThat(result.getLocation()).contains(URI.create(VALID_URL + "@" + VERSION));
+            assertThat(result.getSourceLocation()).contains(URI.create(VALID_URL + "@" + VERSION));
         }
     }
 }

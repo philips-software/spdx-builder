@@ -28,10 +28,10 @@ public final class Package {
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
     private @NullOr URI purl;
-    private @NullOr Party originator;
     private @NullOr Party supplier;
+    private @NullOr Party originator;
     private @NullOr String filename;
-    private @NullOr URI location;
+    private @NullOr URI sourceLocation;
     private @NullOr URL homePage;
     private @NullOr String concludedLicense;
     private @NullOr String declaredLicense;
@@ -111,12 +111,12 @@ public final class Package {
         return this;
     }
 
-    public Optional<URI> getLocation() {
-        return Optional.ofNullable(location);
+    public Optional<URI> getSourceLocation() {
+        return Optional.ofNullable(sourceLocation);
     }
 
-    public Package setLocation(@NullOr URI location) {
-        this.location = location;
+    public Package setSourceLocation(@NullOr URI location) {
+        this.sourceLocation = location;
         return this;
     }
 

@@ -99,7 +99,7 @@ public class ConversionInteractor implements ConversionService {
 
     @Override
     public void curatePackageSource(URI purl, URI source) {
-        curate(purl, pkg -> pkg.setLocation(source));
+        curate(purl, pkg -> pkg.setSourceLocation(source));
     }
 
     private void curate(URI purl, Consumer<Package> curate) {

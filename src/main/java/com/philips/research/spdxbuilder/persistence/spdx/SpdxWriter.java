@@ -96,7 +96,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         doc.addValue("ExternalRef", ExternalReference.purl(pkg));
         doc.addValue("PackageSupplier", SpdxParty.from(pkg.getSupplier()));
         doc.addValue("PackageOriginator", SpdxParty.from(pkg.getOriginator()));
-        doc.addValue("PackageDownloadLocation", pkg.getLocation());
+        doc.addValue("PackageDownloadLocation", pkg.getSourceLocation());
         doc.addValue("FilesAnalyzed", pkg.getDetectedLicense().isPresent());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             final var key = entry.getKey().replaceAll("-", "").toUpperCase();
