@@ -1,22 +1,22 @@
 # SPDX-Builder
 
-**Description**: Converts dependencies for many package managers into a standard
-[SPDX](https://spdx.github.io/spdx-spec) tag-value Software Bill-of-Materials file, 
-optionally integrating externally detected and curated license details.
+CI/CD tool to generate Bill-of-Materials reports in SPDX format.
+
+**Status**: Experimental research prototype
 
 (See the [architecture document](docs/architecture.md) for a detailed technical description.)
 
+Converts dependencies for many package managers into a standard
+[SPDX](https://spdx.github.io/spdx-spec) tag-value Software Bill-of-Materials file, 
+optionally integrating externally detected and curated license details.
+
 Inputs for the SBOM are:
+
 * Package information by YAML files from 
 [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT) Analyzer.
 * Curated license scan results from the REST API of a 
 [License Scanning Service](https://github.com/philips-labs/license-scanner)
 backend service.
-
-**Status**: Research prototype
-
-This is an experimental application for generating reference data in the context
-of [investigations into Bill-of-Materials and open source licensing](https://gitlab.ta.philips.com/swat/bom/comparison).
 
 ## Dependencies
 
@@ -171,9 +171,10 @@ The unit test suite is run via the standard Gradle command:
 (Ticked checkboxes indicate topics currently under development.)
 
 Must-have:
+- [x] Support non-SPDX licenses.
+- [ ] Limit license identifiers to the SPDX list.
 - [ ] Abort if ORT Analyzer raised errors.
 - [ ] Pass checksum to scanner and SPDX report.
-- [x] Support non-SPDX licenses. 
 
 Should-have:
 - [ ] Support output "flavors" for the purpose of the generated SBOM.
