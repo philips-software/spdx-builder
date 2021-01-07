@@ -10,7 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 
 import java.io.File;
 import java.net.URI;

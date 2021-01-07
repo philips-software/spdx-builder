@@ -11,9 +11,9 @@
 package com.philips.research.spdxbuilder.controller;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
-import com.philips.research.spdxbuilder.core.ConversionInteractor;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.ConversionStore;
+import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
 import com.philips.research.spdxbuilder.persistence.ConversionPersistence;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;

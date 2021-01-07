@@ -10,9 +10,9 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
-import com.philips.research.spdxbuilder.core.bom.Relation;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;

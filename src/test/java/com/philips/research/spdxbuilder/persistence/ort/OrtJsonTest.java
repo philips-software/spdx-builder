@@ -10,7 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.ort;
 
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class OrtJsonTest {
             final var result = pkg.createPackage();
 
             assertThat(result.getType()).isEqualTo(TYPE.toLowerCase());
-            assertThat(result.getGroup()).isEqualTo(NAMESPACE);
+            assertThat(result.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(result.getName()).isEqualTo(NAME);
             assertThat(result.getVersion()).isEqualTo(VERSION);
         }
@@ -66,7 +66,7 @@ class OrtJsonTest {
             hashJson.value = HASH_VALUE;
             locationJson.hash = hashJson;
             locationJson.url = URI.create(VALID_URL);
-            pkg.binaryArtifact= locationJson;
+            pkg.binaryArtifact = locationJson;
 
             final var result = pkg.createPackage();
 

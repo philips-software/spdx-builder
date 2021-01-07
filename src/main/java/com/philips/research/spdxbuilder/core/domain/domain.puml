@@ -1,0 +1,25 @@
+@startuml
+
+class Package {
+    type:string
+    namespace:string
+    name:string
+    version:string
+    purl:URI
+    etc...
+}
+
+class Relation {
+    type:{static,dynamic,depends_on,descendant_of}
+}
+Relation -> Package:from
+Relation -> Package:to
+
+class BillOfMaterials {
+    title:string
+    etc...
+}
+BillOfMaterials *--> "*" Package:packages
+BillOfMaterials *--> "*" Relation:relations
+
+@enduml

@@ -8,7 +8,7 @@
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.core.bom;
+package com.philips.research.spdxbuilder.core.domain;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;

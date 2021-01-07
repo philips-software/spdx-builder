@@ -10,7 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.Package;
 
 public class ExternalReference {
     private final String category;

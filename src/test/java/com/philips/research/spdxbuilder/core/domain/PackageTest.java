@@ -8,7 +8,7 @@
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.core.bom;
+package com.philips.research.spdxbuilder.core.domain;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Nested;
@@ -30,7 +30,7 @@ class PackageTest {
     @Test
     void createsInstance() {
         assertThat(pkg.getType()).isEqualTo(TYPE);
-        assertThat(pkg.getGroup()).isEqualTo(NAMESPACE);
+        assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
         assertThat(pkg.getName()).isEqualTo(NAME);
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
         assertThat(pkg.getPurl()).isEqualTo(URI.create("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
@@ -55,7 +55,7 @@ class PackageTest {
     @Test
     void implementsEquals() {
         EqualsVerifier.forClass(Package.class)
-                .withOnlyTheseFields("type", "group", "name", "version")
+                .withOnlyTheseFields("type", "namespace", "name", "version")
                 .verify();
     }
 

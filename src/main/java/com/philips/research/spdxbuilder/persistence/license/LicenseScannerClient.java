@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.ContestJson;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.RequestJson;
 import pl.tlinkowski.annotation.basic.NullOr;

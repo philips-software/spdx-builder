@@ -11,7 +11,7 @@
 package com.philips.research.spdxbuilder.persistence.license;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;

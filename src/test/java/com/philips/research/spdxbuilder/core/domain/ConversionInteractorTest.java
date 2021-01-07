@@ -1,17 +1,17 @@
 /*
  * This software and associated documentation files are
  *
- * Copyright © 2020-2020 Koninklijke Philips N.V.
+ * Copyright © 2020-2021 Koninklijke Philips N.V.
  *
  * and is made available for use within Philips and/or within Philips products.
  *
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.core;
+package com.philips.research.spdxbuilder.core.domain;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.ConversionService;
+import com.philips.research.spdxbuilder.core.ConversionStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

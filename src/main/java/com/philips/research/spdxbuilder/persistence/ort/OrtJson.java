@@ -11,9 +11,9 @@
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
-import com.philips.research.spdxbuilder.core.bom.Relation;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
@@ -140,7 +140,7 @@ class PackageJson {
         }
         if (binaryArtifact != null) {
             binaryArtifact.getFilename().ifPresent(result::setFilename);
-            binaryArtifact.addHash(result);;
+            binaryArtifact.addHash(result);
         }
         addSourceLocation(result);
         addDeclaredLicense(result);

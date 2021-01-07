@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.philips.research.spdxbuilder.core.BusinessException;
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;

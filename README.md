@@ -4,6 +4,8 @@
 [SPDX](https://spdx.github.io/spdx-spec) tag-value Software Bill-of-Materials file, 
 optionally integrating externally detected and curated license details.
 
+(See the [architecture document](docs/architecture.md) for a detailed technical description.)
+
 Inputs for the SBOM are:
 * Package information by YAML files from 
 [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT) Analyzer.
