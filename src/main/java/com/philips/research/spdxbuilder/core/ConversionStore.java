@@ -39,14 +39,6 @@ public interface ConversionStore {
      */
     Optional<LicenseInfo> detectLicense(Package pkg);
 
-    /**
-     * Uploads a (SBOM) file to the indicated url.
-     *
-     * @param url  target location for the upload
-     * @param file SBOM content to upload
-     */
-    void uploadFile(@NullOr URI url, File file);
-
     enum FileType {ORT, SPDX}
 
     class LicenseInfo {

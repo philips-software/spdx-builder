@@ -62,9 +62,4 @@ public class ConversionPersistence implements ConversionStore {
             return Optional.empty();
         }
     }
-
-    @Override
-    public void uploadFile(@NullOr URI url, File file) {
-
-    }
 }

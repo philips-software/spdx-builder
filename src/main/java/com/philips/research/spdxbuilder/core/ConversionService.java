@@ -99,5 +99,4 @@ public interface ConversionService {
      * @param file output file
      */
     void writeBillOfMaterials(File file);
-
 }

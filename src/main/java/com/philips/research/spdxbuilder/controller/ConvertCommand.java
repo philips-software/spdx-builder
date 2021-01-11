@@ -40,6 +40,8 @@ public class ConvertCommand implements Runnable {
     File configFile;
     @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", paramLabel = "SERVER_URL")
     @NullOr URI licenseScanner;
+    @Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
+    @NullOr URI uploadUrl;
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
@@ -69,7 +71,8 @@ public class ConvertCommand implements Runnable {
             readInput();
             scan();
             curate(config);
-            writeResult();
+            final var file = writeResult();
+            upload(file);
         }
 
         private Configuration readConfiguration() {
@@ -124,11 +127,19 @@ public class ConvertCommand implements Runnable {
             });
         }
 
-        private void writeResult() {
+        private File writeResult() {
             if (!spdxFile.getName().contains(".")) {
                 spdxFile = new File(spdxFile.getPath() + ".spdx");
             }
             service.writeBillOfMaterials(spdxFile);
+            return spdxFile;
+        }
+
+        private void upload(File file) {
+            if (uploadUrl == null) {
+                return;
+            }
+            new UploadClient(uploadUrl).upload(file);
         }
     }
 }

@@ -8,8 +8,9 @@
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.persistence.upload;
+package com.philips.research.spdxbuilder.controller;
 
+import com.philips.research.spdxbuilder.controller.UploadClient;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;

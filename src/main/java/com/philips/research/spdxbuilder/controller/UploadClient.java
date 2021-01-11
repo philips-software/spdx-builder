@@ -8,7 +8,7 @@
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.persistence.upload;
+package com.philips.research.spdxbuilder.controller;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerException;
@@ -34,26 +34,31 @@ interface UploadApi {
 
 public class UploadClient {
     private final UploadApi rest;
-    private final URI server;
+    private final URI uploadUrl;
 
-    UploadClient(URI server) {
-        this.server = server;
+    UploadClient(URI uploadUrl) {
+        this.uploadUrl = uploadUrl;
+        var uploadPath = uploadUrl.toASCIIString();
+        if (!uploadPath.endsWith("/")) {
+           uploadPath += '/' ;
+        }
         final var retrofit = new Retrofit.Builder()
-                .baseUrl(server.toASCIIString())
+                .baseUrl(uploadPath)
                 .build();
         rest = retrofit.create(UploadApi.class);
     }
 
     void upload(File file) {
         try {
+            System.out.println("Uploading '" + file.getName() + "' to " + uploadUrl);
             final var reqBody = RequestBody.create(MediaType.parse("text/plain;charset=UTF-8"), file);
             final var filePart = MultipartBody.Part.createFormData("file", "sbom.spdx", reqBody);
-            final var response = rest.uploadFile(server.getPath(), filePart).execute();
+            final var response = rest.uploadFile(uploadUrl.getPath(), filePart).execute();
             if (!response.isSuccessful()) {
                 throw new BusinessException("SPDX upload responded with status " + response.code());
             }
         } catch (IOException e) {
-            throw new LicenseScannerException("The SPDX upload server is not reachable at " + server);
+            throw new LicenseScannerException("The SPDX upload server is not reachable at " + uploadUrl);
         }
     }
 }
