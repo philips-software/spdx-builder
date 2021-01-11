@@ -12,6 +12,7 @@ package com.philips.research.spdxbuilder.core;
 
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
@@ -37,6 +38,14 @@ public interface ConversionStore {
      * @return the scanned license for a package
      */
     Optional<LicenseInfo> detectLicense(Package pkg);
+
+    /**
+     * Uploads a (SBOM) file to the indicated url.
+     *
+     * @param url  target location for the upload
+     * @param file SBOM content to upload
+     */
+    void uploadFile(@NullOr URI url, File file);
 
     enum FileType {ORT, SPDX}
 

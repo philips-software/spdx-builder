@@ -10,23 +10,21 @@
 
 package com.philips.research.spdxbuilder.persistence.license;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.domain.Package;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.json.JSONObject;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.JsonBody;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
 class LicenseScannerClientTest {
     private static final int PORT = 1080;
@@ -37,50 +35,48 @@ class LicenseScannerClientTest {
     private static final URI LOCATION = URI.create("http://example.com");
     private static final String LICENSE = "Apache-2.0";
     private static final String SCAN_ID = "ScanId";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static ClientAndServer mockServer;
+    private final MockWebServer mockServer = new MockWebServer();
 
     private final LicenseScannerClient client = new LicenseScannerClient(URI.create("http://localhost:" + PORT));
     private final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
 
-    @BeforeAll
-    static void beforeAll() {
-        mockServer = startClientAndServer(PORT);
-    }
-
-    @AfterAll
-    static void afterAll() {
-        mockServer.stop();
+    @BeforeEach
+    void setUp() throws IOException {
+        mockServer.start(PORT);
     }
 
     @AfterEach
-    void afterEach() {
-        mockServer.reset();
+    void tearDown() throws IOException {
+        mockServer.shutdown();
     }
 
     @Test
     @SuppressWarnings("OptionalGetWithoutIsPresent")
-    void queriesLicense() {
+    void queriesLicense() throws Exception {
         pkg.setSourceLocation(LOCATION);
-        mockServer.when(request().withMethod("POST")
-                .withPath("/packages")
-                .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).put("location", LOCATION).toString())))
-                .respond(response().withStatusCode(200).withBody(new JSONObject()
+        mockServer.enqueue(new MockResponse().setBody(
+                new JSONObject()
                         .put("license", LICENSE)
                         .put("confirmed", true).toString()));
 
         final var license = client.scanLicense(pkg).get();
 
+        final var request = mockServer.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getPath()).isEqualTo("/packages");
+        assertThat(MAPPER.readTree(request.getBody().readUtf8()))
+                .isEqualTo(MAPPER.readTree(new JSONObject()
+                        .put("purl", pkg.getPurl())
+                        .put("location", LOCATION).toString()));
         assertThat(license.getLicense()).contains(LICENSE);
         assertThat(license.isConfirmed()).isTrue();
     }
 
     @Test
     void ignoresEmptyLicense() {
-        mockServer.when(request().withMethod("POST")
-                .withPath("/packages")
-                .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).toString())))
-                .respond(response().withStatusCode(200).withBody("{}"));
+        mockServer.enqueue(new MockResponse().setBody("{}"));
 
         final var license = client.scanLicense(pkg);
 
@@ -88,26 +84,20 @@ class LicenseScannerClientTest {
     }
 
     @Test
-    void contestsScan_differentFromDeclaredLicense() {
+    void contestsScan_differentFromDeclaredLicense() throws Exception {
         pkg.setDeclaredLicense("Other");
-        mockServer.when(request().withMethod("POST")
-                .withPath("/packages")
-                .withBody(JsonBody.json(new JSONObject().put("purl", pkg.getPurl()).toString())))
-                .respond(response().withStatusCode(200)
-                        .withBody(new JSONObject()
-                                .put("id", SCAN_ID)
-                                .put("license", LICENSE).toString()));
+        mockServer.enqueue(new MockResponse().setBody(new JSONObject()
+                .put("id", SCAN_ID)
+                .put("license", LICENSE).toString()));
+        mockServer.enqueue(new MockResponse());
 
         client.scanLicense(pkg);
 
-        System.out.println(mockServer.retrieveLogMessages(request().withMethod("POST")
-                .withPath("/packages")
-                .withBody(new JSONObject().put("purl", pkg.getPurl()).toString())));
-
-        final var body = new JSONObject().put("license", "Other");
-        mockServer.verify(request().withMethod("POST")
-                .withPath(String.format("/scans/%s/contest", SCAN_ID))
-                .withBody(new JsonBody(body.toString())));
+        mockServer.takeRequest();
+        final var contestRequest = mockServer.takeRequest();
+        assertThat(contestRequest.getMethod()).isEqualTo("POST");
+        assertThat(contestRequest.getPath()).isEqualTo(String.format("/scans/%s/contest", SCAN_ID));
+        assertThat(contestRequest.getBody().readUtf8()).isEqualTo(new JSONObject().put("license", "Other").toString());
     }
 
     @Test
@@ -121,7 +111,8 @@ class LicenseScannerClientTest {
 
     @Test
     void throws_unexpectedResponseFromServer() {
-        // Default not-found response
+        mockServer.enqueue(new MockResponse().setResponseCode(404));
+
         assertThatThrownBy(() -> client.scanLicense(pkg))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("status 404");
