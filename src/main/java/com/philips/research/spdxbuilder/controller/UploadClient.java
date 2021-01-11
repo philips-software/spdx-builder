@@ -14,6 +14,7 @@ import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerException;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -25,6 +26,7 @@ import retrofit2.http.Url;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 
 interface UploadApi {
     @Multipart
@@ -33,6 +35,11 @@ interface UploadApi {
 }
 
 public class UploadClient {
+    private static final Duration MAX_UPLOAD_DURATION = Duration.ofMinutes(5);
+    private static final OkHttpClient CLIENT = new OkHttpClient.Builder()
+            .writeTimeout(MAX_UPLOAD_DURATION)
+            .readTimeout(MAX_UPLOAD_DURATION)
+            .build();
     private final UploadApi rest;
     private final URI uploadUrl;
 
@@ -40,9 +47,10 @@ public class UploadClient {
         this.uploadUrl = uploadUrl;
         var uploadPath = uploadUrl.toASCIIString();
         if (!uploadPath.endsWith("/")) {
-           uploadPath += '/' ;
+            uploadPath += '/';
         }
         final var retrofit = new Retrofit.Builder()
+                .client(CLIENT)
                 .baseUrl(uploadPath)
                 .build();
         rest = retrofit.create(UploadApi.class);
