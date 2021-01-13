@@ -58,7 +58,6 @@ public class UploadClient {
 
     void upload(File file) {
         try {
-            System.out.println("Uploading '" + file.getName() + "' to " + uploadUrl);
             final var reqBody = RequestBody.create(MediaType.parse("text/plain;charset=UTF-8"), file);
             final var filePart = MultipartBody.Part.createFormData("file", "sbom.spdx", reqBody);
             final var response = rest.uploadFile(uploadUrl.getPath(), filePart).execute();

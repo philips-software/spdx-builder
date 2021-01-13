@@ -107,11 +107,13 @@ public class ConvertCommand implements Runnable {
         }
 
         private void readInput() {
+            System.out.println("Reading analyzer result from '" + ortFile + "'");
             service.readOrtAnalysis(ortFile);
         }
 
         private void scan() {
             if (licenseScanner != null) {
+                System.out.println("Merging licenses from License Scanner at " + licenseScanner);
                 service.scanLicenses();
             }
         }
@@ -131,6 +133,7 @@ public class ConvertCommand implements Runnable {
             if (!spdxFile.getName().contains(".")) {
                 spdxFile = new File(spdxFile.getPath() + ".spdx");
             }
+            System.out.println("Writing SBOM to '" + spdxFile +"'");
             service.writeBillOfMaterials(spdxFile);
             return spdxFile;
         }
@@ -139,6 +142,7 @@ public class ConvertCommand implements Runnable {
             if (uploadUrl == null) {
                 return;
             }
+            System.out.println("Uploading '" + file.getName() + "' to " + uploadUrl);
             new UploadClient(uploadUrl).upload(file);
         }
     }
