@@ -5,13 +5,13 @@ document:
   key:
   namespace: "https://research.philips.com/spdx-builder"
 projects:
-  - id: "Gradle:com.philips.research.spdxbuilder:spdx-builder:v0.3.0"
-    purl: "pkg:maven/philips/spdx-builder@v0.3.0"
+  - id: "Gradle:com.philips.research.spdxbuilder:spdx-builder:v0.4.0"
+    purl: "pkg:maven/philips/spdx-builder@v0.4.0"
     excluded:
       - "annotation*"
       - "archives"
       - "runtime*"
       - "test*"
 curations:
-  - purl: "pkg:maven/philips/spdx-builder@v0.3.0"
+  - purl: "pkg:maven/philips/spdx-builder@v0.4.0"
     license: "Proprietary"

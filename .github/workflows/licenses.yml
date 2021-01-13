@@ -31,10 +31,9 @@ jobs:
     - name: Create SPDX file
       run: |
         wget https://artifactory-ehv.ta.philips.com/artifactory/dl-innersource-mvn/com/philips/research/spdxbuilder/spdx-builder/${SPDX_BUILDER_VERSION}/spdx-builder-${SPDX_BUILDER_VERSION}.jar -O spdx-builder.jar
-        java -jar spdx-builder.jar -i ort/analyzer-result.json -o spdx-builder.spdx
+        java -jar spdx-builder.jar -c .spdx-builder.yml -o spdx-builder.spdx ort/analyzer-result.json
     - uses: actions/upload-artifact@v2
       with:
         name: licenses 
         path: |
-          ort/analyzer-result.json 
           spdx-builder.spdx

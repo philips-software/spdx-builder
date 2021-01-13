@@ -10,9 +10,9 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
-import com.philips.research.spdxbuilder.core.bom.Relation;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;
@@ -96,7 +96,7 @@ public class SpdxWriter implements BillOfMaterialsStore {
         doc.addValue("ExternalRef", ExternalReference.purl(pkg));
         doc.addValue("PackageSupplier", SpdxParty.from(pkg.getSupplier()));
         doc.addValue("PackageOriginator", SpdxParty.from(pkg.getOriginator()));
-        doc.addValue("PackageDownloadLocation", pkg.getLocation());
+        doc.addValue("PackageDownloadLocation", pkg.getSourceLocation());
         doc.addValue("FilesAnalyzed", pkg.getDetectedLicense().isPresent());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             final var key = entry.getKey().replaceAll("-", "").toUpperCase();

@@ -11,9 +11,9 @@
 package com.philips.research.spdxbuilder.controller;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
-import com.philips.research.spdxbuilder.core.ConversionInteractor;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.ConversionStore;
+import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
 import com.philips.research.spdxbuilder.persistence.ConversionPersistence;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -40,6 +40,8 @@ public class ConvertCommand implements Runnable {
     File configFile;
     @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", paramLabel = "SERVER_URL")
     @NullOr URI licenseScanner;
+    @Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
+    @NullOr URI uploadUrl;
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
@@ -69,7 +71,8 @@ public class ConvertCommand implements Runnable {
             readInput();
             scan();
             curate(config);
-            writeResult();
+            final var file = writeResult();
+            upload(file);
         }
 
         private Configuration readConfiguration() {
@@ -104,11 +107,13 @@ public class ConvertCommand implements Runnable {
         }
 
         private void readInput() {
+            System.out.println("Reading analyzer result from '" + ortFile + "'");
             service.readOrtAnalysis(ortFile);
         }
 
         private void scan() {
             if (licenseScanner != null) {
+                System.out.println("Merging licenses from License Scanner at " + licenseScanner);
                 service.scanLicenses();
             }
         }
@@ -124,11 +129,21 @@ public class ConvertCommand implements Runnable {
             });
         }
 
-        private void writeResult() {
+        private File writeResult() {
             if (!spdxFile.getName().contains(".")) {
                 spdxFile = new File(spdxFile.getPath() + ".spdx");
             }
+            System.out.println("Writing SBOM to '" + spdxFile +"'");
             service.writeBillOfMaterials(spdxFile);
+            return spdxFile;
+        }
+
+        private void upload(File file) {
+            if (uploadUrl == null) {
+                return;
+            }
+            System.out.println("Uploading '" + file.getName() + "' to " + uploadUrl);
+            new UploadClient(uploadUrl).upload(file);
         }
     }
 }

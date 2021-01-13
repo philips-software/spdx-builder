@@ -1,0 +1,48 @@
+@startuml
+
+title
+    Application layering
+end title
+
+left to right direction
+
+package controller {
+    class FooCommand
+    note right
+        Command line invocation
+        implementation
+    end note
+}
+
+package core {
+    class DtoClass
+
+    interface FooService
+    FooCommand -l-> FooService
+    FooService .l.> DtoClass
+
+    package domain {
+        class FooInteractor
+        note bottom
+            Use Case implementations
+        end note
+        FooService <|.. FooInteractor
+
+        class DomainClass
+        FooInteractor ..> DomainClass
+    }
+
+    interface ConversionStore
+    FooInteractor -> ConversionStore
+}
+
+package persistence {
+    class ConversionPersistence
+    note top
+        Input / output file handling
+    end note
+    ConversionStore <|.u. ConversionPersistence
+    ConversionPersistence ..> DomainClass
+}
+
+@enduml

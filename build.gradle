@@ -31,7 +31,7 @@ repositories {
 ext {
     jacksonVersion = '2.11.0'
     junitVersion = '5.6.2'
-    mockServerVersion = '5.11.0'
+    mockWebServerVersion = '4.9.0'
     retrofitVersion = '2.9.0'
 }
 
@@ -44,7 +44,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
-    testImplementation "org.mock-server:mockserver-netty:${mockServerVersion}"
+    testImplementation "com.squareup.okhttp3:mockwebserver:${mockWebServerVersion}"
     testImplementation "org.json:json:20200518"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
@@ -70,7 +70,7 @@ jar {
         attributes(
                 'Main-Class': 'com.philips.research.spdxbuilder.Application',
                 'Implementation-Title': 'SPDX-Builder',
-                'Implementation-Version': 'v0.3.0'
+                'Implementation-Version': 'v0.4.0'
         )
     }
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
@@ -82,4 +82,4 @@ java {
     }
 }
 
-version = 'v0.3.0'
+version = 'v0.4.0'

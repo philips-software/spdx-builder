@@ -10,7 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.ort;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

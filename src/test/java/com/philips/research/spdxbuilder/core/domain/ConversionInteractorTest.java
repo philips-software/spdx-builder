@@ -1,17 +1,17 @@
 /*
  * This software and associated documentation files are
  *
- * Copyright © 2020-2020 Koninklijke Philips N.V.
+ * Copyright © 2020-2021 Koninklijke Philips N.V.
  *
  * and is made available for use within Philips and/or within Philips products.
  *
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.core;
+package com.philips.research.spdxbuilder.core.domain;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.ConversionService;
+import com.philips.research.spdxbuilder.core.ConversionStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class ConversionInteractorTest {
         @Test
         void scansProjectAndPackageLicenses() {
             bom.addPackage(project);
-            bom.addPackage(pkg.setLocation(LOCATION));
+            bom.addPackage(pkg.setSourceLocation(LOCATION));
             final var licenseInfo = new ConversionStore.LicenseInfo(LICENSE, false);
             when(store.detectLicense(project)).thenReturn(Optional.of(licenseInfo));
             when(store.detectLicense(pkg)).thenReturn(Optional.of(licenseInfo));
@@ -131,8 +131,8 @@ class ConversionInteractorTest {
         void curatesPackageSource() {
             interactor.curatePackageSource(PURL, LOCATION);
 
-            assertThat(pkg.getLocation()).contains(LOCATION);
-            assertThat(otherPkg.getLocation()).isEmpty();
+            assertThat(pkg.getSourceLocation()).contains(LOCATION);
+            assertThat(otherPkg.getSourceLocation()).isEmpty();
         }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * This software and associated documentation files are
  *
- * Copyright © 2020-2020 Koninklijke Philips N.V.
+ * Copyright © 2020-2021 Koninklijke Philips N.V.
  *
  * and is made available for use within Philips and/or within Philips products.
  *
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.core;
+package com.philips.research.spdxbuilder.core.domain;
 
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.ConversionService;
+import com.philips.research.spdxbuilder.core.ConversionStore;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
@@ -99,7 +99,7 @@ public class ConversionInteractor implements ConversionService {
 
     @Override
     public void curatePackageSource(URI purl, URI source) {
-        curate(purl, pkg -> pkg.setLocation(source));
+        curate(purl, pkg -> pkg.setSourceLocation(source));
     }
 
     private void curate(URI purl, Consumer<Package> curate) {

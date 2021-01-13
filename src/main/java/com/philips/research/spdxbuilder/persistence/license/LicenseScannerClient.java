@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.ContestJson;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.RequestJson;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -59,7 +59,7 @@ public class LicenseScannerClient {
      */
     public Optional<LicenseInfo> scanLicense(Package pkg) {
         return query(() -> {
-            final var body = new RequestJson(pkg.getPurl(), pkg.getLocation().orElse(null));
+            final var body = new RequestJson(pkg.getPurl(), pkg.getSourceLocation().orElse(null));
             final var resp = rest.scan(body).execute();
             if (!resp.isSuccessful()) {
                 throw new LicenseScannerException("License scanner responded with status " + resp.code());

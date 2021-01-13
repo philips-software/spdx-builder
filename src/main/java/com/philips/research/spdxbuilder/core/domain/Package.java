@@ -8,7 +8,7 @@
  * All Rights Reserved
  */
 
-package com.philips.research.spdxbuilder.core.bom;
+package com.philips.research.spdxbuilder.core.domain;
 
 import pl.tlinkowski.annotation.basic.NullOr;
 
@@ -23,15 +23,15 @@ import java.util.*;
  */
 public final class Package {
     private final String type;
-    private final String group;
+    private final String namespace;
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
     private @NullOr URI purl;
-    private @NullOr Party originator;
     private @NullOr Party supplier;
+    private @NullOr Party originator;
     private @NullOr String filename;
-    private @NullOr URI location;
+    private @NullOr URI sourceLocation;
     private @NullOr URL homePage;
     private @NullOr String concludedLicense;
     private @NullOr String declaredLicense;
@@ -41,9 +41,9 @@ public final class Package {
     private @NullOr String description;
     private @NullOr String attribution;
 
-    public Package(String type, String group, String name, String version) {
+    public Package(String type, String namespace, String name, String version) {
         this.type = type;
-        this.group = group;
+        this.namespace = namespace;
         this.name = name;
         this.version = version;
     }
@@ -56,8 +56,8 @@ public final class Package {
         return type;
     }
 
-    public String getGroup() {
-        return group;
+    public String getNamespace() {
+        return namespace;
     }
 
     public String getName() {
@@ -71,8 +71,8 @@ public final class Package {
     public URI getPurl() {
         if (purl == null) {
             var path = encoded(name);
-            if (!group.isBlank()) {
-                path = encoded(group) + '/' + path;
+            if (!namespace.isBlank()) {
+                path = encoded(namespace) + '/' + path;
             }
             return URI.create("pkg:" + encoded(type) + '/' + path + "@" + encoded(version));
         }
@@ -111,17 +111,13 @@ public final class Package {
         return this;
     }
 
-    public Optional<URI> getLocation() {
-        return Optional.ofNullable(location);
+    public Optional<URI> getSourceLocation() {
+        return Optional.ofNullable(sourceLocation);
     }
 
-    public Package setLocation(@NullOr URI location) {
-        this.location = location;
+    public Package setSourceLocation(@NullOr URI location) {
+        this.sourceLocation = location;
         return this;
-    }
-
-    public Optional<String> getHash(String format) {
-        return Optional.ofNullable(hash.get(format.toUpperCase()));
     }
 
     public Map<String, String> getHashes() {
@@ -222,19 +218,19 @@ public final class Package {
         if (o == null || getClass() != o.getClass()) return false;
         Package aPackage = (Package) o;
         return Objects.equals(type, aPackage.type) &&
-                Objects.equals(group, aPackage.group) &&
+                Objects.equals(namespace, aPackage.namespace) &&
                 Objects.equals(name, aPackage.name) &&
                 Objects.equals(version, aPackage.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, group, name, version);
+        return Objects.hash(type, namespace, name, version);
     }
 
     @Override
     public String toString() {
-        return String.format("%s:%s/%s-%s", type, group, name, version);
+        return String.format("%s:%s/%s-%s", type, namespace, name, version);
     }
 
 }

@@ -10,7 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.ort;
 
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,11 +25,11 @@ class OrtJsonTest {
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String VERSION = "Version";
-    private static final String VALID_URL = "http://example.com";
+    private static final String FILENAME = "file.name";
+    private static final String VALID_URL = "http://example.com/path/to/" + FILENAME;
 
     @Nested
     class PackageJsonTest {
-        private static final String HASH_TYPE = "SHA-1";
         private static final String HASH_VALUE = "abc123";
         private final PackageJson pkg = new PackageJson();
 
@@ -43,7 +43,7 @@ class OrtJsonTest {
             final var result = pkg.createPackage();
 
             assertThat(result.getType()).isEqualTo(TYPE.toLowerCase());
-            assertThat(result.getGroup()).isEqualTo(NAMESPACE);
+            assertThat(result.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(result.getName()).isEqualTo(NAME);
             assertThat(result.getVersion()).isEqualTo(VERSION);
         }
@@ -55,23 +55,23 @@ class OrtJsonTest {
 
             final var result = pkg.createPackage();
 
-            assertThat(result.getLocation()).contains(URI.create(VALID_URL));
+            assertThat(result.getSourceLocation()).contains(URI.create(VALID_URL));
         }
 
         @Test
-        void addsSourceHash() {
+        void addsBinaryFileHash() {
             var locationJson = new LocationJson();
             var hashJson = new HashJson();
-            hashJson.algorithm = HASH_TYPE;
+            hashJson.algorithm = "SHA-1";
             hashJson.value = HASH_VALUE;
             locationJson.hash = hashJson;
             locationJson.url = URI.create(VALID_URL);
-            pkg.sourceArtifact = locationJson;
+            pkg.binaryArtifact = locationJson;
 
             final var result = pkg.createPackage();
 
-            assertThat(result.getLocation()).contains(URI.create(VALID_URL));
-            assertThat(result.getHash(HASH_TYPE)).contains(HASH_VALUE);
+            assertThat(result.getFilename()).contains(FILENAME);
+            assertThat(result.getHashes()).containsEntry("SHA1", HASH_VALUE);
         }
     }
 
@@ -85,7 +85,7 @@ class OrtJsonTest {
 
             json.addSourceLocation(result);
 
-            assertThat(result.getLocation()).isEmpty();
+            assertThat(result.getSourceLocation()).isEmpty();
         }
 
         @Test
@@ -98,7 +98,7 @@ class OrtJsonTest {
 
             json.addSourceLocation(result);
 
-            assertThat(result.getLocation()).contains(URI.create("git+" + VALID_URL + "@the%3Frevision#the%3Fpath"));
+            assertThat(result.getSourceLocation()).contains(URI.create("git+" + VALID_URL + "@the%3Frevision#the%3Fpath"));
         }
 
         @Test
@@ -108,7 +108,7 @@ class OrtJsonTest {
 
             json.addSourceLocation(result);
 
-            assertThat(result.getLocation()).contains(URI.create(VALID_URL + "@" + VERSION));
+            assertThat(result.getSourceLocation()).contains(URI.create(VALID_URL + "@" + VERSION));
         }
     }
 }

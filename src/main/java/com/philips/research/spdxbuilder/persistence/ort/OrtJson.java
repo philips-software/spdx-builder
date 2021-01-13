@@ -11,10 +11,9 @@
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
-import com.philips.research.spdxbuilder.core.bom.Party;
-import com.philips.research.spdxbuilder.core.bom.Relation;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
@@ -106,9 +105,7 @@ class ResultJson {
         projects.removeIf(project -> !projectIds.contains(project.id));
         final var missing = projectIds.stream()
                 .filter(id -> projects.stream().noneMatch(p -> id.equals(p.id)))
-                .peek(id -> {
-                    System.out.println("ERROR: Project '" + id + "' is not found in the ORT file");
-                })
+                .peek(id -> System.out.println("ERROR: Project '" + id + "' is not found in the ORT file"))
                 .count();
         if (missing != 0) {
             throw new OrtReaderException("Missing " + missing + " project(s) in ORT file");
@@ -131,19 +128,25 @@ class PackageJson {
     @NullOr String description;
     @NullOr URI purl;
     @NullOr URL homepageUrl;
+    @NullOr LocationJson binaryArtifact;
     @NullOr LocationJson sourceArtifact;
-    @JsonProperty("vcs_processed")
     @NullOr VcsJson vcsProcessed;
 
     Package createPackage() {
         final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
 
-        result.setPurl(purl);
-        result.setSupplier(new Party(Party.Type.ORGANIZATION, result.getGroup()));
-        result.setDescription(description);
-        result.setHomePage(homepageUrl);
+        if (purl != null) {
+            result.setPurl(purl);
+        }
+        if (binaryArtifact != null) {
+            binaryArtifact.getFilename().ifPresent(result::setFilename);
+            binaryArtifact.addHash(result);
+        }
         addSourceLocation(result);
         addDeclaredLicense(result);
+        // NOTE: No originator or supplier available from ORT analyzer output
+        result.setSummary(description);
+        result.setHomePage(homepageUrl);
 
         return result;
     }
@@ -158,9 +161,9 @@ class PackageJson {
 
     void addSourceLocation(Package pkg) {
         if (sourceArtifact != null) {
-            sourceArtifact.addSourceLocation(pkg);
+            sourceArtifact.getLocation().ifPresent(pkg::setSourceLocation);
         }
-        if (pkg.getLocation().isEmpty() && vcsProcessed != null) {
+        if (pkg.getSourceLocation().isEmpty() && vcsProcessed != null) {
             vcsProcessed.addSourceLocation(pkg);
         }
     }
@@ -230,12 +233,23 @@ class LocationJson {
     @NullOr URI url;
     @NullOr HashJson hash;
 
-    public void addSourceLocation(Package pkg) {
-        if (url != null && !url.toString().isEmpty()) {
-            pkg.setLocation(url);
-            if (hash != null) {
-                hash.addHash(pkg);
-            }
+    Optional<String> getFilename() {
+        return getLocation().map(uri -> {
+            final var path = uri.getPath().split("/");
+            return path[path.length - 1];
+        });
+    }
+
+    Optional<URI> getLocation() {
+        if (url == null || url.toString().isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
+    }
+
+    void addHash(Package pkg) {
+        if (hash != null) {
+            hash.addHash(pkg);
         }
     }
 }
@@ -245,8 +259,8 @@ class HashJson {
     @NullOr String algorithm;
 
     void addHash(Package pkg) {
-        if (value != null && algorithm != null && !algorithm.isEmpty()) {
-            pkg.addHash(algorithm, value);
+        if (value != null && algorithm != null && !algorithm.isBlank()) {
+            pkg.addHash(algorithm.replaceAll("-", ""), value);
         }
     }
 }
@@ -270,7 +284,7 @@ class VcsJson {
                 : (hasValue(pkg.getVersion()) ? '@' + encoded(pkg.getVersion()) : "");
         final var subDirectory = hasValue(path) ? '#' + encoded(path) : "";
         final var vcsUri = URI.create(scheme + ':' + location + version + subDirectory);
-        pkg.setLocation(vcsUri);
+        pkg.setSourceLocation(vcsUri);
     }
 
     private URI vcsUrlFrom(String url) {

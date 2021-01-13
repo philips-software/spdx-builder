@@ -10,7 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-import com.philips.research.spdxbuilder.core.bom.Party;
+import com.philips.research.spdxbuilder.core.domain.Party;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.util.Objects;

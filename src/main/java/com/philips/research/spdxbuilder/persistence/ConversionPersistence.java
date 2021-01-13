@@ -11,8 +11,8 @@
 package com.philips.research.spdxbuilder.persistence;
 
 import com.philips.research.spdxbuilder.core.ConversionStore;
-import com.philips.research.spdxbuilder.core.bom.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.bom.Package;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerClient;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerException;
 import com.philips.research.spdxbuilder.persistence.ort.OrtReader;

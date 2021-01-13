@@ -9,4 +9,4 @@
  */
 
 @pl.tlinkowski.annotation.basic.NonNullPackage
-package com.philips.research.spdxbuilder.core.bom;
+package com.philips.research.spdxbuilder.core.domain;
