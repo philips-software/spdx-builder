@@ -11,7 +11,8 @@ which have been made on the system.
 ### Scope
 The system is an **experimental** bill-of-materials formatting tool that
 converts the output of OSS Review Toolkit (ORT) to SPDX, while optionally
-integrating licenses from the License Scanner Service.
+integrating licenses from a knowledge base like the [License Scanner
+Service](https://github.com/philips-internal/license-scanner).
 
 ### Definition, Acronyms and Abbreviations
 Term | Description
@@ -41,8 +42,8 @@ The most significant requirements are:
 - The tool shall be easy to integrate into CI/CD build pipelines.
 - The generated bill-of-materials report shall conform to the (latest) SPDX
   standard.
-- Licenses from an optional external license scanner shall be integrated in the
-  report.
+- Licenses from an optional external license "knowledge base" shall be
+  integrated in the report.
 - The tool shall leverage existing open source tooling where possible.
 
 Design constraints are:
@@ -59,19 +60,34 @@ layering model is applied.
 structure and metadata from the package manager used in the project.
 3. The tool unifies the report format into the SPDX format.
 
-### Integrate scanned licenses
+### Integrate validated metadata 
 1. The tool reads packages and metadata from the pre-processing tool.
-2. The tool submits each package with its source code location to an external license scanner service.
-3. The license scanning service provides its latest scan result (if available) for the package.
-4. The tool integrates the license information with the package metadata.
+2. The tool submits each package with its source code location to an external
+metadata knowledge base.
+3. The metadata knowledge base provides its latest metadata result (if
+available) for the package.
+4. The tool integrates the metadata with the package metadata, giving priority
+to confirmed metadata.
+5. The tool contests all mismatches in unconfirmed metadata to the knowledge
+base.
+
+Initially the metadata consists of licenses scanned from source code, but this
+can be expanded to other metadata.
+
+### Curate metadata
+1. A project member identifies incorrect metadata for a package.
+2. The correction is provided as a curation to the tool.
+3. The tool overrides the metadata from other sources with the curated
+metadata.
 
 ## Logical view
 ### Overview
 SPDX-Builder is a command-line application that converts the output of the [OSS
 Review Toolkit (ORT)](https://github.com/oss-review-toolkit/ort) Analyzer tool
 into a SPDX bill-of-materials report in tag-value format, while (optionally)
-merging license information scanned from package source code by the [License
-Scanner service](https://github.com/philips-internal/license-scanner).
+merging license information scanned from package source code by an external
+knowledge base like the [License Scanner
+service](https://github.com/philips-internal/license-scanner).
 
 ### Bill-of-materials
 The domain for this application consists of the classes and relations depicted
@@ -127,7 +143,8 @@ that would benefit from an application framework.
 ### Layers
 The figure below explains how the layers are represented in the source code:
 
-![UML class diagram](layers.png "Implementation of logical layers and their dependencies")
+![UML class diagram](layers.png "Implementation of logical layers and their
+dependencies")
 
 The implication of this design is that invocation from the command line is
 completely decoupled from the domain, because the controller layer can only
