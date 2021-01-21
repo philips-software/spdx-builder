@@ -12,7 +12,7 @@ which have been made on the system.
 The system is an **experimental** bill-of-materials formatting tool that
 converts the output of OSS Review Toolkit (ORT) to SPDX, while optionally
 integrating licenses from a knowledge base like the [License Scanner
-Service](https://github.com/philips-internal/license-scanner).
+Service](https://github.com/philips-software/license-scanner).
 
 ### Definition, Acronyms and Abbreviations
 Term | Description
@@ -22,7 +22,7 @@ SPDX | "The Software Package Data Exchange" - An open standard for communicating
 
 ### References
 - [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort)
-- [License Scanner Service](https://github.com/philips-internal/license-scanner)
+- [License Scanner Service](https://github.com/philips-softwre/license-scanner)
 - [SPDX License list](https://spdx.org/licenses/)
 
 ## Goals and constraints
@@ -87,7 +87,7 @@ Review Toolkit (ORT)](https://github.com/oss-review-toolkit/ort) Analyzer tool
 into a SPDX bill-of-materials report in tag-value format, while (optionally)
 merging license information scanned from package source code by an external
 knowledge base like the [License Scanner
-service](https://github.com/philips-internal/license-scanner).
+service](https://github.com/philips-software/license-scanner).
 
 ### Bill-of-materials
 The domain for this application consists of the classes and relations depicted
@@ -124,7 +124,7 @@ mismatch indicated to the license scanner by "contesting" the detected license.
 
 ## Process view
 ### Single threaded application
-The appliation runs on a single thread, blocking at every request to the
+The application runs on a single thread, blocking at every request to the
 license scanner service. Since most products consist of up to 1000 unique
 (transitive) dependencies and all requests are targeting the same server,
 parallelizing these requests would not dramatically speed up processing. For

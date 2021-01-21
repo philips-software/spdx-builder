@@ -15,7 +15,7 @@ Inputs for the SBOM are:
 * Package information by YAML files from 
 [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT) Analyzer.
 * Curated license scan results from the REST API of a 
-[License Scanning Service](https://github.com/philips-labs/license-scanner)
+[License Scanning Service](https://github.com/philips-software/license-scanner)
 backend service.
 
 ## Dependencies
@@ -125,7 +125,7 @@ format as override. Some examples of valid source URI's are:
 - `git+https://git.myproject.org/MyProject#submodule` (As submodule in a mono repo)
 
 ### Integration with license scanner service
-To query license information from the [License Scanner Service](https://github.com/philips-labs/license-scanner),
+To query license information from the [License Scanner Service](https://github.com/philips-software/license-scanner),
 add the network location of the License Scanner service by adding the command
 line parameter `--scanner <scanner_url>`.
 
@@ -186,7 +186,7 @@ Others:
 
 ## Contact / Getting help
 
-Submit tickets to the [issue tracker](https://github.com/philips-labs/spdx-builder/issues).
+Submit tickets to the [issue tracker](https://github.com/philips-software/spdx-builder/issues).
 
 ## License
 
