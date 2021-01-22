@@ -5,32 +5,34 @@ on:
     branches: 
       - master
       - develop
-      - add-ort-scan
+      - prepare-for-open-source
   pull_request:
     branches:
       - master
       - develop
-
-env:
-  SPDX_BUILDER_VERSION: v0.3.0
-
+        
 jobs:
   scan:
 
-    runs-on: [self-hosted, research] 
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v1
       with:
         java-version: '11.0.1'
+    - name: Download asset
+      uses: fabriciobastian/download-release-asset-action@v1.0.6
+      with:
+        repository: philips-software/spdx-builder 
+        file: spdx-builder.jar
+        token: ${{ secrets.GITHUB_TOKEN }} 
     - name: Run ORT scan 
       run: | 
-        docker run -v /home/ec2-user/actions-runner/_work/spdx-builder/spdx-builder:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort
+        docker run -v ${GITHUB_WORKSPACE}:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort
       continue-on-error: true
     - name: Create SPDX file
       run: |
-        wget https://artifactory-ehv.ta.philips.com/artifactory/dl-innersource-mvn/com/philips/research/spdxbuilder/spdx-builder/${SPDX_BUILDER_VERSION}/spdx-builder-${SPDX_BUILDER_VERSION}.jar -O spdx-builder.jar
         java -jar spdx-builder.jar -c .spdx-builder.yml -o spdx-builder.spdx ort/analyzer-result.json
     - uses: actions/upload-artifact@v2
       with:
