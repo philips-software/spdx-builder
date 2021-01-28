@@ -1,18 +1,13 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2020 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 buildscript {
   repositories {
     jcenter()
   }
   dependencies {
-    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.17.2"
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.18.3"
   }
 }
 
@@ -21,22 +16,20 @@ plugins {
     id 'com.adarshr.test-logger' version '2.1.1'
 }
 
-apply from: "${rootDir}/ci/forest/java/gradle/publish.gradle"
-
 repositories {
     maven { url 'https://plugins.gradle.org/m2/' }
     jcenter()
 }
 
 ext {
-    jacksonVersion = '2.11.0'
-    junitVersion = '5.6.2'
+    jacksonVersion = '2.12.1'
+    junitVersion = '5.7.0'
     mockWebServerVersion = '4.9.0'
     retrofitVersion = '2.9.0'
 }
 
 dependencies {
-    implementation "info.picocli:picocli:4.4.0"
+    implementation "info.picocli:picocli:4.6.1"
     implementation "pl.tlinkowski.annotation:pl.tlinkowski.annotation.basic:0.2.0"
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
@@ -45,12 +38,12 @@ dependencies {
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
     testImplementation "com.squareup.okhttp3:mockwebserver:${mockWebServerVersion}"
-    testImplementation "org.json:json:20200518"
+    testImplementation "org.json:json:20201115"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-    testImplementation "org.assertj:assertj-core:3.16.1"
-    testImplementation "org.mockito:mockito-core:3.4.0"
-    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.5"
+    testImplementation "org.assertj:assertj-core:3.18.1"
+    testImplementation "org.mockito:mockito-core:3.7.7"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.5.1"
 }
 
 testlogger {
@@ -70,7 +63,7 @@ jar {
         attributes(
                 'Main-Class': 'com.philips.research.spdxbuilder.Application',
                 'Implementation-Title': 'SPDX-Builder',
-                'Implementation-Version': 'v0.4.0'
+                'Implementation-Version': 'v0.5.0'
         )
     }
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
@@ -82,4 +75,4 @@ java {
     }
 }
 
-version = 'v0.4.0'
+version = 'v0.5.0'

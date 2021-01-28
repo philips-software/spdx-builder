@@ -10,39 +10,35 @@ jobs:
   build:
     name: Upload Release Asset
 
-    runs-on: [self-hosted, research] 
-    container: philipssoftware/openjdk
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build project
-        run: ./gradlew build -x test
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Copy jar 
-        run: cp ./build/libs/spdx-builder*.jar ./build/libs/spdx-builder.jar
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./build/libs/spdx-builder.jar
-          asset_name: spdx-builder.jar
-          asset_content_type: application/java-archive
-      - name: Push to artifactory
-        run: ./gradlew artifactoryPublish
-        env:
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-          VERSION: ${{ github.ref }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '11.0.1'
+    - name: Build project
+      run: ./gradlew build -x test
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Copy jar 
+      run: cp ./build/libs/spdx-builder*.jar ./build/libs/spdx-builder.jar
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./build/libs/spdx-builder.jar
+        asset_name: spdx-builder.jar
+        asset_content_type: application/java-archive
