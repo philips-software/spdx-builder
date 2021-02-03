@@ -129,6 +129,10 @@ To query license information from the [License Scanner Service](https://github.c
 add the network location of the License Scanner service by adding the command
 line parameter `--scanner <scanner_url>`.
 
+### Integration with BOM-bar service
+SPDX-builder can upload the spdx-builder output immediately to the [BOM-bar service](https://github.com/philips-software/bom-bar)
+by adding the command line parameter `--upload <BOMbar_url>`.
+
 ### Skipping directories for analysis by ORT
 To speed up ORT Analyzer, a repository configuration file can be added to the
 scanned project. By excluding paths via [GLOB patterns](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob)
@@ -165,6 +169,29 @@ scopes marked for exclusion in the ORT repository configuration file._
 The unit test suite is run via the standard Gradle command:
 ```
 ./gradlew clean test
+```
+
+## Test scanning own project
+
+Create ORT report first:
+
+``` fish
+docker run -v (PWD):/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort/analyzer
+```
+
+### Vanilla
+```
+./gradlew run --args="-c .spdx-builder.yml -o test.txt ort/analyzer/analyzer-result.json" 
+```
+
+### With license scanner on local machine
+```
+./gradlew run --args="-c .spdx-builder.yml -o test.txt ort/analyzer/analyzer-result.json --scanner http://localhost:8080"
+```
+
+### With license scanner and BOMbar on local machine
+```
+./gradlew run --args="-c .spdx-builder.yml -o test.txt ort/analyzer/analyzer-result.json --scanner http://localhost:8080 --upload http://localhost:8090"
 ```
 
 ## Known issues
