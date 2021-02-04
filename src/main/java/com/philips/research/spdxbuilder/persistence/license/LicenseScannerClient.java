@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.ContestJson;
 import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.RequestJson;
@@ -33,7 +33,7 @@ public class LicenseScannerClient {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
-            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
     private final URI licenseServer;
     private final LicenseScannerApi rest;
