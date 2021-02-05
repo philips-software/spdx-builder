@@ -75,6 +75,9 @@ analyzer:
                   - id: "NPM::skip:2.1"
                     # If an issue occurred during the dependency analysis of this package there would be an additional "issues"
                     # array.
+          - name: "testStuff"
+            dependencies:
+              - id: "NPM::skip:3.0"
       - id: "NPM::skipme:1.2.3"
         definition_file_path: "subdir/package.json"
     # ...
@@ -110,6 +113,9 @@ analyzer:
       - package:
           id: "NPM::skip:2.1"
           purl: "pkg://NPM//skip@2.1"
+      - package:
+          id: "NPM::skip:3.0"
+          purl: "pkg://NPM//skip@3.0"
     # ...
     # Finally a list of project related issues that happened during dependency analysis. Fortunately empty in this case.
     issues: { }

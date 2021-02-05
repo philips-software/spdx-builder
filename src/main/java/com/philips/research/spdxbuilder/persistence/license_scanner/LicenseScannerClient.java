@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package com.philips.research.spdxbuilder.persistence.license;
+package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -11,18 +11,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.philips.research.spdxbuilder.core.domain.Package;
-import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.ContestJson;
-import com.philips.research.spdxbuilder.persistence.license.LicenseScannerApi.RequestJson;
+import com.philips.research.spdxbuilder.persistence.license_scanner.LicenseScannerApi.ContestJson;
+import com.philips.research.spdxbuilder.persistence.license_scanner.LicenseScannerApi.RequestJson;
 import pl.tlinkowski.annotation.basic.NullOr;
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-
-import static com.philips.research.spdxbuilder.core.ConversionStore.LicenseInfo;
 
 /**
  * REST client for the License Scanner Service.
@@ -52,35 +52,26 @@ public class LicenseScannerClient {
      *
      * @return detected license for the package
      */
-    public Optional<LicenseInfo> scanLicense(Package pkg) {
-        return query(() -> {
-            final var body = new RequestJson(pkg.getPurl(), pkg.getSourceLocation().orElse(null));
-            final var resp = rest.scan(body).execute();
-            if (!resp.isSuccessful()) {
-                throw new LicenseScannerException("License scanner responded with status " + resp.code());
-            }
+    public Optional<LicenseInfo> scanLicense(URI purl, @NullOr URI location) {
+        final var body = new RequestJson(purl, location);
 
-            final @NullOr ResultJson result = resp.body();
-            if (result == null || result.license == null) {
-                return Optional.empty();
-            }
-
-            pkg.getDeclaredLicense()
-                    .filter(l -> !l.equals(result.license))
-                    .filter(l -> !result.confirmed)
-                    .ifPresent(l -> contest(result.id, l));
-
-            return Optional.of(new LicenseInfo(result.license, result.confirmed));
-        });
+        return query(rest.scan(body))
+                .filter(r -> r.license != null)
+                .map(r -> new LicenseInfo(r.license, r.confirmed));
     }
 
-    private void contest(String scanId, String license) {
-        query(() -> rest.contest(scanId, new ContestJson(license)).execute());
+    public void contest(URI purl, String license) {
+        final var scanId = URLEncoder.encode(purl.toASCIIString(), StandardCharsets.UTF_8);
+        query(rest.contest(scanId, new ContestJson(license)));
     }
 
-    private <R> R query(Request<R> supplier) {
+    private <T> Optional<T> query(Call<T> query) {
         try {
-            return supplier.get();
+            final var response = query.execute();
+            if (!response.isSuccessful()) {
+                throw new LicenseScannerException("License scanner responded with status " + response.code());
+            }
+            return Optional.ofNullable(response.body());
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("JSON formatting error", e);
         } catch (IOException e) {
@@ -88,9 +79,22 @@ public class LicenseScannerClient {
         }
     }
 
-    @FunctionalInterface
-    interface Request<R> {
-        R get() throws IOException;
+    static class LicenseInfo {
+        private final String license;
+        private final boolean confirmed;
+
+        public LicenseInfo(String license, boolean confirmed) {
+            this.license = license;
+            this.confirmed = confirmed;
+        }
+
+        public String getLicense() {
+            return license;
+        }
+
+        public boolean isConfirmed() {
+            return confirmed;
+        }
     }
 }
 

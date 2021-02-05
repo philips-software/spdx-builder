@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package com.philips.research.spdxbuilder.persistence.license;
+package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -33,7 +33,6 @@ interface LicenseScannerApi {
      */
     @POST("/scans/{scanId}/contest")
     Call<Void> contest(@Path("scanId") String scanId, @Body ContestJson body);
-
 
     class RequestJson {
         URI purl;

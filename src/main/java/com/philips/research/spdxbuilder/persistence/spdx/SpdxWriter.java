@@ -5,10 +5,10 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
+import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
-import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,24 +23,20 @@ import java.util.UUID;
 /**
  * Converts a bill-of-materials to an SPDX file.
  */
-public class SpdxWriter implements BillOfMaterialsStore {
+public class SpdxWriter implements BomWriter {
     private static final List<String> SUPPORTED_HASH_KEYS = List.of("SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6");
 
+    private final File file;
     private final Map<Package, SpdxRef> identifiers = new HashMap<>();
 
     private int nextId = 1;
 
-    @Override
-    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes) {
-        // Can not read SPDX as input
-        throw new RuntimeException("Not implemented");
+    public SpdxWriter(File file) {
+        this.file = file;
     }
 
-    /**
-     * Writes the bill-of-materials to an SPDX file.
-     */
     @Override
-    public void write(File file, BillOfMaterials bom) {
+    public void write(BillOfMaterials bom) {
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             writeDocumentInformation(doc, bom);
             generatePackageIdentifiers(bom);
@@ -155,5 +151,6 @@ public class SpdxWriter implements BillOfMaterialsStore {
     private SpdxRef identifierFor(Package pkg) {
         return identifiers.computeIfAbsent(pkg, (o) -> new SpdxRef(Integer.toString(nextId++)));
     }
+
 }
 

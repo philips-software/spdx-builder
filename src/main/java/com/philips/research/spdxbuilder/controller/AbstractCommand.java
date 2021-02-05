@@ -32,6 +32,8 @@ public abstract class AbstractCommand implements Runnable {
     @CommandLine.Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
     @NullOr URI uploadUrl;
 
+    abstract protected ConversionService createService();
+
     @Override
     public void run() {
         if (showVersion) {
@@ -41,25 +43,15 @@ public abstract class AbstractCommand implements Runnable {
             return;
         }
 
-        execute();
-    }
-
-    abstract protected void execute();
-
-    File writeResult(ConversionService service) {
         if (!spdxFile.getName().contains(".")) {
             spdxFile = new File(spdxFile.getPath() + ".spdx");
         }
-        System.out.println("Writing SBOM to '" + spdxFile +"'");
-        service.writeBillOfMaterials(spdxFile);
-        return spdxFile;
-    }
 
-    void upload(File file) {
-        if (uploadUrl == null) {
-            return;
+        createService().convert();
+
+        if (uploadUrl != null) {
+            System.out.println("Uploading '" + spdxFile.getName() + "' to " + uploadUrl);
+            new UploadClient(uploadUrl).upload(spdxFile);
         }
-        System.out.println("Uploading '" + file.getName() + "' to " + uploadUrl);
-        new UploadClient(uploadUrl).upload(file);
     }
 }

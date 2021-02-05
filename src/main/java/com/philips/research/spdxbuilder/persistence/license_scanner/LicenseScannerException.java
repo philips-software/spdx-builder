@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package com.philips.research.spdxbuilder.persistence.license;
+package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.philips.research.spdxbuilder.core.BusinessException;
 

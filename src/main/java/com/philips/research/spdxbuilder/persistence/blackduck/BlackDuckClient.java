@@ -32,7 +32,7 @@ public class BlackDuckClient {
             .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
     private final URL url;
 
-    private BlackDuckApi api;
+    private final BlackDuckApi api;
     private @NullOr String bearerToken;
 
     public BlackDuckClient(URL url) {

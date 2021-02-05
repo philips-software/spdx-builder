@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package com.philips.research.spdxbuilder.persistence.license;
+package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.philips.research.spdxbuilder.core.BusinessException;
@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,19 +24,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LicenseScannerClientTest {
     private static final int PORT = 1080;
-    private static final String TYPE = "Type";
-    private static final String NAMESPACE = "My/#?Namespace";
-    private static final String NAME = "My/#?Name";
-    private static final String VERSION = "My/#?Version";
+    private static final URI PURL = URI.create("pkg:namespace/name@version");
+    private static final String SCAN_ID = "pkg%253Anamespace%252Fname%2540version";
     private static final URI LOCATION = URI.create("http://example.com");
     private static final String LICENSE = "Apache-2.0";
-    private static final String SCAN_ID = "ScanId";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final MockWebServer mockServer = new MockWebServer();
 
     private final LicenseScannerClient client = new LicenseScannerClient(URI.create("http://localhost:" + PORT));
-    private final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
 
     @BeforeEach
     void setUp() throws IOException {
@@ -50,20 +47,19 @@ class LicenseScannerClientTest {
     @Test
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     void queriesLicense() throws Exception {
-        pkg.setSourceLocation(LOCATION);
         mockServer.enqueue(new MockResponse().setBody(
                 new JSONObject()
                         .put("license", LICENSE)
                         .put("confirmed", true).toString()));
 
-        final var license = client.scanLicense(pkg).get();
+        final var license = client.scanLicense(PURL, LOCATION).get();
 
         final var request = mockServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("POST");
         assertThat(request.getPath()).isEqualTo("/packages");
         assertThat(MAPPER.readTree(request.getBody().readUtf8()))
                 .isEqualTo(MAPPER.readTree(new JSONObject()
-                        .put("purl", pkg.getPurl())
+                        .put("purl", PURL)
                         .put("location", LOCATION).toString()));
         assertThat(license.getLicense()).contains(LICENSE);
         assertThat(license.isConfirmed()).isTrue();
@@ -73,33 +69,28 @@ class LicenseScannerClientTest {
     void ignoresEmptyLicense() {
         mockServer.enqueue(new MockResponse().setBody("{}"));
 
-        final var license = client.scanLicense(pkg);
+        final var license = client.scanLicense(PURL, LOCATION);
 
         assertThat(license).isEmpty();
     }
 
     @Test
-    void contestsScan_differentFromDeclaredLicense() throws Exception {
-        pkg.setDeclaredLicense("Other");
-        mockServer.enqueue(new MockResponse().setBody(new JSONObject()
-                .put("id", SCAN_ID)
-                .put("license", LICENSE).toString()));
+    void contestsLicense() throws Exception {
         mockServer.enqueue(new MockResponse());
 
-        client.scanLicense(pkg);
+        client.contest(PURL, LICENSE);
 
-        mockServer.takeRequest();
         final var contestRequest = mockServer.takeRequest();
         assertThat(contestRequest.getMethod()).isEqualTo("POST");
         assertThat(contestRequest.getPath()).isEqualTo(String.format("/scans/%s/contest", SCAN_ID));
-        assertThat(contestRequest.getBody().readUtf8()).isEqualTo(new JSONObject().put("license", "Other").toString());
+        assertThat(contestRequest.getBody().readUtf8()).isEqualTo(new JSONObject().put("license", LICENSE).toString());
     }
 
     @Test
     void ignores_serverNotReachable() {
         var serverlessClient = new LicenseScannerClient(URI.create("http://localhost:1234"));
 
-        assertThatThrownBy(() -> serverlessClient.scanLicense(pkg))
+        assertThatThrownBy(() -> serverlessClient.scanLicense(PURL, LOCATION))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("not reachable");
     }
@@ -108,8 +99,16 @@ class LicenseScannerClientTest {
     void throws_unexpectedResponseFromServer() {
         mockServer.enqueue(new MockResponse().setResponseCode(404));
 
-        assertThatThrownBy(() -> client.scanLicense(pkg))
+        assertThatThrownBy(() -> client.scanLicense(PURL, LOCATION))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("status 404");
+    }
+
+    @Test
+    void throws_mapformedResponseFromServer() {
+        mockServer.enqueue(new MockResponse().setBody("Not a JSON response"));
+
+        assertThatThrownBy(() -> client.scanLicense(PURL, LOCATION))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

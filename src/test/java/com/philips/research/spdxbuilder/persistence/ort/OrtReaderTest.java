@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +24,10 @@ class OrtReaderTest {
 
     @Test
     void loadsOrtSample() {
-        new OrtReader().read(ORT_SAMPLE, bom, Map.of("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18")), Map.of());
+        new OrtReader(ORT_SAMPLE)
+                .defineProjectPackage("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18"))
+                .excludeScopes("NPM::mime-types:2.1.18", List.of("test*"))
+                .read(bom);
 
         assertThat(bom.getPackages()).hasSize(1 + 2);
     }

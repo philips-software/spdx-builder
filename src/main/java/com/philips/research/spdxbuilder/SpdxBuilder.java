@@ -5,8 +5,8 @@
 
 package com.philips.research.spdxbuilder;
 
-import com.philips.research.spdxbuilder.controller.OrtCommand;
 import com.philips.research.spdxbuilder.controller.BlackDuckCommand;
+import com.philips.research.spdxbuilder.controller.OrtCommand;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import picocli.CommandLine;
 
@@ -40,6 +40,7 @@ public class SpdxBuilder {
 
     @CommandLine.Command(subcommands = {OrtCommand.class, BlackDuckCommand.class},
             description = "Builds SPDX bill-of-materials files from various sources")
-    static class Runner {}
+    static class Runner {
+    }
 }
 

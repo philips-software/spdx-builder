@@ -9,12 +9,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
-import com.philips.research.spdxbuilder.persistence.BillOfMaterialsStore;
+import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,18 +29,46 @@ import java.util.*;
  *
  * @see <a href="https://github.com/oss-review-toolkit/ort">OSS Review Toolkit</a>
  */
-public class OrtReader implements BillOfMaterialsStore {
+public class OrtReader implements BomReader {
     private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
-            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+    private final File file;
+    private final Map<String, @NullOr URI> projectPackages = new HashMap<>();
+    private final Map<String, List<String>> projectExcludes = new HashMap<>();
+
+    public OrtReader(File file) {
+        this.file = file;
+    }
 
     /**
-     * Parses the ORT YAML file that was output by the ORT Analyzer.
+     * Marks a project for import with an (optional) package alias
+     *
+     * @param id   ORT identifier for the project
+     * @param purl (Optional) Package URL
      */
+    public OrtReader defineProjectPackage(String id, @NullOr URI purl) {
+        //noinspection ConstantConditions
+        projectPackages.put(id, purl);
+        return this;
+    }
+
+    /**
+     * Adds excluded scopes to ORT.
+     *
+     * @param id       ORT identifier for the project
+     * @param excluded (optionally wild-carded) scope names
+     */
+    public OrtReader excludeScopes(String id, List<String> excluded) {
+        projectExcludes.put(id, excluded);
+        return this;
+    }
+
     @Override
-    public void read(File file, BillOfMaterials bom, Map<String, URI> projectPackages, Map<String, List<String>> projectExcludes) {
+    public void read(BillOfMaterials bom) {
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
 
@@ -132,10 +161,5 @@ public class OrtReader implements BillOfMaterialsStore {
                     .flatMap(scope -> scope.dependencies.stream())
                     .forEach(dep -> dep.registerRelations(bom, project, dictionary));
         });
-    }
-
-    @Override
-    public void write(File file, BillOfMaterials bom) {
-        // Not implemented
     }
 }

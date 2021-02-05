@@ -10,13 +10,14 @@
 
 package com.philips.research.spdxbuilder.controller;
 
+import com.philips.research.spdxbuilder.core.BomReader;
+import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.ConversionService;
-import com.philips.research.spdxbuilder.core.ConversionStore;
 import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
-import com.philips.research.spdxbuilder.persistence.ConversionPersistence;
+import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckReader;
+import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
 import picocli.CommandLine;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -31,27 +32,18 @@ public class BlackDuckCommand extends AbstractCommand {
     String version;
 
     @CommandLine.Option(names = {"--url"}, description = "Black Duck server URL (defaults to BLACKDUCK_URL environment variable)",
-            defaultValue = "${env:BLACKDUCK_URL}", required=true)
+            defaultValue = "${env:BLACKDUCK_URL}", required = true)
     URL url;
 
     @CommandLine.Option(names = {"--token"}, description = "Black Duck authorization token (defaults to BLACKDUCK_API_TOKEN environment variable)",
             defaultValue = "${env:BLACKDUCK_API_TOKEN}", required = true)
-    String token ;
+    String token;
 
     @Override
-    protected void execute() {
-        new Exporter().run();
-    }
+    protected ConversionService createService() {
+        final BomReader reader = new BlackDuckReader(url, token, project, version);
+        final BomWriter writer = new SpdxWriter(spdxFile);
 
-    private class Exporter implements Runnable {
-        final ConversionStore store = new ConversionPersistence();
-        final ConversionService service = new ConversionInteractor(store);
-
-        @Override
-        public void run() {
-            service.importBlackDuckBom(url, token, project, version);
-            final var file = writeResult(service);
-            upload(file);
-        }
+        return new ConversionInteractor(reader, writer);
     }
 }
