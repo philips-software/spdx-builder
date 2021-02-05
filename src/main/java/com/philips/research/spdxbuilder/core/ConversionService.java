@@ -9,6 +9,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -66,6 +67,15 @@ public interface ConversionService {
      * @param file YAML file
      */
     void readOrtAnalysis(File file);
+
+    /**
+     * Imports the BOM from Black Duck for a single project.
+     * @param url address of the server
+     * @param token Black Duck access token
+     * @param project project identifier
+     * @param version project version
+     */
+    void importBlackDuckBom(URL url, String token, String project, String version);
 
     /**
      * Scans licenses for all bill-of-material items.

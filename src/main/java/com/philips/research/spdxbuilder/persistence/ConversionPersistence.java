@@ -26,6 +26,10 @@ import java.util.Optional;
 public class ConversionPersistence implements ConversionStore {
     private final @NullOr LicenseScannerClient licenseClient;
 
+    public ConversionPersistence() {
+        this((URI)null);
+    }
+
     public ConversionPersistence(@NullOr URI licenseScannerUri) {
         licenseClient = (licenseScannerUri != null)
                 ? new LicenseScannerClient(licenseScannerUri)

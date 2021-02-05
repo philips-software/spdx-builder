@@ -5,6 +5,7 @@
 
 package com.philips.research.spdxbuilder.controller;
 
+import com.philips.research.spdxbuilder.SpdxBuilder;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.ConversionStore;
@@ -23,40 +24,25 @@ import java.net.URI;
 /**
  * CLI command to generate an SPDX file from an ORT Analyzer YAML.
  */
-@CommandLine.Command(name = "spdx-builder")
-public class ConvertCommand implements Runnable {
-    @Option(names = {"--version", "-V"}, description = "Show version info and exit")
-    boolean showVersion;
-    @Option(names = {"--help", "-H"}, usageHelp = true, description = "Show this message exit")
-    @SuppressWarnings("unused")
-    boolean showUsage;
+@CommandLine.Command(name = "ort")
+public class OrtCommand extends AbstractCommand {
+    @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    File ortFile;
+
     @Option(names = {"--config", "-c"}, description = "Configuration YAML file", paramLabel = "FILE", defaultValue = ".spdx-builder.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")
     File configFile;
+
     @Option(names = {"--scanner"}, description = "Add licenses from license scanner service", paramLabel = "SERVER_URL")
     @NullOr URI licenseScanner;
-    @Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
-    @NullOr URI uploadUrl;
-    @SuppressWarnings("NotNullFieldNotInitialized")
-    @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
-    File spdxFile;
-    @SuppressWarnings("NotNullFieldNotInitialized")
-    @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
-    File ortFile;
 
     @Override
-    public void run() {
-        if (showVersion) {
-            final var app = getClass().getPackage().getImplementationTitle();
-            final var version = getClass().getPackage().getImplementationVersion();
-            System.out.println(app + ", Version " + version);
-            return;
-        }
-
-        new Runner().run();
+    protected void execute() {
+        new Converter().run();
     }
 
-    private class Runner {
+    private class Converter {
         final ConversionStore store = new ConversionPersistence(licenseScanner);
         final ConversionService service = new ConversionInteractor(store);
 
@@ -66,7 +52,7 @@ public class ConvertCommand implements Runnable {
             readInput();
             scan();
             curate(config);
-            final var file = writeResult();
+            final var file = writeResult(service);
             upload(file);
         }
 
@@ -122,23 +108,6 @@ public class ConvertCommand implements Runnable {
                     service.curatePackageSource(curation.purl, curation.source);
                 }
             });
-        }
-
-        private File writeResult() {
-            if (!spdxFile.getName().contains(".")) {
-                spdxFile = new File(spdxFile.getPath() + ".spdx");
-            }
-            System.out.println("Writing SBOM to '" + spdxFile +"'");
-            service.writeBillOfMaterials(spdxFile);
-            return spdxFile;
-        }
-
-        private void upload(File file) {
-            if (uploadUrl == null) {
-                return;
-            }
-            System.out.println("Uploading '" + file.getName() + "' to " + uploadUrl);
-            new UploadClient(uploadUrl).upload(file);
         }
     }
 }

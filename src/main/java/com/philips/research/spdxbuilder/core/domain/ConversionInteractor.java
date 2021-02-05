@@ -11,6 +11,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,11 @@ public class ConversionInteractor implements ConversionService {
     @Override
     public void readOrtAnalysis(File file) {
         store.read(bom, projectPackages, projectExcludes, ConversionStore.FileType.ORT, file);
+    }
+
+    @Override
+    public void importBlackDuckBom(URL url, String token, String project, String version) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override

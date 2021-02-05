@@ -41,8 +41,8 @@ dependencies {
     testImplementation "org.json:json:20210307"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-    testImplementation "org.mockito:mockito-core:3.8.0"
     testImplementation "org.assertj:assertj-core:3.19.0"
+    testImplementation "org.mockito:mockito-core:3.8.0"
     testImplementation "nl.jqno.equalsverifier:equalsverifier:3.5.5"
 }
 
@@ -55,13 +55,13 @@ test {
 }
 
 application {
-    mainClass = 'com.philips.research.spdxbuilder.Application'
+    mainClass = 'com.philips.research.spdxbuilder.SpdxBuilder'
 }
 
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.philips.research.spdxbuilder.Application',
+                'Main-Class': 'com.philips.research.spdxbuilder.SpdxBuilder',
                 'Implementation-Title': 'SPDX-Builder',
                 'Implementation-Version': 'v0.5.0'
         )
