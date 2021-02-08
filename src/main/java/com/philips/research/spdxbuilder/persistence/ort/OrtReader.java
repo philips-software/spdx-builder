@@ -69,6 +69,7 @@ public class OrtReader implements BomReader {
 
     @Override
     public void read(BillOfMaterials bom) {
+        System.out.println("Reading ORT file '" + file + "'...");
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
 

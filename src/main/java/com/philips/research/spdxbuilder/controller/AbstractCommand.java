@@ -17,6 +17,9 @@ import pl.tlinkowski.annotation.basic.NullOr;
 import java.io.File;
 import java.net.URI;
 
+/**
+ * Shared generic part of CLI commands.
+ */
 public abstract class AbstractCommand implements Runnable {
     @CommandLine.Option(names = {"--version", "-V"}, description = "Show version info and exit")
     boolean showVersion;
@@ -32,6 +35,9 @@ public abstract class AbstractCommand implements Runnable {
     @CommandLine.Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
     @NullOr URI uploadUrl;
 
+    /**
+     * @return instantiated service for the provided parameters and options
+     */
     abstract protected ConversionService createService();
 
     @Override
@@ -40,7 +46,7 @@ public abstract class AbstractCommand implements Runnable {
             final var app = getClass().getPackage().getImplementationTitle();
             final var version = getClass().getPackage().getImplementationVersion();
             System.out.println(app + ", Version " + version);
-            return;
+            System.exit(0);
         }
 
         if (!spdxFile.getName().contains(".")) {
@@ -53,5 +59,7 @@ public abstract class AbstractCommand implements Runnable {
             System.out.println("Uploading '" + spdxFile.getName() + "' to " + uploadUrl);
             new UploadClient(uploadUrl).upload(spdxFile);
         }
+
+        System.exit(0);
     }
 }

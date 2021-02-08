@@ -18,6 +18,10 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Knowledge base implementation for the License Scanner service.
+ * See https://github.com/philips-software/license-scanner
+ */
 public class LicenseKnowledgeBase implements KnowledgeBase {
     final LicenseScannerClient licenseClient;
 

@@ -1,0 +1,29 @@
+@startuml
+
+title Black Duck BOM representation
+
+class License {
+    name:String
+    spdxId:String
+}
+
+class Origin {
+   externalNamespace:String
+   externalId:String
+}
+Origin -> "*" Origin: direct dependencies
+Origin --> "*" License: licenses<AND/OR>
+
+class Component {
+    name:String
+    version:String
+    description:String
+}
+Component o-> "*" Origin: origins
+
+class Project {
+    name:String
+    version:String
+}
+Project *-> "*" Component: BOM
+@enduml

@@ -23,6 +23,8 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class BlackDuckClient {
@@ -43,7 +45,7 @@ public class BlackDuckClient {
                         return chain.proceed(chain.request());
                     }
                     final var newRequest = chain.request().newBuilder()
-                            .addHeader("Authorization", "Bearer " + bearerToken)
+                            .addHeader("Authorization", "bearer " + bearerToken)
                             .build();
                     return chain.proceed(newRequest);
                 })
@@ -57,20 +59,44 @@ public class BlackDuckClient {
         api = retrofit.create(BlackDuckApi.class);
     }
 
-    void authenticate(UUID token) {
-        final var auth = query(api.authenticate("Token " + token));
-        this.bearerToken = auth.bearerToken;
+    void authenticate(String token) {
+        query(api.authenticate("token " + token))
+                .ifPresent(auth -> bearerToken = auth.bearerToken);
     }
 
     String getServerVersion() {
-        return query(api.serverVersion()).version;
+        return query(api.serverVersion()).orElseThrow().version;
     }
 
-    <T> T query(Call<T> request) {
+    Optional<BlackDuckApi.ProjectJson> findProject(String name) {
+        final var items = query(api.findProjects("name:" + name));
+        return items.filter(result -> result.items.size() == 1)
+                .map(result -> result.items.get(0));
+    }
+
+    Optional<BlackDuckApi.ProjectVersionJson> findProjectVersion(UUID projectId, String name) {
+        final var items = query(api.findProjectVersions(projectId, "versionName:" + name));
+        return items.filter(result -> result.items.size() == 1)
+                .map(result -> result.items.get(0));
+    }
+
+    List<BlackDuckApi.ComponentJson> getComponents(UUID projectId, UUID versionId) {
+        return query(api.readComponents(projectId, versionId))
+                .map(object -> object.items)
+                .orElse(List.of());
+    }
+
+    List<BlackDuckApi.DependencyJson> getDependencies(BlackDuckApi.OriginJson origin) {
+        return query(api.readDependencies(origin.getComponentId(), origin.getComponentVersion(), origin.getId()))
+                .map(object -> object.items)
+                .orElse(List.of());
+    }
+
+    <T> Optional<T> query(Call<T> request) {
         try {
             final var response = request.execute();
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body();
+            if (response.isSuccessful()) {
+                return Optional.ofNullable(response.body());
             }
             throw new BlackDuckException("Server responded with status " + response.code() + " " + response.message());
         } catch (IOException e) {
