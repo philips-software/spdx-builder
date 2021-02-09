@@ -7,14 +7,12 @@ package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.philips.research.spdxbuilder.core.BusinessException;
-import com.philips.research.spdxbuilder.core.domain.Package;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import java.io.IOException;
 import java.net.URI;

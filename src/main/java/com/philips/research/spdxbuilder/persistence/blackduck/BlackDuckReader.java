@@ -12,8 +12,12 @@ package com.philips.research.spdxbuilder.persistence.blackduck;
 
 import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.Package;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class BlackDuckReader implements BomReader {
     private final BlackDuckClient client;
@@ -53,9 +57,17 @@ public class BlackDuckReader implements BomReader {
 
         bom.setTitle(project.name + " " + projectVersion.versionName);
 
+        final var packages = new HashMap<UUID, Package>();
         System.out.println("Reading components...");
         client.getComponents(project.getId(), projectVersion.getId()).forEach(c -> {
-            System.out.println("Component " + c.componentName + " " + c.componentVersionName);
+            //TODO What if no origins?
+            //TODO What if multiple origins?
+            final var origin = c.origins.get(0);
+            final var pkg = new Package(origin.getType(), origin.getNamespace(), origin.getName(),  origin.getVersion())
+                    .setSummary(c.componentName);
+            packages.put(origin.getId(), pkg);
         });
+
+        packages.values().forEach(bom::addPackage);
     }
 }

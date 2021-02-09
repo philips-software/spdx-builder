@@ -90,6 +90,39 @@ class BlackDuckClientTest {
         assertThat(request.getPath()).isEqualTo("/api/current-version");
     }
 
+    @Test
+    void readsProjectComponents() throws Exception {
+        server.enqueue(new MockResponse().setBody(new JSONObject().put("items", new JSONArray()
+                .put(new JSONObject()
+                        .put("componentName", NAME))).toString()));
+
+        final var components = client.getComponents(PROJECT_ID, VERSION_ID);
+
+        assertThat(components).hasSize(1);
+        assertThat(components.get(0).componentName).isEqualTo(NAME);
+        final var request = server.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions/" + VERSION_ID + "/components");
+    }
+
+    @Test
+    void readsOriginDependencies() throws Exception {
+        final var href = String.format("https://server/api/components/%s/versions/%s/origins/%s", COMPONENT_ID, VERSION_ID, ORIGIN_ID);
+        final var origin = new BlackDuckApi.OriginJson();
+        origin.origin = URI.create(href);
+        server.enqueue(new MockResponse().setBody(new JSONObject().put("items", new JSONArray()
+                .put(new JSONObject().put("_meta", new JSONObject().put("href", href)))).toString()));
+
+        final var deps = client.getDependencies(origin);
+
+        assertThat(deps).hasSize(1);
+        assertThat(deps.get(0).getId()).isEqualTo(ORIGIN_ID);
+        final var request = server.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getPath()).isEqualTo("/api/components/" + COMPONENT_ID + "/versions/" + VERSION_ID + "/origins/" + ORIGIN_ID
+                + "/direct-dependencies");
+    }
+
     @Nested
     class FindProject {
         @Test
@@ -164,38 +197,5 @@ class BlackDuckClientTest {
 
             assertThat(client.findProject(NAME)).isEmpty();
         }
-    }
-
-    @Test
-    void readsProjectComponents() throws Exception {
-        server.enqueue(new MockResponse().setBody(new JSONObject().put("items", new JSONArray()
-                .put(new JSONObject()
-                        .put("componentName", NAME))).toString()));
-
-        final var components = client.getComponents(PROJECT_ID, VERSION_ID);
-
-        assertThat(components).hasSize(1);
-        assertThat(components.get(0).componentName).isEqualTo(NAME);
-        final var request = server.takeRequest();
-        assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions/" + VERSION_ID + "/components");
-    }
-
-    @Test
-    void readsOriginDependencies() throws Exception {
-        final var href = String.format("https://server/api/components/%s/versions/%s/origins/%s", COMPONENT_ID, VERSION_ID, ORIGIN_ID);
-        final var origin = new BlackDuckApi.OriginJson();
-        origin.origin = URI.create(href);
-        server.enqueue(new MockResponse().setBody(new JSONObject().put("items", new JSONArray()
-                .put(new JSONObject().put("_meta", new JSONObject().put("href", href)))).toString()));
-
-        final var deps = client.getDependencies(origin);
-
-        assertThat(deps).hasSize(1);
-        assertThat(deps.get(0).getId()).isEqualTo(ORIGIN_ID);
-        final var request = server.takeRequest();
-        assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getPath()).isEqualTo("/api/components/" + COMPONENT_ID + "/versions/" + VERSION_ID + "/origins/" + ORIGIN_ID
-                + "/direct-dependencies");
     }
 }

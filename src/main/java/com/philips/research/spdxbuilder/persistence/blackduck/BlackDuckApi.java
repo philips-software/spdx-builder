@@ -14,8 +14,7 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 import java.net.URI;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Black Duck REST API declaration for Retrofit2
@@ -56,7 +55,7 @@ public interface BlackDuckApi {
     }
 
     class ItemsJson<T> {
-        List<T> items;
+        List<T> items = new ArrayList<>();
     }
 
     abstract class EntityJson {
@@ -85,17 +84,68 @@ public interface BlackDuckApi {
 
     class ComponentJson extends EntityJson {
         String componentName;
-        String componentVersionName;
         boolean ignored;
-        List<LicenseJson> licenses;
-        List<OriginJson> origins;
+        List<LicenseJson> licenses = new ArrayList<>();
+        List<OriginJson> origins = new ArrayList<>();
     }
 
     class OriginJson {
-        String name;
+        private static final Map<String, String> TYPE_MAPPING = new HashMap<>();
+
+        static {
+            TYPE_MAPPING.put("", "generic");
+            TYPE_MAPPING.put("alpine", "alpine");
+            TYPE_MAPPING.put("bitbucket", "bitbucket");
+            TYPE_MAPPING.put("cargo", "cargo");
+            TYPE_MAPPING.put("centos", "rpm");
+            TYPE_MAPPING.put("composer", "composer");
+            TYPE_MAPPING.put("debian", "deb");
+            TYPE_MAPPING.put("docker", "docker");
+            TYPE_MAPPING.put("gem", "gem");
+            TYPE_MAPPING.put("github", "github");
+            TYPE_MAPPING.put("golang", "golang");
+            TYPE_MAPPING.put("hex", "hex");
+            TYPE_MAPPING.put("long_tail", "generic");
+            TYPE_MAPPING.put("maven", "maven");
+            TYPE_MAPPING.put("npmjs", "npm");
+            TYPE_MAPPING.put("nuget", "nuget");
+            TYPE_MAPPING.put("pypi", "pypi");
+        }
+
         URI origin;
         String externalNamespace;
         String externalId;
+
+        String getType() {
+            final var type = TYPE_MAPPING.get(externalNamespace);
+            return (type != null) ? type : "generic";
+        }
+
+        String getNamespace() {
+            return endPart(2);
+        }
+
+        String getName() {
+            return endPart(1);
+        }
+
+        String getVersion() {
+            return endPart(0);
+        }
+
+        private String endPart(int offset) {
+            final var parts = externalId.split(String.valueOf(separator()));
+            return (offset < parts.length) ? parts[parts.length - offset - 1] : "";
+        }
+
+        private char separator() {
+            switch (externalNamespace) {
+                case "maven":
+                    return ':';
+                default:
+                    return '/';
+            }
+        }
 
         UUID getComponentId() {
             return uuidFromOrigin(-4);
@@ -126,7 +176,7 @@ public interface BlackDuckApi {
         String licenseDisplay;
         String licenseType;
         String spdxId;
-        List<LicenseJson> licenses;
+        List<LicenseJson> licenses = new ArrayList<>();
     }
 }
 

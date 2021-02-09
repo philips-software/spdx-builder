@@ -12,7 +12,6 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

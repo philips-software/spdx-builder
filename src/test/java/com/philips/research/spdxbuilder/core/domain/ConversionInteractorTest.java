@@ -9,15 +9,11 @@ import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.KnowledgeBase;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -37,7 +33,7 @@ class ConversionInteractorTest {
     private static final URI PURL = URI.create("pkg:/group/name");
 
     private final BomReader reader = mock(BomReader.class);
-    private final BomWriter writer= mock(BomWriter.class);
+    private final BomWriter writer = mock(BomWriter.class);
     private final KnowledgeBase knowledgeBase = mock(KnowledgeBase.class);
     private final BillOfMaterials bom = new BillOfMaterials();
     private final ConversionService interactor = new ConversionInteractor(reader, writer, bom)
@@ -57,7 +53,7 @@ class ConversionInteractorTest {
     @Test
     void skipsEnhancement_noKnowledgeBaseConfigured() {
         //noinspection ConstantConditions
-        ((ConversionInteractor)interactor).setKnowledgeBase(null);
+        ((ConversionInteractor) interactor).setKnowledgeBase(null);
 
         interactor.convert();
 
