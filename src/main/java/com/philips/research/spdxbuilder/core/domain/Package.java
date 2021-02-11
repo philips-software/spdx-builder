@@ -225,7 +225,7 @@ public final class Package {
 
     @Override
     public String toString() {
-        return String.format("%s:%s/%s-%s", type, namespace, name, version);
+        return String.format("%s:%s/%s@%s", type, namespace, name, version);
     }
 
 }

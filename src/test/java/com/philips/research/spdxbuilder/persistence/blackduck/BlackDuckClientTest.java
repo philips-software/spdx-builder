@@ -102,7 +102,7 @@ class BlackDuckClientTest {
         assertThat(components.get(0).componentName).isEqualTo(NAME);
         final var request = server.takeRequest();
         assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions/" + VERSION_ID + "/components");
+        assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions/" + VERSION_ID + "/components?limit=9999");
     }
 
     @Test
@@ -120,7 +120,7 @@ class BlackDuckClientTest {
         final var request = server.takeRequest();
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getPath()).isEqualTo("/api/components/" + COMPONENT_ID + "/versions/" + VERSION_ID + "/origins/" + ORIGIN_ID
-                + "/direct-dependencies");
+                + "/direct-dependencies?limit=999");
     }
 
     @Nested

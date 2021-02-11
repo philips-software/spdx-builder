@@ -37,11 +37,11 @@ public interface BlackDuckApi {
     Call<ItemsJson<ProjectVersionJson>> findProjectVersions(@Path("projectId") UUID projectId, @Query("q") String filter);
 
     @Headers({"Accept: application/vnd.blackducksoftware.bill-of-materials-6+json"})
-    @GET("/api/projects/{projectId}/versions/{versionId}/components")
+    @GET("/api/projects/{projectId}/versions/{versionId}/components?limit=9999")
     Call<ItemsJson<ComponentJson>> readComponents(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
 
     @Headers({"Accept: application/vnd.blackducksoftware.component-detail-4+json"})
-    @GET("/api/components/{componentId}/versions/{componentVersionId}/origins/{originId}/direct-dependencies")
+    @GET("/api/components/{componentId}/versions/{componentVersionId}/origins/{originId}/direct-dependencies?limit=999")
     Call<ItemsJson<DependencyJson>> readDependencies(@Path("componentId") UUID componentId,
                                                      @Path("componentVersionId") UUID componentVersionId,
                                                      @Path("originId") UUID originId);
@@ -62,8 +62,12 @@ public interface BlackDuckApi {
         MetaJson _meta;
 
         UUID getId() {
-            final var path = _meta.href.getPath();
-            return UUID.fromString(path.substring(path.lastIndexOf('/') + 1));
+            final var path = _meta.href.getPath().split("/");
+            try {
+                return UUID.fromString(path[path.length-1]);
+            } catch (IllegalArgumentException e) {
+                return UUID.fromString(path[path.length-2]);
+            }
         }
     }
 
@@ -84,9 +88,16 @@ public interface BlackDuckApi {
 
     class ComponentJson extends EntityJson {
         String componentName;
+        String componentVersionName;
         boolean ignored;
-        List<LicenseJson> licenses = new ArrayList<>();
+        List<String> usages = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
+        List<LicenseJson> licenses = new ArrayList<>();
+
+        @Override
+        public String toString() {
+            return componentName + ' ' + componentVersionName;
+        }
     }
 
     class OriginJson {
