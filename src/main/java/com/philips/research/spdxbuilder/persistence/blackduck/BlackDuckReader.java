@@ -47,8 +47,6 @@ public class BlackDuckReader implements BomReader {
 
     @Override
     public void read(BillOfMaterials bom) {
-        System.out.println("Exporting Black Duck project '" + projectName + "', version '" + versionName + "'...");
-
         client.authenticate(token);
 
         exportProjectInfo(bom);
@@ -65,6 +63,7 @@ public class BlackDuckReader implements BomReader {
         final var projectVersion = client.findProjectVersion(project.getId(), versionName)
                 .orElseThrow(() -> new BlackDuckException("Found no version named '" + versionName + "' in project '" + project.name));
 
+        System.out.println("Exporting Black Duck project '" + project.name + "', version '" + projectVersion.versionName + "'...");
         bom.setTitle(project.name + " " + projectVersion.versionName);
 
         final var components = new HashMap<UUID, ComponentJson>();
@@ -75,9 +74,13 @@ public class BlackDuckReader implements BomReader {
                 .filter(c -> !c.ignored)
                 .forEach(c -> {
                     if (c.origins.isEmpty()) {
-                        System.out.println("WARNING: Component " + c + " does not specify any origin");
+                        System.out.println("WARNING: Component '" + c + "' does not specify any origin");
                     }
                     c.origins.forEach(origin -> {
+                        if (origin.externalId == null) {
+                            System.out.println("WARNING: Skipped undefined origin for component '" + c + "'");
+                            return;
+                        }
                         final var pkg = new Package(origin.getType(), origin.getNamespace(), origin.getName(), origin.getVersion())
                                 .setSummary(c.componentName);
                         final var uuid = origin.getId();

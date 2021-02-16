@@ -143,6 +143,15 @@ class BlackDuckReaderTest {
         }
 
         @Test
+        void skipsComponentWithUnidentifiedOrigin() {
+            origin.externalId = null;
+
+            reader.read(bom);
+
+            assertThat(bom.getPackages()).isEmpty();
+        }
+
+        @Test
         void ignoresDuplicateOrigins() {
             component.origins.add(origin);
 

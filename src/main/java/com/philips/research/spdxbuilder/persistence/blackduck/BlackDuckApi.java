@@ -10,6 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
+import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -64,9 +65,9 @@ public interface BlackDuckApi {
         UUID getId() {
             final var path = _meta.href.getPath().split("/");
             try {
-                return UUID.fromString(path[path.length-1]);
+                return UUID.fromString(path[path.length - 1]);
             } catch (IllegalArgumentException e) {
-                return UUID.fromString(path[path.length-2]);
+                return UUID.fromString(path[path.length - 2]);
             }
         }
     }
@@ -125,7 +126,7 @@ public interface BlackDuckApi {
 
         URI origin;
         String externalNamespace;
-        String externalId;
+        @NullOr String externalId;
 
         String getType() {
             final var type = TYPE_MAPPING.get(externalNamespace);
