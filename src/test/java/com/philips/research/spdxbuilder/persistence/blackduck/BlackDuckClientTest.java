@@ -45,7 +45,7 @@ class BlackDuckClientTest {
     void setUp() throws IOException {
         server.start(PORT);
         final var url = server.url("/").url();
-        client = new BlackDuckClient(url);
+        client = new BlackDuckClient(url, false);
     }
 
     @AfterEach

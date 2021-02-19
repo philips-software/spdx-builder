@@ -12,7 +12,7 @@ import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
 import com.philips.research.spdxbuilder.persistence.license_scanner.LicenseKnowledgeBase;
 import com.philips.research.spdxbuilder.persistence.ort.OrtReader;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
-import picocli.CommandLine;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -25,7 +25,7 @@ import java.net.URI;
 /**
  * CLI command to generate an SPDX file from an ORT Analyzer YAML.
  */
-@CommandLine.Command(name = "ort")
+@Command(name = "ort")
 public class OrtCommand extends AbstractCommand {
     @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")

@@ -85,7 +85,7 @@ class LicenseScannerClientTest {
     }
 
     @Test
-    void ignores_serverNotReachable() {
+    void throws_serverNotReachable() {
         var serverlessClient = new LicenseScannerClient(URI.create("http://localhost:1234"));
 
         assertThatThrownBy(() -> serverlessClient.scanLicense(PURL, LOCATION))
@@ -103,7 +103,7 @@ class LicenseScannerClientTest {
     }
 
     @Test
-    void throws_mapformedResponseFromServer() {
+    void throws_malformedResponseFromServer() {
         mockServer.enqueue(new MockResponse().setBody("Not a JSON response"));
 
         assertThatThrownBy(() -> client.scanLicense(PURL, LOCATION))

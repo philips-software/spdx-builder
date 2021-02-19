@@ -21,6 +21,9 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -37,7 +40,7 @@ public class BlackDuckClient {
     private final BlackDuckApi api;
     private @NullOr String bearerToken;
 
-    public BlackDuckClient(URL url) {
+    public BlackDuckClient(URL url, boolean skipSSL) {
         this.url = url;
         final var client = new OkHttpClient.Builder()
                 .addInterceptor(chain -> {
@@ -48,15 +51,42 @@ public class BlackDuckClient {
                             .addHeader("Authorization", "bearer " + bearerToken)
                             .build();
                     return chain.proceed(newRequest);
-                })
-                .build();
+                });
+        if (skipSSL) {
+            disableSSL(client);
+        }
         final var retrofit = new Retrofit.Builder()
                 .baseUrl(url)
                 .addConverterFactory(JacksonConverterFactory.create(MAPPER))
-                .client(client)
+                .client(client.build())
                 .build();
 
         api = retrofit.create(BlackDuckApi.class);
+    }
+
+    private void disableSSL(OkHttpClient.Builder client) {
+        try {
+            final var gullibleBeliever = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[]{};
+                }
+            };
+            final var sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, new TrustManager[]{gullibleBeliever}, new java.security.SecureRandom());
+            client.sslSocketFactory(sslContext.getSocketFactory(), gullibleBeliever)
+                    .hostnameVerifier((hostname, session) -> true);
+        } catch (Exception e) {
+            throw new RuntimeException("SSL bypass failed", e);
+        }
     }
 
     void authenticate(String token) {
@@ -100,7 +130,7 @@ public class BlackDuckClient {
             }
             throw new BlackDuckException("Server responded with status " + response.code() + " " + response.message());
         } catch (IOException e) {
-            throw new BlackDuckException("Failed to connect to Black Duck server on " + url);
+            throw new BlackDuckException("Failed to connect to Black Duck server on " + url, e);
         }
     }
 }

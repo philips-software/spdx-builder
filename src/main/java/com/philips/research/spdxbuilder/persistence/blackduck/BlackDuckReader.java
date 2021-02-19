@@ -34,8 +34,8 @@ public class BlackDuckReader implements BomReader {
     private final String projectName;
     private final String versionName;
 
-    public BlackDuckReader(URL url, String token, String projectName, String versionName) {
-        this(new BlackDuckClient(url), token, projectName, versionName);
+    public BlackDuckReader(URL url, String token, String projectName, String versionName, boolean skipSSL) {
+        this(new BlackDuckClient(url, skipSSL), token, projectName, versionName);
     }
 
     BlackDuckReader(BlackDuckClient client, String token, String projectName, String versionName) {
@@ -74,11 +74,11 @@ public class BlackDuckReader implements BomReader {
                 .filter(c -> !c.ignored)
                 .forEach(c -> {
                     if (c.origins.isEmpty()) {
-                        System.out.println("WARNING: Component '" + c + "' does not specify any origin");
+                        System.err.println("WARNING: Component '" + c + "' does not specify any origin");
                     }
                     c.origins.forEach(origin -> {
                         if (origin.externalId == null) {
-                            System.out.println("WARNING: Skipped undefined origin for component '" + c + "'");
+                            System.err.println("WARNING: Skipped undefined origin for component '" + c + "'");
                             return;
                         }
                         final var pkg = new Package(origin.getType(), origin.getNamespace(), origin.getName(), origin.getVersion())
@@ -104,6 +104,7 @@ public class BlackDuckReader implements BomReader {
                         final var relationship = relationshipFor(components.get(originId));
                         bom.addRelation(from, to, relationship);
                     });
+            System.out.println("done");
         });
     }
 

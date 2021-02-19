@@ -14,4 +14,8 @@ public class BlackDuckException extends RuntimeException {
     public BlackDuckException(String message) {
         super(message);
     }
+
+    public BlackDuckException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

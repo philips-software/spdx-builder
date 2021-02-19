@@ -11,7 +11,7 @@
 package com.philips.research.spdxbuilder.controller;
 
 import com.philips.research.spdxbuilder.core.ConversionService;
-import picocli.CommandLine;
+import picocli.CommandLine.Option;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
@@ -21,18 +21,18 @@ import java.net.URI;
  * Shared generic part of CLI commands.
  */
 public abstract class AbstractCommand implements Runnable {
-    @CommandLine.Option(names = {"--version", "-V"}, description = "Show version info and exit")
+    @Option(names = {"--version", "-V"}, description = "Show version info and exit")
     boolean showVersion;
 
-    @CommandLine.Option(names = {"--help", "-H"}, usageHelp = true, description = "Show this message and exit")
+    @Option(names = {"--help", "-H"}, usageHelp = true, description = "Show this message and exit")
     @SuppressWarnings("unused")
     boolean showUsage;
 
     @SuppressWarnings("NotNullFieldNotInitialized")
-    @CommandLine.Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
+    @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
 
-    @CommandLine.Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
+    @Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
     @NullOr URI uploadUrl;
 
     /**
