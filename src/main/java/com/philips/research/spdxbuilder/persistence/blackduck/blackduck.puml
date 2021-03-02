@@ -3,27 +3,39 @@
 title Black Duck BOM representation
 
 class License {
+    UUID
     name:String
     spdxId:String
 }
 
 class Origin {
-   externalNamespace:String
-   externalId:String
+    UUID
+    externalNamespace:String
+    externalId:String
 }
-Origin -> "*" Origin: direct dependencies
-Origin --> "*" License: licenses<AND/OR>
+note left of Origin: Provides\nPackage URL
 
-class Component {
+class ComponentVersion {
+    UUID + UUID
     name:String
     version:String
     description:String
+    ignored:boolean
 }
-Component o-> "*" Origin: origins
+ComponentVersion o--> "*" License: licenses\n<AND/OR>
+ComponentVersion o-d-> "*" Origin: origins
+ComponentVersion --> "*" ComponentVersion: children
+
+class ProjectVersion{
+    UUID
+    versionName:String
+}
+ProjectVersion *-> "*" ComponentVersion: BOM
 
 class Project {
+    UUID
     name:String
-    version:String
 }
-Project *-> "*" Component: BOM
+Project *-> "*" ProjectVersion
+
 @enduml

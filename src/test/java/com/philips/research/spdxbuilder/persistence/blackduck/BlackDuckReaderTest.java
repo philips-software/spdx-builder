@@ -10,18 +10,15 @@
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Relation;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ComponentJson;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.OriginJson;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ProjectJson;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ProjectVersionJson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,20 +36,34 @@ class BlackDuckReaderTest {
     private static final String BLACK_DUCK_VERSION = "BlackDuckVersion";
     private static final UUID COMPONENT_ID = UUID.randomUUID();
     private static final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
-    private static final UUID ORIGIN_ID = UUID.randomUUID();
-    private static final UUID ORIGIN_ID2 = UUID.randomUUID();
     private static final String TYPE = "maven";
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String SUMMARY = "Summary";
+    private static final PackageURL PACKAGE_URL = purlFrom(String.format("pkg:%s/%s/%s@%s", TYPE, NAMESPACE, NAME, VERSION));
 
+    private final BlackDuckProduct project = mock(BlackDuckProduct.class);
+    private final BlackDuckProduct projectVersion = mock(BlackDuckProduct.class);
     private final BlackDuckClient client = mock(BlackDuckClient.class);
     private final BomReader reader = new BlackDuckReader(client, TOKEN, PROJECT, VERSION);
     private final BillOfMaterials bom = new BillOfMaterials();
 
+    private static PackageURL purlFrom(String purl) {
+        try {
+            return new PackageURL(purl);
+        } catch (MalformedPackageURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        when(project.getId()).thenReturn(PROJECT_ID);
+        when(projectVersion.getId()).thenReturn(VERSION_ID);
+    }
+
     @Test
     void throws_projectNotFound() {
-        when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
         when(client.findProject(PROJECT)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reader.read(bom))
@@ -62,8 +73,6 @@ class BlackDuckReaderTest {
 
     @Test
     void throws_projectVersionNotFound() {
-        final var project = withId(new ProjectJson(), PROJECT_ID);
-        when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
         when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
         when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.empty());
 
@@ -72,30 +81,19 @@ class BlackDuckReaderTest {
                 .hasMessageContaining(VERSION);
     }
 
-    private <E extends BlackDuckApi.EntityJson> E withId(E entity, UUID id) {
-        entity._meta = new BlackDuckApi.MetaJson();
-        entity._meta.href = URI.create("https://server/" + entity.getClass().getSimpleName() + "/" + id);
-        return entity;
-    }
-
     @Nested
-    class ProjectVersionExists {
-        private final ProjectJson project = withId(new ProjectJson(), PROJECT_ID);
-        private final ProjectVersionJson projectVersion = withId(new ProjectVersionJson(), VERSION_ID);
-        private final ComponentJson component = new ComponentJson();
-        private final OriginJson origin = new OriginJson();
+    class ExportBillOfMaterials {
+        private final BlackDuckComponent component = mock(BlackDuckComponent.class);
 
         @BeforeEach
         void beforeEach() {
             when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
+            when(component.getId()).thenReturn(COMPONENT_ID);
+            when(component.getVersionId()).thenReturn(COMPONENT_VERSION_ID);
+            when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
             when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
             when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
             when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
-            origin.origin = URI.create(String.format("https://server/components/%s/versions/%s/origins/%s",
-                    COMPONENT_ID, COMPONENT_VERSION_ID, ORIGIN_ID));
-            origin.externalNamespace = TYPE;
-            origin.externalId = String.format("%s:%s:%s", NAMESPACE, NAME, VERSION);
-            component.origins.add(origin);
         }
 
         @Test
@@ -111,7 +109,7 @@ class BlackDuckReaderTest {
 
         @Test
         void exportsComponent() {
-            component.componentName = SUMMARY;
+            when(component.getName()).thenReturn(SUMMARY);
 
             reader.read(bom);
 
@@ -125,58 +123,32 @@ class BlackDuckReaderTest {
         }
 
         @Test
-        void skipsIgnoredComponents() {
-            component.ignored = true;
-
-            reader.read(bom);
-
-            assertThat(bom.getPackages()).isEmpty();
-        }
-
-        @Test
         void skipsComponentWithoutOrigin() {
-            component.origins.clear();
+            when(component.getPackageUrls()).thenReturn(List.of());
 
             reader.read(bom);
 
             assertThat(bom.getPackages()).isEmpty();
-        }
-
-        @Test
-        void skipsComponentWithUnidentifiedOrigin() {
-            origin.externalId = null;
-
-            reader.read(bom);
-
-            assertThat(bom.getPackages()).isEmpty();
-        }
-
-        @Test
-        void ignoresDuplicateOrigins() {
-            component.origins.add(origin);
-
-            reader.read(bom);
-
-            assertThat(bom.getPackages()).hasSize(1);
         }
 
         @Nested
         class PackageRelations {
-            private final OriginJson origin2 = new OriginJson();
+            private final UUID PARENT_ID = UUID.randomUUID();
+            private final UUID PARENT_VERSION_ID = UUID.randomUUID();
+
+            private final BlackDuckComponent parent = mock(BlackDuckComponent.class);
 
             @BeforeEach
             void beforeEach() {
-                origin2.externalNamespace = origin.externalNamespace;
-                origin2.externalId = origin.externalNamespace;
-                origin2.origin = URI.create(String.format("https://server/components/%s/versions/%s/origins/%s",
-                        COMPONENT_ID, COMPONENT_VERSION_ID, ORIGIN_ID2));
+                when(parent.getId()).thenReturn(PARENT_ID);
+                when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
+                when(parent.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
             }
 
             @Test
             void exportsRelationships() {
-                component.origins.add(origin2);
-                final var dependency = withId(new BlackDuckApi.DependencyJson(), ORIGIN_ID2);
-                when(client.getDependencies(origin)).thenReturn(List.of(dependency));
+                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent, component));
+                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
 
                 reader.read(bom);
 
@@ -190,8 +162,8 @@ class BlackDuckReaderTest {
 
             @Test
             void ignoresRelationshipsOutsideBom() {
-                final var dependency = withId(new BlackDuckApi.DependencyJson(), ORIGIN_ID2);
-                when(client.getDependencies(origin)).thenReturn(List.of(dependency));
+                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent));
+                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
 
                 reader.read(bom);
 
@@ -218,11 +190,10 @@ class BlackDuckReaderTest {
             }
 
             void assertRelationship(List<String> usages, Relation.Type relationship) {
+                when(component.getUsages()).thenReturn(usages);
+                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent, component));
+                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
                 final var bom = new BillOfMaterials();
-                component.origins.add(origin2);
-                component.usages = usages;
-                final var dependency = withId(new BlackDuckApi.DependencyJson(), ORIGIN_ID2);
-                when(client.getDependencies(origin)).thenReturn(List.of(dependency));
 
                 reader.read(bom);
 

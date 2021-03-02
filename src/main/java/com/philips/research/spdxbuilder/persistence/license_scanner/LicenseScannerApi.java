@@ -35,11 +35,11 @@ interface LicenseScannerApi {
     Call<Void> contest(@Path("scanId") String scanId, @Body ContestJson body);
 
     class RequestJson {
-        URI purl;
+        String purl;
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @NullOr String location;
 
-        public RequestJson(URI purl, @NullOr URI location) {
+        public RequestJson(String purl, @NullOr URI location) {
             this.purl = purl;
             if (location != null) {
                 this.location = location.toASCIIString();

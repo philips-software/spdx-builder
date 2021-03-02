@@ -10,26 +10,25 @@
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
+import com.github.packageurl.PackageURL;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BlackDuckApiTest {
     @Test
-    void convertsOriginToPackageURL() {
-        assertPurl("maven", "Group:Name:Version", "maven", "Group", "Name", "Version");
-        assertPurl("maven", ":Name:Version", "maven", "", "Name", "Version");
-        assertPurl("UNKNOWN", "Name/Version", "generic", "", "Name", "Version");
-        assertPurl("npmjs", "Name/Version", "npm", "", "Name", "Version");
+    void convertsOriginToPackageURL() throws Exception {
+        assertPurl("maven", "Group:Name:Version", new PackageURL("pkg:maven/Group/Name@Version"));
+        assertPurl("maven", "::Name:Version", new PackageURL("pkg:maven/Name@Version"));
+        assertPurl("maven", "Name:Version", new PackageURL("pkg:maven/Name@Version"));
+        assertPurl("UNKNOWN", "Name/Version", new PackageURL("pkg:generic/Name@Version"));
+        assertPurl("npmjs", "Name/Version", new PackageURL("pkg:npm/Name@Version"));
     }
 
-    private void assertPurl(String externalNamespace, String externalId, String type, String namespace, String name, String version) {
+    private void assertPurl(String externalNamespace, String externalId, PackageURL purl) {
         final var origin = new BlackDuckApi.OriginJson();
         origin.externalNamespace = externalNamespace;
         origin.externalId = externalId;
-        assertThat(origin.getType()).isEqualTo(type);
-        assertThat(origin.getNamespace()).isEqualTo(namespace);
-        assertThat(origin.getName()).isEqualTo(name);
-        assertThat(origin.getVersion()).isEqualTo(version);
+        assertThat(origin.getPurl()).isEqualTo(purl);
     }
 }

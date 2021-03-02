@@ -19,7 +19,7 @@ public class ExternalReference {
     }
 
     public static ExternalReference purl(Package pkg) {
-        return new ExternalReference("PACKAGE-MANAGER", "purl", pkg.getPurl());
+        return new ExternalReference("PACKAGE-MANAGER", "purl", pkg.getPurl().canonicalize());
     }
 
     @Override

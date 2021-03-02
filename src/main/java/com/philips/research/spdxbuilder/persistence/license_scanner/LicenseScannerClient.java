@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.persistence.license_scanner.LicenseScannerApi.ContestJson;
 import com.philips.research.spdxbuilder.persistence.license_scanner.LicenseScannerApi.RequestJson;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -52,16 +53,16 @@ public class LicenseScannerClient {
      *
      * @return detected license for the package
      */
-    public Optional<LicenseInfo> scanLicense(URI purl, @NullOr URI location) {
-        final var body = new RequestJson(purl, location);
+    public Optional<LicenseInfo> scanLicense(PackageURL purl, @NullOr URI location) {
+        final var body = new RequestJson(purl.canonicalize(), location);
 
         return query(rest.scan(body))
                 .filter(r -> r.license != null)
                 .map(r -> new LicenseInfo(r.license, r.confirmed));
     }
 
-    public void contest(URI purl, String license) {
-        final var scanId = URLEncoder.encode(purl.toASCIIString(), StandardCharsets.UTF_8);
+    public void contest(PackageURL purl, String license) {
+        final var scanId = URLEncoder.encode(purl.canonicalize(), StandardCharsets.UTF_8);
         query(rest.contest(scanId, new ContestJson(license)));
     }
 

@@ -14,8 +14,6 @@ import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ComponentJson;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.OriginJson;
 
 import java.net.URL;
 import java.util.Comparator;
@@ -61,58 +59,50 @@ public class BlackDuckReader implements BomReader {
         final var project = client.findProject(projectName)
                 .orElseThrow(() -> new BlackDuckException("Found no project named '" + projectName + "'"));
         final var projectVersion = client.findProjectVersion(project.getId(), versionName)
-                .orElseThrow(() -> new BlackDuckException("Found no version named '" + versionName + "' in project '" + project.name));
+                .orElseThrow(() -> new BlackDuckException("Found no version named '" + versionName + "' in project '" + project.getName()));
 
-        System.out.println("Exporting Black Duck project '" + project.name + "', version '" + projectVersion.versionName + "'...");
-        bom.setTitle(project.name + " " + projectVersion.versionName);
+        System.out.println("Exporting Black Duck project '" + project.getName() + "', version '" + projectVersion.getName() + "'...");
+        bom.setTitle(project.getName() + " " + projectVersion.getName());
 
-        final var components = new HashMap<UUID, ComponentJson>();
-        final var origins = new HashMap<UUID, OriginJson>();
         final var packages = new HashMap<UUID, Package>();
+        final var components = new HashMap<UUID, BlackDuckComponent>();
         System.out.println("Building list of components...");
-        client.getComponents(project.getId(), projectVersion.getId()).stream()
-                .filter(c -> !c.ignored)
-                .forEach(c -> {
-                    if (c.origins.isEmpty()) {
-                        System.err.println("WARNING: Component '" + c + "' does not specify any origin");
-                    }
-                    c.origins.forEach(origin -> {
-                        if (origin.externalId == null) {
-                            System.err.println("WARNING: Skipped undefined origin for component '" + c + "'");
-                            return;
-                        }
-                        final var pkg = new Package(origin.getType(), origin.getNamespace(), origin.getName(), origin.getVersion())
-                                .setSummary(c.componentName);
-                        final var uuid = origin.getId();
-                        components.put(uuid, c);
-                        origins.put(uuid, origin);
-                        packages.put(uuid, pkg);
-                    });
-                });
+        client.getComponents(project.getId(), projectVersion.getId()).forEach(c -> {
+            final var purls = c.getPackageUrls();
+            if (purls.isEmpty()) {
+                System.err.println("WARNING: Component '" + c + "' does not specify any packages");
+            }
+            c.getPackageUrls().forEach(purl -> {
+                final var pkg = new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion())
+                        .setSummary(c.getName());
+                packages.put(c.getVersionId(), pkg);
+                components.put(c.getVersionId(), c);
+            });
+        });
 
         packages.values().forEach(bom::addPackage);
 
         System.out.print("Analyzing dependencies");
-        origins.forEach((originId, origin) -> {
+        components.values().forEach(c -> {
             System.out.print(".");
-            final var dependencies = client.getDependencies(origin);
+            final var dependencies = client.getDependencies(project.getId(), projectVersion.getId(), c);
             dependencies.stream()
-                    .filter(dep -> origins.containsKey(dep.getId()))
+                    .filter(dep -> components.containsKey(dep.getVersionId()))
                     .forEach(dep -> {
-                        final var from = packages.get(originId);
-                        final var to = packages.get(dep.getId());
-                        final var relationship = relationshipFor(components.get(originId));
+                        final var from = packages.get(c.getVersionId());
+                        final var to = packages.get(dep.getVersionId());
+                        final var relationship = relationshipFor(components.get(dep.getVersionId()));
                         bom.addRelation(from, to, relationship);
                     });
-            System.out.println("done");
         });
+        System.out.println("done");
     }
 
     /**
      * @return strictest relationship for the listed component usages
      */
-    Relation.Type relationshipFor(ComponentJson component) {
-        return component.usages.stream()
+    Relation.Type relationshipFor(BlackDuckComponent component) {
+        return component.getUsages().stream()
                 .map(u -> USAGE_MAPPING.getOrDefault(u, Relation.Type.DEPENDS_ON))
                 .min(Comparator.comparingInt(Enum::ordinal))
                 .orElse(Relation.Type.DEPENDS_ON);

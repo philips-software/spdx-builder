@@ -98,27 +98,31 @@ public class BlackDuckClient {
         return query(api.serverVersion()).orElseThrow().version;
     }
 
-    Optional<BlackDuckApi.ProjectJson> findProject(String name) {
+    Optional<BlackDuckProduct> findProject(String name) {
         final var items = query(api.findProjects("name:" + name));
         return items.filter(result -> result.items.size() == 1)
                 .map(result -> result.items.get(0));
     }
 
-    Optional<BlackDuckApi.ProjectVersionJson> findProjectVersion(UUID projectId, String name) {
+    Optional<BlackDuckProduct> findProjectVersion(UUID projectId, String name) {
         final var items = query(api.findProjectVersions(projectId, "versionName:" + name));
         return items.filter(result -> result.items.size() == 1)
                 .map(result -> result.items.get(0));
     }
 
-    List<BlackDuckApi.ComponentJson> getComponents(UUID projectId, UUID versionId) {
-        return query(api.readComponents(projectId, versionId))
-                .map(object -> object.items)
+    List<BlackDuckComponent> getComponents(UUID projectId, UUID versionId) {
+        //noinspection unchecked
+        return query(api.hierarchicalRoot(projectId, versionId))
+                //TODO Remove any ignored components. (Are these even indicated?)
+                .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
     }
 
-    List<BlackDuckApi.DependencyJson> getDependencies(BlackDuckApi.OriginJson origin) {
-        return query(api.readDependencies(origin.getComponentId(), origin.getComponentVersion(), origin.getId()))
-                .map(object -> object.items)
+    List<BlackDuckComponent> getDependencies(UUID projectId, UUID versionId, BlackDuckComponent component) {
+        //noinspection unchecked
+        return query(api.hierarchicalChildComponents(projectId, versionId,
+                component.getId(), component.getVersionId(), component.getHierarchicalId()))
+                .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
     }
 

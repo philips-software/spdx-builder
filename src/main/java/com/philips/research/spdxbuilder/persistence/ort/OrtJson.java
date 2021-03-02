@@ -6,6 +6,8 @@
 package com.philips.research.spdxbuilder.persistence.ort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
@@ -131,7 +133,11 @@ class PackageJson {
         final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
 
         if (purl != null) {
-            result.setPurl(purl);
+            try {
+                result.setPurl(new PackageURL(purl.toASCIIString()));
+            } catch (MalformedPackageURLException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
         if (binaryArtifact != null) {
             binaryArtifact.getFilename().ifPresent(result::setFilename);

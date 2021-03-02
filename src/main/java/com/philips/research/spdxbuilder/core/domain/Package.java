@@ -5,6 +5,9 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
+import com.github.packageurl.PackageURLBuilder;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
@@ -22,7 +25,7 @@ public final class Package {
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
-    private @NullOr URI purl;
+    private @NullOr PackageURL purl;
     private @NullOr Party supplier;
     private @NullOr Party originator;
     private @NullOr String filename;
@@ -63,18 +66,23 @@ public final class Package {
         return version;
     }
 
-    public URI getPurl() {
+    public PackageURL getPurl() {
         if (purl == null) {
-            var path = encoded(name);
-            if (!namespace.isBlank()) {
-                path = encoded(namespace) + '/' + path;
+            try {
+                return PackageURLBuilder.aPackageURL()
+                        .withType(type)
+                        .withNamespace(namespace)
+                        .withName(name)
+                        .withVersion(version)
+                        .build();
+            } catch (MalformedPackageURLException e) {
+                throw new IllegalArgumentException(e);
             }
-            return URI.create("pkg:" + encoded(type) + '/' + path + "@" + encoded(version));
         }
         return purl;
     }
 
-    public Package setPurl(URI purl) {
+    public Package setPurl(PackageURL purl) {
         this.purl = purl;
         return this;
     }
