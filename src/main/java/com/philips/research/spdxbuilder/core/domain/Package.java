@@ -39,15 +39,15 @@ public final class Package {
     private @NullOr String description;
     private @NullOr String attribution;
 
+    public static Package fromPurl(PackageURL purl) {
+        return new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion());
+    }
+
     public Package(String type, String namespace, String name, String version) {
         this.type = type;
         this.namespace = namespace;
         this.name = name;
         this.version = version;
-    }
-
-    private static String encoded(String string) {
-        return URLEncoder.encode(string, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
     }
 
     public String getType() {

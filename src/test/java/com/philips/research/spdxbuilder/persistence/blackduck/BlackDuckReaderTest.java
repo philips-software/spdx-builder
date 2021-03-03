@@ -62,23 +62,37 @@ class BlackDuckReaderTest {
         when(projectVersion.getId()).thenReturn(VERSION_ID);
     }
 
-    @Test
-    void throws_projectNotFound() {
-        when(client.findProject(PROJECT)).thenReturn(Optional.empty());
+    @Nested
+    class FindProjectVersion {
+        @Test
+        void authenticatesWithServer() {
+            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
+            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
 
-        assertThatThrownBy(() -> reader.read(bom))
-                .isInstanceOf(BlackDuckException.class)
-                .hasMessageContaining(PROJECT);
-    }
+            reader.read(bom);
 
-    @Test
-    void throws_projectVersionNotFound() {
-        when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
-        when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.empty());
+            verify(client).authenticate(TOKEN);
+        }
 
-        assertThatThrownBy(() -> reader.read(bom))
-                .isInstanceOf(BlackDuckException.class)
-                .hasMessageContaining(VERSION);
+        @Test
+        void throws_projectNotFound() {
+            when(client.findProject(PROJECT)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> reader.read(bom))
+                    .isInstanceOf(BlackDuckException.class)
+                    .hasMessageContaining(PROJECT);
+        }
+
+        @Test
+        void throws_projectVersionNotFound() {
+            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
+            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> reader.read(bom))
+                    .isInstanceOf(BlackDuckException.class)
+                    .hasMessageContaining(VERSION);
+        }
+
     }
 
     @Nested
@@ -97,14 +111,16 @@ class BlackDuckReaderTest {
         }
 
         @Test
-        void readsEmptyProjectVersion() {
+        void exportsProjectInformation() {
+            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
+            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
+            when(project.getName()).thenReturn(PROJECT);
+            when(projectVersion.getName()).thenReturn(VERSION);
+
             reader.read(bom);
 
-            verify(client).authenticate(TOKEN);
-            final var comment = bom.getComment().orElseThrow();
-            assertThat(comment).contains(PROJECT);
-            assertThat(comment).contains(VERSION);
-            assertThat(comment).contains(BLACK_DUCK_VERSION);
+            assertThat(bom.getTitle()).contains(PROJECT).contains(VERSION);
+            assertThat(bom.getComment().orElseThrow()).contains(BLACK_DUCK_VERSION);
         }
 
         @Test
@@ -135,6 +151,7 @@ class BlackDuckReaderTest {
         class PackageRelations {
             private final UUID PARENT_ID = UUID.randomUUID();
             private final UUID PARENT_VERSION_ID = UUID.randomUUID();
+            private final PackageURL PARENT_PURL = purlFrom("pkg:maven/parent@version");
 
             private final BlackDuckComponent parent = mock(BlackDuckComponent.class);
 
@@ -142,32 +159,23 @@ class BlackDuckReaderTest {
             void beforeEach() {
                 when(parent.getId()).thenReturn(PARENT_ID);
                 when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
-                when(parent.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
+                when(parent.getPackageUrls()).thenReturn(List.of(PARENT_PURL));
             }
 
             @Test
             void exportsRelationships() {
-                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent, component));
+                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent));
                 when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
 
                 reader.read(bom);
 
+                assertThat(bom.getPackages()).hasSize(2);
                 final var from = bom.getPackages().get(0);
                 final var to = bom.getPackages().get(1);
                 assertThat(bom.getRelations()).hasSize(1);
                 assertThat(bom.getRelations()).containsAnyOf(
                         new Relation(from, to, Relation.Type.DEPENDS_ON),
                         new Relation(to, from, Relation.Type.DEPENDS_ON));
-            }
-
-            @Test
-            void ignoresRelationshipsOutsideBom() {
-                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent));
-                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
-
-                reader.read(bom);
-
-                assertThat(bom.getRelations()).isEmpty();
             }
 
             @Test
@@ -195,7 +203,7 @@ class BlackDuckReaderTest {
                 when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
                 final var bom = new BillOfMaterials();
 
-                reader.read(bom);
+                new BlackDuckReader(client, TOKEN, PROJECT, VERSION).read(bom);
 
                 assertThat(bom.getRelations()).hasSize(1);
                 final var relation = bom.getRelations().stream().findFirst().orElseThrow();

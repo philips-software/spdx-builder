@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PackageTest {
-    private static final String TYPE = "Type";
+    private static final String TYPE = "type";
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String VERSION = "Version";
@@ -29,6 +29,16 @@ class PackageTest {
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
         assertThat(pkg.getPurl()).isEqualTo(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
         assertThat(pkg.getConcludedLicense()).isEmpty();
+    }
+
+    @Test
+    void createsInstanceFromPackageUrl() throws Exception {
+        final var fromPurl = Package.fromPurl(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
+
+        assertThat(fromPurl.getType()).isEqualTo(TYPE);
+        assertThat(fromPurl.getNamespace()).isEqualTo(NAMESPACE);
+        assertThat(fromPurl.getName()).isEqualTo(NAME);
+        assertThat(fromPurl.getVersion()).isEqualTo(VERSION);
     }
 
     @Test
