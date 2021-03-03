@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +35,8 @@ class BlackDuckClientTest {
     private static final UUID PROJECT_ID = UUID.randomUUID();
     private static final String VERSION = "1.2.3";
     private static final UUID VERSION_ID = UUID.randomUUID();
-    private static final String NAME = "Name";
+    private static final UUID COMPONENT_ID = UUID.randomUUID();
+    private static final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
     private static final String DESCRIPTION = "Description";
     private static final int PORT = 1080;
 
@@ -165,7 +167,7 @@ class BlackDuckClientTest {
             server.enqueue(new MockResponse().setBody(new JSONObject()
                     .put("items", new JSONArray()).toString()));
 
-            assertThat(client.findProject(NAME)).isEmpty();
+            assertThat(client.findProject(PROJECT)).isEmpty();
         }
 
         @Test
@@ -175,7 +177,7 @@ class BlackDuckClientTest {
                             .put(new JSONObject())
                             .put(new JSONObject())).toString()));
 
-            assertThat(client.findProject(NAME)).isEmpty();
+            assertThat(client.findProject(PROJECT)).isEmpty();
         }
     }
 
@@ -185,8 +187,6 @@ class BlackDuckClientTest {
         private static final String COMPONENT_VERSION_NAME = "Component Version Name";
         private static final long HIERARCHY_ID = 1234567890;
         private static final String USAGE = "Usage";
-        private final UUID COMPONENT_ID = UUID.randomUUID();
-        private final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
 
         @Test
         void readsProjectComponents() throws Exception {
@@ -247,6 +247,34 @@ class BlackDuckClientTest {
             assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions/" + VERSION_ID
                     + "/components/" + COMPONENT_ID + "/versions/" + COMPONENT_VERSION_ID
                     + "/hierarchical-components/" + HIERARCHY_ID + "/children?limit=999");
+        }
+    }
+
+    @Nested
+    class ReadKnowledgeBase {
+        private final String HOMEPAGE = "https://homepage.com";
+
+        private final BlackDuckComponent component = mock(BlackDuckComponent.class);
+
+        @BeforeEach
+        void beforeEach() {
+            when(component.getId()).thenReturn(COMPONENT_ID);
+        }
+
+        @Test
+        void readsComponentDetails() throws Exception {
+            server.enqueue(new MockResponse().setBody(new JSONObject()
+                    .put("description", DESCRIPTION)
+                    .put("url", HOMEPAGE)
+                    .toString()));
+
+            final var details = client.getComponentDetails(component);
+
+            assertThat(details.getDescription()).contains(DESCRIPTION);
+            assertThat(details.getHomepage()).contains(new URL(HOMEPAGE));
+            final var request = server.takeRequest();
+            assertThat(request.getMethod()).isEqualTo("GET");
+            assertThat(request.getPath()).isEqualTo("/api/components/" + COMPONENT_ID);
         }
     }
 }

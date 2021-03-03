@@ -18,6 +18,7 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ public interface BlackDuckApi {
     String PROJECT_DETAIL_4_JSON = "Accept: application/vnd.blackducksoftware.project-detail-4+json";
     String PROJECT_DETAIL_5_JSON = "Accept: application/vnd.blackducksoftware.project-detail-5+json";
     String BILL_OF_MATERIALS_6_JSON = "Accept: application/vnd.blackducksoftware.bill-of-materials-6+json";
+    String COMPONENT_DETAIL_4_JSON = "Accept: application/vnd.blackducksoftware.component-detail-4+json";
 
     @Headers(USER_4_JSON)
     @POST("/api/tokens/authenticate")
@@ -58,6 +60,10 @@ public interface BlackDuckApi {
                                                                @Path("componentId") UUID componentId,
                                                                @Path("componentVersionId") UUID componentVersionId,
                                                                @Path("hierarchicalId") long hierarchicalId);
+
+    @Headers(COMPONENT_DETAIL_4_JSON)
+    @GET("/api/components/{componentId}")
+    Call<ComponentDetailsJson> componentDetails(@Path("componentId") UUID componentId);
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     class AuthJson {
@@ -265,6 +271,22 @@ public interface BlackDuckApi {
         String licenseType;
         String spdxId;
         List<LicenseJson> licenses = new ArrayList<>();
+    }
+
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    class ComponentDetailsJson implements BlackDuckComponentDetails {
+        String description;
+        @NullOr URL url;
+
+        @Override
+        public Optional<String> getDescription() {
+            return description.isBlank() ? Optional.empty() : Optional.of(description);
+        }
+
+        @Override
+        public Optional<URL> getHomepage() {
+            return Optional.ofNullable(url);
+        }
     }
 }
 

@@ -202,6 +202,7 @@ Must-have:
 - [ ] Limit license identifiers to the SPDX list.
 - [ ] Abort if ORT Analyzer raised errors.
 - [ ] Pass checksum to scanner and SPDX report.
+- [ ] Import sub-projects from Black Duck.
 
 Should-have:
 - [ ] Support output "flavors" for the purpose of the generated SBOM.

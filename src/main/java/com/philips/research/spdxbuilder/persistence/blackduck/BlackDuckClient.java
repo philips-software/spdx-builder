@@ -126,6 +126,10 @@ public class BlackDuckClient {
                 .orElse(List.of());
     }
 
+    BlackDuckComponentDetails getComponentDetails(BlackDuckComponent component) {
+        return query(api.componentDetails(component.getId())).orElseThrow();
+    }
+
     <T> Optional<T> query(Call<T> request) {
         try {
             final var response = request.execute();

@@ -34,7 +34,9 @@ public class BlackDuckReader implements BomReader {
     private final String projectName;
     private final String versionName;
     private final Map<PackageURL, Package> packages = new HashMap<>();
+    @SuppressWarnings("NotNullFieldNotInitialized")
     private BlackDuckProduct project;
+    @SuppressWarnings("NotNullFieldNotInitialized")
     private BlackDuckProduct projectVersion;
 
     public BlackDuckReader(URL url, String token, String projectName, String versionName, boolean skipSSL) {
@@ -66,7 +68,7 @@ public class BlackDuckReader implements BomReader {
 
     private void exportProjectMetadata(BillOfMaterials bom) {
         final var serverVersion = client.getServerVersion();
-        bom.setComment(String.format("Project '%s', version '%s' from Black Duck server version %s", projectName, versionName, serverVersion));
+        bom.setComment(String.format("Extracted from Black Duck server version %s", serverVersion));
 
         project = client.findProject(projectName)
                 .orElseThrow(() -> new BlackDuckException("Found no project named '" + projectName + "'"));
@@ -83,14 +85,14 @@ public class BlackDuckReader implements BomReader {
     }
 
     void addChildren(BillOfMaterials bom, @NullOr Package parent, List<BlackDuckComponent> components) {
-        components.forEach(c -> {
-            final var purls = c.getPackageUrls();
+        components.forEach(component -> {
+            final var purls = component.getPackageUrls();
             if (purls.isEmpty()) {
-                System.err.println("\nWARNING: Skipped component '" + c + "' as it does not specify any packages");
+                System.err.println("\nWARNING: Skipped component '" + component + "' as it does not specify any packages");
             }
             purls.stream()
-                    .map(purl -> exportPackageIfNotExists(bom, c, purl))
-                    .forEach(pkg -> exportRelation(bom, parent, pkg, c));
+                    .map(purl -> exportPackageIfNotExists(bom, component, purl))
+                    .forEach(pkg -> exportRelation(bom, parent, pkg, component));
             System.out.print(".");
         });
     }
@@ -101,8 +103,11 @@ public class BlackDuckReader implements BomReader {
             return existing;
         }
 
+        final var details = client.getComponentDetails(component);
         final var pkg = Package.fromPurl(purl)
                 .setSummary(component.getName());
+        details.getDescription().ifPresent(pkg::setDescription);
+        details.getHomepage().ifPresent(pkg::setHomePage);
         bom.addPackage(pkg);
         packages.put(purl, pkg);
 

@@ -12,8 +12,6 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -39,15 +37,15 @@ public final class Package {
     private @NullOr String description;
     private @NullOr String attribution;
 
-    public static Package fromPurl(PackageURL purl) {
-        return new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion());
-    }
-
     public Package(String type, String namespace, String name, String version) {
         this.type = type;
         this.namespace = namespace;
         this.name = name;
         this.version = version;
+    }
+
+    public static Package fromPurl(PackageURL purl) {
+        return new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion());
     }
 
     public String getType() {

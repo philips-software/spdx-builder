@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -97,17 +98,24 @@ class BlackDuckReaderTest {
 
     @Nested
     class ExportBillOfMaterials {
+        private static final String DESCRIPTION = "Description";
+        private static final String HOMEPAGE = "https://homepage.com";
+
         private final BlackDuckComponent component = mock(BlackDuckComponent.class);
+        private final BlackDuckComponentDetails details = mock(BlackDuckComponentDetails.class);
 
         @BeforeEach
-        void beforeEach() {
+        void beforeEach() throws Exception {
             when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
-            when(component.getId()).thenReturn(COMPONENT_ID);
-            when(component.getVersionId()).thenReturn(COMPONENT_VERSION_ID);
-            when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
             when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
             when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
             when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
+            when(client.getComponentDetails(component)).thenReturn(details);
+            when(component.getId()).thenReturn(COMPONENT_ID);
+            when(component.getVersionId()).thenReturn(COMPONENT_VERSION_ID);
+            when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
+            when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
+            when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
         }
 
         @Test
@@ -124,7 +132,7 @@ class BlackDuckReaderTest {
         }
 
         @Test
-        void exportsComponent() {
+        void exportsComponent() throws Exception {
             when(component.getName()).thenReturn(SUMMARY);
 
             reader.read(bom);
@@ -135,6 +143,8 @@ class BlackDuckReaderTest {
             assertThat(pkg.getName()).isEqualTo(NAME);
             assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(pkg.getVersion()).isEqualTo(VERSION);
+            assertThat(pkg.getDescription()).contains(DESCRIPTION);
+            assertThat(pkg.getHomePage()).contains(new URL(HOMEPAGE));
             assertThat(pkg.getSummary()).contains(SUMMARY);
         }
 
@@ -160,6 +170,7 @@ class BlackDuckReaderTest {
                 when(parent.getId()).thenReturn(PARENT_ID);
                 when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
                 when(parent.getPackageUrls()).thenReturn(List.of(PARENT_PURL));
+                when(client.getComponentDetails(parent)).thenReturn(details);
             }
 
             @Test
