@@ -19,7 +19,7 @@ public abstract class License {
         if (identifier.isBlank()) {
             return NONE;
         }
-        return new SingleLicense(identifier);
+        return new SingleLicense(identifier.trim());
     }
 
     public License with(String exception) {
@@ -100,7 +100,7 @@ public abstract class License {
                 throw new LicenseException("Adding a second exception is not allowed");
             }
             final var license = new SingleLicense(identifier);
-            license.exception = exception;
+            license.exception = exception.trim();
             return license;
         }
 

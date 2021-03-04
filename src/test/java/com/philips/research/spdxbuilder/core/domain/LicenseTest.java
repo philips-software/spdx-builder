@@ -33,6 +33,13 @@ class LicenseTest {
         }
 
         @Test
+        void trimsLicenseIdentifiers() {
+            final var license = License.of(" \tA \t").with(" \tB \t");
+
+            assertThat(license.toString()).isEqualTo("A WITH B");
+        }
+
+        @Test
         void addsExceptionToSingleLicense() {
             var license = License.of(IDENTIFIER).with(EXCEPTION);
 

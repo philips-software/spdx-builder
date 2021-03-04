@@ -5,16 +5,23 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LicenseParserTest {
     private static final String IDENTIFIER = "MIT";
     private static final String IDENTIFIER2 = "Apache-2.0";
     private static final String IDENTIFIER3 = "GPL-2.0-only";
     private static final String EXCEPTION = "SHL-2.0";
+
+    private final LicenseDictionary dictionary = LicenseDictionary.getInstance();
+
+    @BeforeEach()
+    void beforeEach() {
+        dictionary.clear();
+    }
 
     @Test
     void parsesNoLicense() {
@@ -46,17 +53,34 @@ class LicenseParserTest {
     }
 
     @Test
-    void throws_rogueWithClause() {
-        assertThatThrownBy(() -> LicenseParser.parse("with " + EXCEPTION))
-                .isInstanceOf(LicenseException.class)
-                .hasMessageContaining("WITH");
+    void ignoresUnbalancedOpenBracket() {
+        final var license = LicenseParser.parse("(" + IDENTIFIER);
+
+        assertThat(license).isEqualTo(License.of(IDENTIFIER));
+    }
+
+    @Test
+    void ignoresUnbalancedClosingBracket() {
+        final var license = LicenseParser.parse(IDENTIFIER + ")");
+
+        assertThat(license).isEqualTo(License.of(IDENTIFIER));
+    }
+
+    @Test
+    void ignoresRogueWithClause() {
+        final var license = LicenseParser.parse("with " + EXCEPTION);
+
+        assertThat(license.toString()).contains("Ref");
+        assertThat(dictionary.getCustomLicenses()).containsValue("with " + EXCEPTION);
     }
 
     @Test
     void throws_doubleWithClause() {
-        //TODO This should be a custom license instead
-        assertThatThrownBy(() -> LicenseParser.parse(IDENTIFIER + " with " + EXCEPTION + " with " + EXCEPTION))
-                .isInstanceOf(LicenseException.class);
+        final var text = IDENTIFIER + " WITH " + EXCEPTION + " with " + EXCEPTION;
+        final var license = LicenseParser.parse(text);
+
+        assertThat(license.toString()).contains("Ref");
+        assertThat(dictionary.getCustomLicenses()).containsEntry(license.toString(), text);
     }
 
     @Test
@@ -82,10 +106,10 @@ class LicenseParserTest {
 
     @Test
     void throws_licensesWithoutLogicalOperator() {
-        //TODO Should become a custom license instead
-        assertThatThrownBy(() -> LicenseParser.parse("A B"))
-                .isInstanceOf(LicenseException.class)
-                .hasMessageContaining("logical operator");
+        final var license = LicenseParser.parse(IDENTIFIER + " " + IDENTIFIER2);
+
+        assertThat(license.toString()).contains("Ref");
+        assertThat(dictionary.getCustomLicenses()).containsEntry(license.toString(), IDENTIFIER + " " + IDENTIFIER2);
     }
 
     @Test
@@ -110,26 +134,10 @@ class LicenseParserTest {
     }
 
     @Test
-    void throws_unbalancedOpenBracket() {
-        //TODO Should be custom license
-        assertThatThrownBy(() -> LicenseParser.parse("("))
-                .isInstanceOf(LicenseException.class)
-                .hasMessageContaining("opening bracket");
-    }
+    void withClauseFollowedByOpeningBracketIsAndRelationWithoutException() {
+        final var license = LicenseParser.parse(IDENTIFIER + " with (" + EXCEPTION + ")");
 
-    @Test
-    void throws_unbalancedClosingBracket() {
-        //TODO Should be custom license
-        assertThatThrownBy(() -> LicenseParser.parse(")"))
-                .isInstanceOf(LicenseException.class)
-                .hasMessageContaining("closing bracket");
-    }
-
-    @Test
-    void throws_withClauseFollowedByOpeningBracket() {
-        //TODO Should be custom license
-        assertThatThrownBy(() -> LicenseParser.parse(IDENTIFIER + " with (" + EXCEPTION + ")"))
-                .isInstanceOf(LicenseException.class)
-                .hasMessageContaining("not expected");
+        assertThat(license.toString()).contains(IDENTIFIER).contains("Ref");
+        assertThat(dictionary.getCustomLicenses()).hasSize(1).containsValue(EXCEPTION);
     }
 }

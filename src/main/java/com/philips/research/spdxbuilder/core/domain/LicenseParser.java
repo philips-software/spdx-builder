@@ -11,12 +11,20 @@ import pl.tlinkowski.annotation.basic.NullOr;
  * Parser for SPDX-like license statements containing AND, OR, WITH clauses and braces.
  */
 public class LicenseParser {
+    private final LicenseDictionary dictionary;
     private StringBuilder buffer = new StringBuilder();
     private License license = License.NONE;
-    private @NullOr License latest = null;
+    private License current = License.NONE;
+    private String identifier = "";
     private Mode mode = Mode.NONE;
+    private boolean parsingWith = false;
 
     private LicenseParser() {
+        this(LicenseDictionary.getInstance());
+    }
+
+    private LicenseParser(LicenseDictionary dictionary) {
+        this.dictionary = dictionary;
     }
 
     /**
@@ -26,6 +34,7 @@ public class LicenseParser {
         if (text == null || text.isBlank()) {
             return License.NONE;
         }
+        //TODO Catch any exceptions and convert to single plain license via dictionary
         return new LicenseParser().decode(text);
     }
 
@@ -34,33 +43,24 @@ public class LicenseParser {
             final var ch = text.charAt(i);
             switch (ch) {
                 case '(':
-                    final var sub = bracketSubstring(text, i + 1);
-                    final var lic = new LicenseParser().decode(sub);
-                    switch (mode) {
-                        case AND:
-                            license = license.and(lic);
-                            break;
-                        case OR:
-                            license = license.or(lic);
-                            break;
-                        case NONE:
-                            license = lic;
-                            break;
-                        default:
-                            throw new LicenseException("Opening bracket is not expected");
+                    updateCurrent();
+                    if (!current.equals(License.NONE)) {
+                        appendCurrent();
                     }
+                    final var sub = bracketSubstring(text, i + 1);
+                    current = new LicenseParser(dictionary).decode(sub);
                     i += sub.length() + 1;
                     break;
                 case ')':
-                    throw new LicenseException("Unbalanced closing bracket found");
                 case ' ':
-                    parseToken();
+                    addToken();
                     break;
                 default:
                     buffer.append(ch);
             }
         }
-        parseToken();
+        addToken();
+        appendCurrent();
         return license;
     }
 
@@ -77,59 +77,73 @@ public class LicenseParser {
                 nested--;
             }
         }
-        throw new LicenseException("Unbalanced opening bracket found");
+        return text.substring(start);
     }
 
-    private void parseToken() {
-        final var token = buffer.toString();
-        if (token.isEmpty()) {
-            return;
-        }
-
+    private void addToken() {
+        final var token = buffer.toString().trim();
         switch (token.toLowerCase()) {
             case "with":
-                mode = Mode.WITH;
+                if (current.equals(License.NONE) && !identifier.isBlank() && !parsingWith) {
+                    current = dictionary.licenseFor(identifier);
+                    identifier = "";
+                    parsingWith = true;
+                } else {
+                    identifier += ' ' + token;
+                }
                 break;
             case "and":
+                appendCurrent();
                 mode = Mode.AND;
                 break;
             case "or":
+                appendCurrent();
                 mode = Mode.OR;
                 break;
             default:
-                appendToken(token);
+                if (!token.isBlank()) {
+                    identifier += ' ' + token;
+                }
         }
         buffer = new StringBuilder();
     }
 
-    private void appendToken(String token) {
+    private void appendCurrent() {
+        updateCurrent();
         switch (mode) {
-            case WITH:
-                if (latest == null) {
-                    throw new LicenseException("No license for WITH clause");
-                }
-                latest.with(token);
-                break;
             case AND:
-                license = license.and(createSingle(token));
+                license = license.and(current);
                 break;
             case OR:
-                license = license.or(createSingle(token));
+                license = license.or(current);
                 break;
             default:
-                if (latest != null) {
-                    throw new LicenseException("Missing logical operator between " + latest + " and " + token);
+                if (!current.equals(License.NONE)) {
+                    if (license.equals(License.NONE)) {
+                        license = current;
+                    } else {
+                        license = license.and(current);
+                    }
                 }
-                license = createSingle(token);
         }
+        current = License.NONE;
         mode = Mode.NONE;
     }
 
-    private License createSingle(String name) {
-        latest = License.of(name);
-        return latest;
+    private void updateCurrent() {
+        if (identifier.isBlank()) {
+            parsingWith = false;
+            return;
+        }
+        if (parsingWith) {
+            current = dictionary.withException(current, identifier);
+            parsingWith = false;
+        } else {
+            current = dictionary.licenseFor(identifier);
+        }
+        identifier = "";
     }
 
-    enum Mode {NONE, WITH, AND, OR}
+    enum Mode {NONE, AND, OR}
 }
 

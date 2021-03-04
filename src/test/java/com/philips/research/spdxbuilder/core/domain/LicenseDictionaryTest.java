@@ -29,6 +29,13 @@ class LicenseDictionaryTest {
     }
 
     @Test
+    void ignoresEmptyLicense() {
+        final var license = dictionary.licenseFor(" \t");
+
+        assertThat(license).isEqualTo(License.NONE);
+    }
+
+    @Test
     void normalizesSpdxLicenses() {
         final var license = dictionary.licenseFor(" mit ");
 
@@ -42,6 +49,15 @@ class LicenseDictionaryTest {
 
         assertThat(custom1).isEqualTo(License.of("LicenseRef-1"));
         assertThat(custom2).isEqualTo(License.of("LicenseRef-2"));
+    }
+
+    @Test
+    void clearsDictionaryForTestingPurposes() {
+        dictionary.licenseFor("First");
+        dictionary.clear();
+        dictionary.licenseFor("Second");
+
+        assertThat(dictionary.getCustomLicenses()).containsOnlyKeys("LicenseRef-1");
     }
 
     @Test
@@ -68,21 +84,30 @@ class LicenseDictionaryTest {
     }
 
     @Test
+    void ignoresEmptyException() {
+        final var base = License.of("MIT");
+
+        final var license = dictionary.withException(base, " \t");
+
+        assertThat(license).isSameAs(base);
+    }
+
+    @Test
     void extendsLicenseWithSpdxException() {
         final var base = License.of("GPL-3.0-only");
 
-        final var license =dictionary.withException(base, " Classpath-exception-2.0 ");
+        final var license = dictionary.withException(base, " Classpath-exception-2.0 ");
 
         assertThat(license).isEqualTo(License.of("GPL-3.0-only").with("Classpath-exception-2.0"));
     }
 
     @Test
     void customLicenseForCustomException() {
-       final var base = License.of("MIT") ;
+        final var base = License.of("MIT");
 
-       final var license = dictionary.withException(base, " Not an exception ");
+        final var license = dictionary.withException(base, " Not an exception ");
 
-       assertThat(license).isEqualTo(License.of("LicenseRef-1"));
-       assertThat(dictionary.getCustomLicenses()).containsEntry("LicenseRef-1", "MIT WITH Not an exception");
+        assertThat(license).isEqualTo(License.of("LicenseRef-1"));
+        assertThat(dictionary.getCustomLicenses()).containsEntry("LicenseRef-1", "MIT WITH Not an exception");
     }
 }

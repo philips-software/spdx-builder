@@ -77,17 +77,17 @@ public class LicenseDictionary {
     private final Map<String, String> spdxExceptions = new HashMap<>();
     private int nextCustomId = 1;
 
+    LicenseDictionary() {
+        version = loadLicenses();
+        loadExceptions();
+    }
+
     public static LicenseDictionary getInstance() {
         if (instance == null) {
             instance = new LicenseDictionary();
         }
 
         return instance;
-    }
-
-    LicenseDictionary() {
-        version = loadLicenses();
-        loadExceptions();
     }
 
     private String loadLicenses() {
@@ -113,11 +113,20 @@ public class LicenseDictionary {
         }
     }
 
+    void clear() {
+        customLicenses.clear();
+        customIdentifiers.clear();
+        nextCustomId = 1;
+    }
+
     public String getVersion() {
         return version;
     }
 
     public License licenseFor(String identifier) {
+        if (identifier.isBlank()) {
+            return License.NONE;
+        }
         return getSpdxLicense(identifier)
                 .orElseGet(() -> upgrade(identifier)
                         .orElseGet(() -> getOrCreateCustomLicense(identifier)));
@@ -131,6 +140,9 @@ public class LicenseDictionary {
     }
 
     public License withException(License license, String exception) {
+        if (exception.isBlank()) {
+            return license;
+        }
         final var ex = spdxExceptions.get(exception.trim().toLowerCase());
         return (ex != null)
                 ? license.with(ex)
