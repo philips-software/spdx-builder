@@ -15,6 +15,7 @@ import com.github.packageurl.PackageURL;
 import com.github.packageurl.PackageURLBuilder;
 import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
+import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Call;
 import retrofit2.http.*;
@@ -145,7 +146,6 @@ public interface BlackDuckApi {
         List<String> usages = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
         List<LicenseJson> licenses = new ArrayList<>();
-        @NullOr String licenseType;
         LinksJson _meta;
 
         @Override
@@ -182,10 +182,7 @@ public interface BlackDuckApi {
 
         @Override
         public License getLicense() {
-            final var dictionary = LicenseDictionary.getInstance();
-            final var disjunctive = Objects.equals(licenseType, "DISJUNCTIVE");
-            return licenses.stream().map(lic -> dictionary.licenseFor(lic.getLicense()))
-                    .reduce(License.NONE, (l, r) -> disjunctive ? l.or(r) : l.and(r));
+            return (licenses.size() > 0) ? licenses.get(0).getLicense() : License.NONE;
         }
 
         @Override
@@ -280,9 +277,17 @@ public interface BlackDuckApi {
     class LicenseJson {
         String licenseDisplay;
         @NullOr String spdxId;
+        String licenseType;
+        List<LicenseJson> licenses=new ArrayList<>();
 
-        public String getLicense() {
-            return (spdxId != null) ? spdxId : licenseDisplay;
+        public License getLicense() {
+            if (licenses.isEmpty()) {
+                final var identifier = (spdxId != null) ? spdxId : licenseDisplay;
+                return LicenseParser.parse(identifier);
+            }
+            final var disjunctive = "DISJUNCTIVE".equals(licenseType);
+            return licenses.stream().map(LicenseJson::getLicense)
+                    .reduce(License.NONE, (l, r) -> disjunctive ? l.or(r) : l.and(r));
         }
     }
 

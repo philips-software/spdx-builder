@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BlackDuckApiTest {
@@ -53,9 +55,11 @@ class BlackDuckApiTest {
 
         @Test
         void combinesConjunctiveByDefault() {
+            final var json1 = new LicenseJson();
+            json1.spdxId = LICENSE;
             final var json2 = new LicenseJson();
             json2.spdxId = LICENSE2;
-            component.licenses.add(json2);
+            component.licenses.get(0).licenses = List.of(json1, json2);
 
             final var license = component.getLicense();
 
@@ -64,10 +68,12 @@ class BlackDuckApiTest {
 
         @Test
         void combinesDisjunctive() {
+            final var json1 = new LicenseJson();
+            json1.spdxId = LICENSE;
             final var json2 = new LicenseJson();
             json2.spdxId = LICENSE2;
-            component.licenseType = "DISJUNCTIVE";
-            component.licenses.add(json2);
+            component.licenses.get(0).licenseType = "DISJUNCTIVE";
+            component.licenses.get(0).licenses = List.of(json1, json2);
 
             final var license = component.getLicense();
 
