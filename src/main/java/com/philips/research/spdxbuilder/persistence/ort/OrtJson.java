@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -171,7 +172,7 @@ class PackageJson {
 
     void addDeclaredLicense(Package pkg) {
         if (declaredLicensesProcessed != null) {
-            pkg.setDeclaredLicense(declaredLicensesProcessed.spdxExpression);
+            pkg.setDeclaredLicense(LicenseParser.parse(declaredLicensesProcessed.spdxExpression));
         }
     }
 }

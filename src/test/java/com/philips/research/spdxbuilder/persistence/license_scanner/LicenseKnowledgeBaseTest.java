@@ -11,6 +11,7 @@
 package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.*;
 
 class LicenseKnowledgeBaseTest {
     private static final URI LOCATION = URI.create("http://example.com");
-    private static final String LICENSE = "License";
+    private static final License LICENSE = License.of("MIT");
 
     private final Package pkg = new Package("Type", "Namespace", "Name", "Version");
     private final BillOfMaterials bom = new BillOfMaterials().addPackage(pkg);
@@ -32,7 +33,7 @@ class LicenseKnowledgeBaseTest {
     @Test
     void checksLicenses() {
         pkg.setSourceLocation(LOCATION);
-        final var info = new LicenseScannerClient.LicenseInfo(LICENSE, false);
+        final var info = new LicenseScannerClient.LicenseInfo(LICENSE.toString(), false);
         when(client.scanLicense(pkg.getPurl(), LOCATION)).thenReturn(Optional.of(info));
 
         knowledgeBase.enhance(bom);
@@ -50,13 +51,13 @@ class LicenseKnowledgeBaseTest {
         knowledgeBase.enhance(bom);
 
         assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        verify(client).contest(pkg.getPurl(), LICENSE);
+        verify(client).contest(pkg.getPurl(), LICENSE.toString());
     }
 
     @Test
     void acceptsConfirmedLicense() {
-        pkg.setDeclaredLicense("Other");
-        final var info = new LicenseScannerClient.LicenseInfo(LICENSE, true);
+        pkg.setDeclaredLicense(License.of("Other"));
+        final var info = new LicenseScannerClient.LicenseInfo(LICENSE.toString(), true);
         when(client.scanLicense(eq(pkg.getPurl()), any())).thenReturn(Optional.of(info));
 
         knowledgeBase.enhance(bom);
@@ -67,7 +68,7 @@ class LicenseKnowledgeBaseTest {
 
     @Test
     void ignoresCommunicationExceptions() {
-        pkg.setDeclaredLicense("Other");
+        pkg.setDeclaredLicense(License.of("Other"));
         when(client.scanLicense(any(), any())).thenThrow(new LicenseScannerException("Test"));
 
         knowledgeBase.enhance(bom);

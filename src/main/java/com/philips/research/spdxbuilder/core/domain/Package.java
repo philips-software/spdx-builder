@@ -29,9 +29,9 @@ public final class Package {
     private @NullOr String filename;
     private @NullOr URI sourceLocation;
     private @NullOr URL homePage;
-    private @NullOr String concludedLicense;
-    private @NullOr String declaredLicense;
-    private @NullOr String detectedLicense;
+    private @NullOr License concludedLicense;
+    private @NullOr License declaredLicense;
+    private @NullOr License detectedLicense;
     private @NullOr String copyright;
     private @NullOr String summary;
     private @NullOr String description;
@@ -139,7 +139,7 @@ public final class Package {
         return this;
     }
 
-    public Optional<String> getConcludedLicense() {
+    public Optional<License> getConcludedLicense() {
         if (concludedLicense != null) {
             return Optional.of(concludedLicense);
         } else if (declaredLicense == null) {
@@ -148,33 +148,27 @@ public final class Package {
         return Optional.of(declaredLicense);
     }
 
-    public Package setConcludedLicense(@NullOr String concludedLicense) {
-        this.concludedLicense = nullIfEmpty(concludedLicense);
+    public Package setConcludedLicense(@NullOr License concludedLicense) {
+        this.concludedLicense = concludedLicense;
         return this;
     }
 
-    public Optional<String> getDeclaredLicense() {
+    public Optional<License> getDeclaredLicense() {
         return Optional.ofNullable(declaredLicense);
     }
 
-    public Package setDeclaredLicense(@NullOr String license) {
-        this.declaredLicense = nullIfEmpty(license);
+    public Package setDeclaredLicense(@NullOr License license) {
+        this.declaredLicense = license;
         return this;
     }
 
-    public Optional<String> getDetectedLicense() {
+    public Optional<License> getDetectedLicense() {
         return Optional.ofNullable(detectedLicense);
     }
 
-    public Package setDetectedLicense(@NullOr String license) {
-        this.detectedLicense = nullIfEmpty(license);
+    public Package setDetectedLicense(@NullOr License license) {
+        this.detectedLicense = license;
         return this;
-    }
-
-    private @NullOr String nullIfEmpty(@NullOr String string) {
-        return (string != null && !string.isBlank())
-                ? string
-                : null;
     }
 
     public Optional<String> getCopyright() {

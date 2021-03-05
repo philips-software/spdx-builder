@@ -146,7 +146,7 @@ class BlackDuckReaderTest {
             assertThat(pkg.getName()).isEqualTo(NAME);
             assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(pkg.getVersion()).isEqualTo(VERSION);
-            assertThat(pkg.getDeclaredLicense()).contains(LICENSE.toString());
+            assertThat(pkg.getDeclaredLicense()).contains(LICENSE);
             assertThat(pkg.getDescription()).contains(DESCRIPTION);
             assertThat(pkg.getHomePage()).contains(new URL(HOMEPAGE));
             assertThat(pkg.getSummary()).contains(SUMMARY);

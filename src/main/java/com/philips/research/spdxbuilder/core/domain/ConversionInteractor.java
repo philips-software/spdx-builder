@@ -64,7 +64,7 @@ public class ConversionInteractor implements ConversionService {
     @Override
     public void curatePackageLicense(URI purl, String license) {
         //FIXME Should be stored first
-        curate(purl, pkg -> pkg.setConcludedLicense(license));
+        curate(purl, pkg -> pkg.setConcludedLicense(LicenseParser.parse(license)));
     }
 
     @Override

@@ -17,7 +17,7 @@ class PackageTest {
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String VERSION = "Version";
-    private static final String LICENSE = "License";
+    private static final License LICENSE = License.of("MIT");
 
     final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
 
@@ -91,7 +91,7 @@ class PackageTest {
 
         @Test
         void concludedLicenseOverridesDeclaredLicense() {
-            pkg.setDeclaredLicense("Other");
+            pkg.setDeclaredLicense(License.of("Other"));
             pkg.setConcludedLicense(LICENSE);
 
             assertThat(pkg.getConcludedLicense()).contains(LICENSE);

@@ -12,6 +12,7 @@ package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.philips.research.spdxbuilder.core.KnowledgeBase;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import com.philips.research.spdxbuilder.core.domain.Package;
 
 import java.net.URI;
@@ -41,12 +42,13 @@ public class LicenseKnowledgeBase implements KnowledgeBase {
     private void updateLicense(Package pkg) {
         detectLicense(pkg)
                 .ifPresent(l -> {
-                    final var declared = pkg.getDeclaredLicense().orElse(l.getLicense());
-                    pkg.setDetectedLicense(l.getLicense());
+                    final var scanned = LicenseParser.parse(l.getLicense());
+                    final var declared = pkg.getDeclaredLicense().orElse(scanned);
+                    pkg.setDetectedLicense(scanned);
                     if (l.isConfirmed()) {
-                        pkg.setConcludedLicense(l.getLicense());
-                    } else if (!Objects.equals(l.getLicense(), declared)) {
-                        licenseClient.contest(pkg.getPurl(), declared);
+                        pkg.setConcludedLicense(scanned);
+                    } else if (!Objects.equals(scanned, declared)) { //FIXME should expand through dictionary
+                        licenseClient.contest(pkg.getPurl(), declared.toString()); //FIXME should expand through dictionary
                     }
                 });
     }
