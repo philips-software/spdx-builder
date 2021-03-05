@@ -17,7 +17,6 @@ import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import com.philips.research.spdxbuilder.core.domain.Package;
 
 import java.net.URI;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -53,7 +52,7 @@ public class LicenseKnowledgeBase implements KnowledgeBase {
                         final var scannedText = dictionary.expand(scanned);
                         final var declaredText = dictionary.expand(declared);
                         if (!scannedText.equals(declaredText)) {
-                            licenseClient.contest(pkg.getPurl(), declaredText); //FIXME should expand through dictionary
+                            licenseClient.contest(pkg.getPurl(), declaredText);
                         }
                     }
                 });

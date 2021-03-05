@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.persistence.spdx;
 
 import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 
@@ -44,7 +45,7 @@ public class SpdxWriter implements BomWriter {
             for (Package pkg : identifiers.keySet()) {
                 writePackage(doc, pkg, bom);
             }
-            //TODO Add non-SPDX license information
+            writeCustomLicenses(doc);
         } catch (IOException e) {
             throw new SpdxException("Could not write SPDX file: " + e.getMessage());
         }
@@ -142,16 +143,16 @@ public class SpdxWriter implements BomWriter {
         }
     }
 
-    private void writeLicense(TagValueDocument doc) throws IOException {
-//       doc.addValue("LicenseID", );
-//       doc.addText("ExtractedText", );
-//       doc.addValue("LicenseName", );
-//       doc.addValue("LicenseCrossReference", );
+    private void writeCustomLicenses(TagValueDocument doc) throws IOException {
+        final var dictionary = LicenseDictionary.getInstance().getCustomLicenses();
+        for (var key : dictionary.keySet()) {
+            doc.addValue("LicenseID", key);
+            doc.addValue("LicenseName", dictionary.get(key));
+        }
     }
 
     private SpdxRef identifierFor(Package pkg) {
         return identifiers.computeIfAbsent(pkg, (o) -> new SpdxRef(Integer.toString(nextId++)));
     }
-
 }
 
