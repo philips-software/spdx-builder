@@ -11,6 +11,7 @@
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
 import com.github.packageurl.PackageURL;
+import com.philips.research.spdxbuilder.core.domain.License;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,8 @@ interface BlackDuckComponent {
     List<PackageURL> getPackageUrls();
 
     List<String> getUsages();
+
+    License getLicense();
 
     long getHierarchicalId();
 }

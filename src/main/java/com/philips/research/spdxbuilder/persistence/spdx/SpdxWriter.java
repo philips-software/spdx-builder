@@ -37,7 +37,7 @@ public class SpdxWriter implements BomWriter {
 
     @Override
     public void write(BillOfMaterials bom) {
-        System.out.println("Writing SBOM to '" + file + "'...");
+        System.out.println("Writing SBOM to '" + file + "'");
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             writeDocumentInformation(doc, bom);
             generatePackageIdentifiers(bom);

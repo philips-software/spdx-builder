@@ -61,7 +61,7 @@ public class BlackDuckReader implements BomReader {
 
     private void exportProjectVersion(BillOfMaterials bom) {
         exportProjectMetadata(bom);
-        System.out.println("Exporting Black Duck project '" + project.getName() + "', version '" + projectVersion.getName() + "'...");
+        System.out.println("Exporting Black Duck project '" + project.getName() + "', version '" + projectVersion.getName() + "'");
         exportPackages(bom);
         System.out.println("done");
     }
@@ -105,6 +105,7 @@ public class BlackDuckReader implements BomReader {
 
         final var details = client.getComponentDetails(component);
         final var pkg = Package.fromPurl(purl)
+                .setDeclaredLicense(component.getLicense().toString())
                 .setSummary(component.getName());
         details.getDescription().ifPresent(pkg::setDescription);
         details.getHomepage().ifPresent(pkg::setHomePage);

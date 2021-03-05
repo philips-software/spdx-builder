@@ -14,6 +14,7 @@ import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -100,6 +101,7 @@ class BlackDuckReaderTest {
     class ExportBillOfMaterials {
         private static final String DESCRIPTION = "Description";
         private static final String HOMEPAGE = "https://homepage.com";
+        private final License LICENSE = License.of("GPL-3.0-only");
 
         private final BlackDuckComponent component = mock(BlackDuckComponent.class);
         private final BlackDuckComponentDetails details = mock(BlackDuckComponentDetails.class);
@@ -114,6 +116,7 @@ class BlackDuckReaderTest {
             when(component.getId()).thenReturn(COMPONENT_ID);
             when(component.getVersionId()).thenReturn(COMPONENT_VERSION_ID);
             when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
+            when(component.getLicense()).thenReturn(LICENSE);
             when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
             when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
         }
@@ -143,6 +146,7 @@ class BlackDuckReaderTest {
             assertThat(pkg.getName()).isEqualTo(NAME);
             assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(pkg.getVersion()).isEqualTo(VERSION);
+            assertThat(pkg.getDeclaredLicense()).contains(LICENSE.toString());
             assertThat(pkg.getDescription()).contains(DESCRIPTION);
             assertThat(pkg.getHomePage()).contains(new URL(HOMEPAGE));
             assertThat(pkg.getSummary()).contains(SUMMARY);
@@ -170,6 +174,7 @@ class BlackDuckReaderTest {
                 when(parent.getId()).thenReturn(PARENT_ID);
                 when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
                 when(parent.getPackageUrls()).thenReturn(List.of(PARENT_PURL));
+                when(parent.getLicense()).thenReturn(License.NONE);
                 when(client.getComponentDetails(parent)).thenReturn(details);
             }
 

@@ -13,6 +13,8 @@ package com.philips.research.spdxbuilder.persistence.blackduck;
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
 import com.github.packageurl.PackageURLBuilder;
+import com.philips.research.spdxbuilder.core.domain.License;
+import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Call;
 import retrofit2.http.*;
@@ -143,6 +145,7 @@ public interface BlackDuckApi {
         List<String> usages = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
         List<LicenseJson> licenses = new ArrayList<>();
+        @NullOr String licenseType;
         LinksJson _meta;
 
         @Override
@@ -175,6 +178,14 @@ public interface BlackDuckApi {
         @Override
         public List<String> getUsages() {
             return usages;
+        }
+
+        @Override
+        public License getLicense() {
+            final var dictionary = LicenseDictionary.getInstance();
+            final var disjunctive = Objects.equals(licenseType, "DISJUNCTIVE");
+            return licenses.stream().map(lic -> dictionary.licenseFor(lic.getLicense()))
+                    .reduce(License.NONE, (l, r) -> disjunctive ? l.or(r) : l.and(r));
         }
 
         @Override
@@ -268,9 +279,11 @@ public interface BlackDuckApi {
     @SuppressWarnings("NotNullFieldNotInitialized")
     class LicenseJson {
         String licenseDisplay;
-        String licenseType;
-        String spdxId;
-        List<LicenseJson> licenses = new ArrayList<>();
+        @NullOr String spdxId;
+
+        public String getLicense() {
+            return (spdxId != null) ? spdxId : licenseDisplay;
+        }
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
