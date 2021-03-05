@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class LicenseDictionary {
@@ -32,6 +34,7 @@ public class LicenseDictionary {
     private static final URL EXCEPTIONS = LicenseDictionary.class.getResource("/exceptions.json");
     private static final String PREFIX = "LicenseRef-";
     private static final Map<String, Function<LicenseDictionary, License>> UPGRADE_MAP = new HashMap<>();
+    private static final Pattern LICENSE_REF = Pattern.compile("LicenseRef-\\w+");
 
     private static @NullOr LicenseDictionary instance;
 
@@ -160,6 +163,14 @@ public class LicenseDictionary {
             return nextCustomId++;
         });
         return License.of(customId);
+    }
+
+    public String expand(License license) {
+        final var text = license.toString();
+        final var map = getCustomLicenses();
+        return LICENSE_REF.matcher(text).results()
+                .map(MatchResult::group)
+                .reduce(text, (prev, ref) -> prev.replace(ref, map.getOrDefault(ref, "?")));
     }
 
     public Map<String, String> getCustomLicenses() {

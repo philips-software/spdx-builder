@@ -110,4 +110,26 @@ class LicenseDictionaryTest {
         assertThat(license).isEqualTo(License.of("LicenseRef-1"));
         assertThat(dictionary.getCustomLicenses()).containsEntry("LicenseRef-1", "MIT WITH Not an exception");
     }
+
+    @Test
+    void expandsCustomLicenseElements() {
+        final var license = License.of("MIT")
+                .and(dictionary.licenseFor("First"))
+                .or(dictionary.licenseFor("Second"));
+
+        final var string = dictionary.expand(license);
+
+        assertThat(string).isEqualTo(License.of("MIT").and(License.of("First")).or(License.of("Second")).toString());
+    }
+
+    @Test
+    void expandsUnknownCustomElements() {
+        final var license = License.of("MIT")
+                .and(License.of("LicenseRef-abc123"))
+                .and(License.of("Unknown"));
+
+        final var string = dictionary.expand(license);
+
+        assertThat(string).isEqualTo(License.of("MIT").and(License.of("?")).and(License.of("Unknown")).toString());
+    }
 }
