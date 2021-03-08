@@ -24,7 +24,7 @@ repositories {
 ext {
     jacksonVersion = '2.12.1'
     junitVersion = '5.7.0'
-    mockWebServerVersion = '4.9.0'
+    mockWebServerVersion = '4.9.1'
     retrofitVersion = '2.9.0'
 }
 
