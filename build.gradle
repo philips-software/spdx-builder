@@ -24,7 +24,7 @@ repositories {
 ext {
     jacksonVersion = '2.12.1'
     junitVersion = '5.7.1'
-    mockWebServerVersion = '4.9.0'
+    mockWebServerVersion = '4.9.1'
     retrofitVersion = '2.9.0'
 }
 
@@ -43,7 +43,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
     testImplementation "org.assertj:assertj-core:3.18.1"
     testImplementation "org.mockito:mockito-core:3.7.7"
-    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.5.1"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.5.5"
 }
 
 testlogger {
