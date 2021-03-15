@@ -5,15 +5,16 @@
 
 package com.philips.research.spdxbuilder;
 
-import com.philips.research.spdxbuilder.controller.ConvertCommand;
+import com.philips.research.spdxbuilder.controller.BlackDuckCommand;
+import com.philips.research.spdxbuilder.controller.OrtCommand;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import picocli.CommandLine;
 
-public class Application {
+public class SpdxBuilder {
     public static void main(String... args) {
         try {
-            new CommandLine(new ConvertCommand())
-                    .setExecutionExceptionHandler(Application::exceptionHandler)
+            new CommandLine(new Runner())
+                    .setExecutionExceptionHandler(SpdxBuilder::exceptionHandler)
                     .execute(args);
         } catch (BusinessException e) {
             System.err.println("Conversion failed: " + e.getMessage());
@@ -36,5 +37,10 @@ public class Application {
         cmd.getErr().println(cmd.getColorScheme().errorText(message));
     }
 
+
+    @CommandLine.Command(subcommands = {OrtCommand.class, BlackDuckCommand.class},
+            description = "Builds SPDX bill-of-materials files from various sources")
+    static class Runner {
+    }
 }
 

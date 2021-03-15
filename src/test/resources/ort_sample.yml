@@ -43,7 +43,7 @@ analyzer:
     # Metadata about all found projects, in this case only the mime-types package defined by the package.json file.
     projects:
       - id: "NPM::mime-types:2.1.18"
-        purl: "pkg://NPM//mime-types@2.1.18"
+        purl: "pkg:npm/mime-types@2.1.18"
         definition_file_path: "package.json"
         declared_licenses:
           - "MIT"
@@ -75,6 +75,9 @@ analyzer:
                   - id: "NPM::skip:2.1"
                     # If an issue occurred during the dependency analysis of this package there would be an additional "issues"
                     # array.
+          - name: "testStuff"
+            dependencies:
+              - id: "NPM::skip:3.0"
       - id: "NPM::skipme:1.2.3"
         definition_file_path: "subdir/package.json"
     # ...
@@ -82,7 +85,7 @@ analyzer:
     packages:
       - package:
           id: "NPM::dependency:1.0"
-          purl: "pkg://NPM//dependency@1.0"
+          purl: "pkg:npm/dependency@1.0"
           declared_licenses:
             - "ISC"
           declared_licenses_processed:
@@ -103,13 +106,16 @@ analyzer:
           id: "NPM::static_dependency:2.0"
       - package:
           id: "NPM::skip:1.0"
-          purl: "pkg://NPM//skip@1.0"
+          purl: "pkg:npm/skip@1.0"
       - package:
           id: "NPM::skip:2.0"
-          purl: "pkg://NPM//skip@2.0"
+          purl: "pkg:npm/skip@2.0"
       - package:
           id: "NPM::skip:2.1"
-          purl: "pkg://NPM//skip@2.1"
+          purl: "pkg:npm/skip@2.1"
+      - package:
+          id: "NPM::skip:3.0"
+          purl: "pkg:npm/skip@3.0"
     # ...
     # Finally a list of project related issues that happened during dependency analysis. Fortunately empty in this case.
     issues: { }

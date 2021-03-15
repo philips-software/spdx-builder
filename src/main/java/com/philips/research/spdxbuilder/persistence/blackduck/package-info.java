@@ -4,4 +4,4 @@
  */
 
 @pl.tlinkowski.annotation.basic.NonNullPackage
-package com.philips.research.spdxbuilder.persistence.license;
+package com.philips.research.spdxbuilder.persistence.blackduck;

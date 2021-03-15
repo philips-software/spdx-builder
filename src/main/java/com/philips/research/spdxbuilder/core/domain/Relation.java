@@ -47,5 +47,11 @@ public final class Relation {
         return Objects.hash(from, to, type);
     }
 
-    public enum Type {DYNAMIC_LINK, STATIC_LINK, DEPENDS_ON, DESCENDANT_OF}
+    @Override
+    public String toString() {
+        return String.format("%s -> %s: %s", from, to, type);
+    }
+
+    // Sorted from strongest weakest binding
+    public enum Type {DESCENDANT_OF, STATIC_LINK, DYNAMIC_LINK, DEPENDS_ON}
 }

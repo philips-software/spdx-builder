@@ -5,12 +5,13 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
+import com.github.packageurl.PackageURLBuilder;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -22,15 +23,15 @@ public final class Package {
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
-    private @NullOr URI purl;
+    private @NullOr PackageURL purl;
     private @NullOr Party supplier;
     private @NullOr Party originator;
     private @NullOr String filename;
     private @NullOr URI sourceLocation;
     private @NullOr URL homePage;
-    private @NullOr String concludedLicense;
-    private @NullOr String declaredLicense;
-    private @NullOr String detectedLicense;
+    private @NullOr License concludedLicense;
+    private @NullOr License declaredLicense;
+    private @NullOr License detectedLicense;
     private @NullOr String copyright;
     private @NullOr String summary;
     private @NullOr String description;
@@ -43,8 +44,8 @@ public final class Package {
         this.version = version;
     }
 
-    private static String encoded(String string) {
-        return URLEncoder.encode(string, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+    public static Package fromPurl(PackageURL purl) {
+        return new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion());
     }
 
     public String getType() {
@@ -63,18 +64,23 @@ public final class Package {
         return version;
     }
 
-    public URI getPurl() {
+    public PackageURL getPurl() {
         if (purl == null) {
-            var path = encoded(name);
-            if (!namespace.isBlank()) {
-                path = encoded(namespace) + '/' + path;
+            try {
+                return PackageURLBuilder.aPackageURL()
+                        .withType(type)
+                        .withNamespace(namespace)
+                        .withName(name)
+                        .withVersion(version)
+                        .build();
+            } catch (MalformedPackageURLException e) {
+                throw new IllegalArgumentException(e);
             }
-            return URI.create("pkg:" + encoded(type) + '/' + path + "@" + encoded(version));
         }
         return purl;
     }
 
-    public Package setPurl(URI purl) {
+    public Package setPurl(PackageURL purl) {
         this.purl = purl;
         return this;
     }
@@ -133,7 +139,7 @@ public final class Package {
         return this;
     }
 
-    public Optional<String> getConcludedLicense() {
+    public Optional<License> getConcludedLicense() {
         if (concludedLicense != null) {
             return Optional.of(concludedLicense);
         } else if (declaredLicense == null) {
@@ -142,33 +148,27 @@ public final class Package {
         return Optional.of(declaredLicense);
     }
 
-    public Package setConcludedLicense(@NullOr String concludedLicense) {
-        this.concludedLicense = nullIfEmpty(concludedLicense);
+    public Package setConcludedLicense(@NullOr License concludedLicense) {
+        this.concludedLicense = concludedLicense;
         return this;
     }
 
-    public Optional<String> getDeclaredLicense() {
+    public Optional<License> getDeclaredLicense() {
         return Optional.ofNullable(declaredLicense);
     }
 
-    public Package setDeclaredLicense(@NullOr String license) {
-        this.declaredLicense = nullIfEmpty(license);
+    public Package setDeclaredLicense(@NullOr License license) {
+        this.declaredLicense = license;
         return this;
     }
 
-    public Optional<String> getDetectedLicense() {
+    public Optional<License> getDetectedLicense() {
         return Optional.ofNullable(detectedLicense);
     }
 
-    public Package setDetectedLicense(@NullOr String license) {
-        this.detectedLicense = nullIfEmpty(license);
+    public Package setDetectedLicense(@NullOr License license) {
+        this.detectedLicense = license;
         return this;
-    }
-
-    private @NullOr String nullIfEmpty(@NullOr String string) {
-        return (string != null && !string.isBlank())
-                ? string
-                : null;
     }
 
     public Optional<String> getCopyright() {
@@ -225,7 +225,7 @@ public final class Package {
 
     @Override
     public String toString() {
-        return String.format("%s:%s/%s-%s", type, namespace, name, version);
+        return String.format("%s:%s/%s@%s", type, namespace, name, version);
     }
 
 }

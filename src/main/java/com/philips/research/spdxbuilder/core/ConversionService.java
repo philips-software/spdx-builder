@@ -5,11 +5,7 @@
 
 package com.philips.research.spdxbuilder.core;
 
-import pl.tlinkowski.annotation.basic.NullOr;
-
-import java.io.File;
 import java.net.URI;
-import java.util.List;
 
 /**
  * Conversion use cases.
@@ -45,34 +41,6 @@ public interface ConversionService {
     void setDocNamespace(URI namespace);
 
     /**
-     * Marks a project for import with an (optional) package alias
-     *
-     * @param id   ORT identifier for the project
-     * @param purl (Optional) Package URL
-     */
-    void defineProjectPackage(String id, @NullOr URI purl);
-
-    /**
-     * Adds excluded scopes to ORT.
-     *
-     * @param id       ORT identifier for the project
-     * @param excluded (optionally wild-carded) scope names
-     */
-    void excludeScopes(String id, List<String> excluded);
-
-    /**
-     * Reads the result of an OSS Review Toolkit analysis.
-     *
-     * @param file YAML file
-     */
-    void readOrtAnalysis(File file);
-
-    /**
-     * Scans licenses for all bill-of-material items.
-     */
-    void scanLicenses();
-
-    /**
      * Set alternative license for a package.
      *
      * @param purl    identification of the package
@@ -89,9 +57,8 @@ public interface ConversionService {
     void curatePackageSource(URI purl, URI source);
 
     /**
-     * Writes an SPDX bill-of-materials.
-     *
-     * @param file output file
+     * Reads a bill-of-materials, extends it with metadata from the knowledge base (if configured),
+     * and writes it as a document.
      */
-    void writeBillOfMaterials(File file);
+    void convert();
 }

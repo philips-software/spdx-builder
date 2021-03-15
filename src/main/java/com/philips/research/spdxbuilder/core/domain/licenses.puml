@@ -1,0 +1,31 @@
+@startuml
+
+abstract class License {
+    {static} of(string):License
+    with(string):License
+    and(string):License
+    or(string):License
+}
+
+class NoLicense
+License <|.. NoLicense
+class SingleLicense
+License <|.. SingleLicense
+class ComboLicense
+License <|.. ComboLicense
+class AndLicense
+ComboLicense <|.. AndLicense
+class OrLicense
+ComboLicense <|.. OrLicense
+
+class Detection {
+    score:int
+    confirmations:int
+    filePath:file
+    startLine:int
+    endLine:int
+    ignored:boolean
+}
+Detection -> "1" License:license
+
+@enduml

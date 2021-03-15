@@ -5,17 +5,15 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import com.philips.research.spdxbuilder.core.BomReader;
+import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.ConversionService;
-import com.philips.research.spdxbuilder.core.ConversionStore;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
+import com.philips.research.spdxbuilder.core.KnowledgeBase;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -34,11 +32,33 @@ class ConversionInteractorTest {
     private static final URI NAMESPACE_URI = URI.create("http://example.com");
     private static final URI PURL = URI.create("pkg:/group/name");
 
-    private final ConversionStore store = mock(ConversionStore.class);
+    private final BomReader reader = mock(BomReader.class);
+    private final BomWriter writer = mock(BomWriter.class);
+    private final KnowledgeBase knowledgeBase = mock(KnowledgeBase.class);
     private final BillOfMaterials bom = new BillOfMaterials();
-    private final ConversionService interactor = new ConversionInteractor(store, bom);
+    private final ConversionService interactor = new ConversionInteractor(reader, writer, bom)
+            .setKnowledgeBase(knowledgeBase);
     private final Package project = new Package(TYPE, GROUP, PROJECT, VERSION);
     private final Package pkg = new Package(TYPE, GROUP, NAME, VERSION);
+
+    @Test
+    void convertsBillOfMaterials() {
+        interactor.convert();
+
+        verify(reader).read(bom);
+        verify(knowledgeBase).enhance(bom);
+        verify(writer).write(bom);
+    }
+
+    @Test
+    void skipsEnhancement_noKnowledgeBaseConfigured() {
+        //noinspection ConstantConditions
+        ((ConversionInteractor) interactor).setKnowledgeBase(null);
+
+        interactor.convert();
+
+        verify(knowledgeBase, never()).enhance(bom);
+    }
 
     @Test
     void setsDocumentProperties() {
@@ -59,75 +79,30 @@ class ConversionInteractorTest {
         assertThat(bom.getIdentifier()).contains(PROJECT);
     }
 
-    @Nested
-    class OrtFile {
-        @BeforeEach
-        void beforeEach() {
-            interactor.readOrtAnalysis(ORT_FILE);
-        }
-
-        @Test
-        void processesOrtAnalysisFile() {
-            verify(store).read(bom, Map.of(), Map.of(), ConversionStore.FileType.ORT, ORT_FILE);
-        }
-    }
-
-    @Nested
-    class LicenseScanner {
-        @Test
-        void scansProjectAndPackageLicenses() {
-            bom.addPackage(project);
-            bom.addPackage(pkg.setSourceLocation(LOCATION));
-            final var licenseInfo = new ConversionStore.LicenseInfo(LICENSE, false);
-            when(store.detectLicense(project)).thenReturn(Optional.of(licenseInfo));
-            when(store.detectLicense(pkg)).thenReturn(Optional.of(licenseInfo));
-
-            interactor.scanLicenses();
-
-            assertThat(project.getDetectedLicense()).contains(LICENSE);
-            assertThat(pkg.getDetectedLicense()).contains(LICENSE);
-        }
-
-        @Test
-        void overridesConcludedLicenseIfScanConfirmed() {
-            pkg.setDeclaredLicense("Other");
-            bom.addPackage(pkg);
-            final var licenseInfo = new ConversionStore.LicenseInfo(LICENSE, true);
-            when(store.detectLicense(pkg)).thenReturn(Optional.of(licenseInfo));
-
-            interactor.scanLicenses();
-
-            assertThat(pkg.getDetectedLicense()).contains(LICENSE);
-            //noinspection OptionalGetWithoutIsPresent
-            assertThat(pkg.getDeclaredLicense().get()).isNotEqualTo(LICENSE);
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        }
-    }
-
-    @Nested
-    class Curation {
-        private final Package otherPkg = new Package(TYPE, GROUP, NAME, VERSION);
-
-        @BeforeEach
-        void setUp() {
-            pkg.setPurl(PURL);
-            bom.addPackage(pkg).addPackage(otherPkg);
-        }
-
-        @Test
-        void curatesPackageLicense() {
-            interactor.curatePackageLicense(PURL, LICENSE);
-
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-            assertThat(otherPkg.getConcludedLicense()).isEmpty();
-        }
-
-        @Test
-        void curatesPackageSource() {
-            interactor.curatePackageSource(PURL, LOCATION);
-
-            assertThat(pkg.getSourceLocation()).contains(LOCATION);
-            assertThat(otherPkg.getSourceLocation()).isEmpty();
-        }
-    }
+//    @Nested
+//    class Curation {
+//        private final Package otherPkg = new Package(TYPE, GROUP, NAME, VERSION);
+//
+//        @BeforeEach
+//        void setUp() {
+//            pkg.setPurl(PURL);
+//            bom.addPackage(pkg).addPackage(otherPkg);
+//        }
+//
+//        @Test
+//        void curatesPackageLicense() {
+//            interactor.curatePackageLicense(PURL, LICENSE);
+//
+//            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+//            assertThat(otherPkg.getConcludedLicense()).isEmpty();
+//        }
+//
+//        @Test
+//        void curatesPackageSource() {
+//            interactor.curatePackageSource(PURL, LOCATION);
+//
+//            assertThat(pkg.getSourceLocation()).contains(LOCATION);
+//            assertThat(otherPkg.getSourceLocation()).isEmpty();
+//        }
+//    }
 }

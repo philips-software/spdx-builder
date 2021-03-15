@@ -5,15 +5,13 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import com.philips.research.spdxbuilder.core.BomReader;
+import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.ConversionService;
-import com.philips.research.spdxbuilder.core.ConversionStore;
+import com.philips.research.spdxbuilder.core.KnowledgeBase;
 import pl.tlinkowski.annotation.basic.NullOr;
 
-import java.io.File;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -21,18 +19,25 @@ import java.util.function.Consumer;
  * Implementation of conversion use cases.
  */
 public class ConversionInteractor implements ConversionService {
-    private final ConversionStore store;
+    private final BomReader reader;
+    private final BomWriter writer;
     private final BillOfMaterials bom;
-    private final Map<String, @NullOr URI> projectPackages = new HashMap<>();
-    private final Map<String, List<String>> projectExcludes = new HashMap<>();
 
-    public ConversionInteractor(ConversionStore store) {
-        this(store, new BillOfMaterials());
+    private @NullOr KnowledgeBase knowledgeBase;
+
+    public ConversionInteractor(BomReader reader, BomWriter writer) {
+        this(reader, writer, new BillOfMaterials());
     }
 
-    ConversionInteractor(ConversionStore store, BillOfMaterials bom) {
-        this.store = store;
+    ConversionInteractor(BomReader reader, BomWriter writer, BillOfMaterials bom) {
+        this.reader = reader;
+        this.writer = writer;
         this.bom = bom;
+    }
+
+    public ConversionInteractor setKnowledgeBase(KnowledgeBase knowledgeBase) {
+        this.knowledgeBase = knowledgeBase;
+        return this;
     }
 
     @Override
@@ -57,54 +62,30 @@ public class ConversionInteractor implements ConversionService {
     }
 
     @Override
-    public void defineProjectPackage(String id, @NullOr URI purl) {
-        //noinspection ConstantConditions
-        projectPackages.put(id, purl);
-    }
-
-    @Override
-    public void excludeScopes(String id, List<String> excluded) {
-        projectExcludes.put(id, excluded);
-    }
-
-    @Override
-    public void readOrtAnalysis(File file) {
-        store.read(bom, projectPackages, projectExcludes, ConversionStore.FileType.ORT, file);
-    }
-
-    @Override
-    public void scanLicenses() {
-        bom.getPackages().forEach(this::updateLicense);
-    }
-
-    private void updateLicense(Package pkg) {
-        store.detectLicense(pkg)
-                .ifPresent(l -> {
-                    pkg.setDetectedLicense(l.getLicense());
-                    if (l.isConfirmed()) {
-                        pkg.setConcludedLicense(l.getLicense());
-                    }
-                });
-    }
-
-    @Override
     public void curatePackageLicense(URI purl, String license) {
-        curate(purl, pkg -> pkg.setConcludedLicense(license));
+        //FIXME Should be stored first
+        curate(purl, pkg -> pkg.setConcludedLicense(LicenseParser.parse(license)));
     }
 
     @Override
     public void curatePackageSource(URI purl, URI source) {
+        //FIXME Should be stored first
         curate(purl, pkg -> pkg.setSourceLocation(source));
+    }
+
+    @Override
+    public void convert() {
+        reader.read(bom);
+        if (knowledgeBase != null) {
+            knowledgeBase.enhance(bom);
+        }
+        //TODO Curate before writing
+        writer.write(bom);
     }
 
     private void curate(URI purl, Consumer<Package> curate) {
         bom.getPackages().stream()
                 .filter(pkg -> Objects.equals(purl, pkg.getPurl()))
                 .forEach(curate);
-    }
-
-    @Override
-    public void writeBillOfMaterials(File file) {
-        store.write(bom, ConversionStore.FileType.SPDX, file);
     }
 }

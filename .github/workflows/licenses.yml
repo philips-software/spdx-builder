@@ -3,12 +3,11 @@ name: Get Licenses
 on:
   push:
     branches: 
-      - master
+      - main
       - develop
-      - prepare-for-open-source
   pull_request:
     branches:
-      - master
+      - main
       - develop
         
 jobs:

@@ -5,43 +5,52 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import com.github.packageurl.PackageURL;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PackageTest {
-    private static final String TYPE = "Type";
+    private static final String TYPE = "type";
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String VERSION = "Version";
-    private static final String LICENSE = "License";
+    private static final License LICENSE = License.of("MIT");
 
     final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
 
     @Test
-    void createsInstance() {
+    void createsInstance() throws Exception {
         assertThat(pkg.getType()).isEqualTo(TYPE);
         assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
         assertThat(pkg.getName()).isEqualTo(NAME);
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
-        assertThat(pkg.getPurl()).isEqualTo(URI.create("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
+        assertThat(pkg.getPurl()).isEqualTo(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
         assertThat(pkg.getConcludedLicense()).isEmpty();
     }
 
     @Test
-    void encodesPackageUrlElements() {
-        final var encoded = new Package("type", "!#?@space", "@?!#", "#!?#");
+    void createsInstanceFromPackageUrl() throws Exception {
+        final var fromPurl = Package.fromPurl(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
 
-        assertThat(encoded.getPurl()).isEqualTo(URI.create("pkg:type/%21%23%3F%40space/%40%3F%21%23@%23%21%3F%23"));
+        assertThat(fromPurl.getType()).isEqualTo(TYPE);
+        assertThat(fromPurl.getNamespace()).isEqualTo(NAMESPACE);
+        assertThat(fromPurl.getName()).isEqualTo(NAME);
+        assertThat(fromPurl.getVersion()).isEqualTo(VERSION);
     }
 
     @Test
-    void overridesExplicitPackageUrl() {
-        final var purl = URI.create("pkg:custom@1.2.3");
+    void encodesPackageUrlElements() throws Exception {
+        final var encoded = new Package("type", "!#?@space", "@?!#", "#!?#");
+
+        assertThat(encoded.getPurl()).isEqualTo(new PackageURL("pkg:type/%21%23%3F%40space/%40%3F%21%23@%23%21%3F%23"));
+    }
+
+    @Test
+    void overridesExplicitPackageUrl() throws Exception {
+        final var purl = new PackageURL("pkg:type/custom@1.2.3");
         pkg.setPurl(purl);
 
         assertThat(pkg.getPurl()).isEqualTo(purl);
@@ -82,7 +91,7 @@ class PackageTest {
 
         @Test
         void concludedLicenseOverridesDeclaredLicense() {
-            pkg.setDeclaredLicense("Other");
+            pkg.setDeclaredLicense(License.of("Other"));
             pkg.setConcludedLicense(LICENSE);
 
             assertThat(pkg.getConcludedLicense()).contains(LICENSE);
