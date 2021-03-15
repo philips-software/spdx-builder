@@ -42,6 +42,8 @@ public abstract class AbstractCommand implements Runnable {
 
     @Override
     public void run() {
+        showBanner();
+
         if (showVersion) {
             final var app = getClass().getPackage().getImplementationTitle();
             final var version = getClass().getPackage().getImplementationVersion();
@@ -61,5 +63,12 @@ public abstract class AbstractCommand implements Runnable {
         }
 
         System.exit(0);
+    }
+
+    private void showBanner() {
+        System.out.println(" ___ ___ _____  __   ___      _ _    _         ");
+        System.out.println("/ __| _ \\   \\ \\/ /__| _ )_  _(_) |__| |___ _ _ ");
+        System.out.println("\\__ \\  _/ |) >  <___| _ \\ || | | / _` / -_) '_|");
+        System.out.println("|___/_| |___/_/\\_\\  |___/\\_,_|_|_\\__,_\\___|_|");
     }
 }
