@@ -14,7 +14,6 @@ import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
 import com.github.packageurl.PackageURLBuilder;
 import com.philips.research.spdxbuilder.core.domain.License;
-import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import pl.tlinkowski.annotation.basic.NullOr;
 import retrofit2.Call;
@@ -278,7 +277,7 @@ public interface BlackDuckApi {
         String licenseDisplay;
         @NullOr String spdxId;
         String licenseType;
-        List<LicenseJson> licenses=new ArrayList<>();
+        List<LicenseJson> licenses = new ArrayList<>();
 
         public License getLicense() {
             if (licenses.isEmpty()) {

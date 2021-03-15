@@ -62,7 +62,7 @@ public class SpdxWriter implements BomWriter {
         doc.addValue("DocumentNamespace", bom.getNamespace()
                 .orElseGet(() -> URI.create("https://spdx.org/spdxdocs"))
                 .resolve(UUID.randomUUID().toString()));
-        doc.addValue("LicenseListVersion", SpdxLicense.VERSION);
+        doc.addValue("LicenseListVersion", LicenseDictionary.getInstance().getVersion());
 
         doc.addEmptyLine();
         doc.addComment("Creation information");
