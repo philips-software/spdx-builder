@@ -254,6 +254,14 @@ the [License Scanner Service](https://github.com/philips-software/license-scanne
 , add the network location of the License Scanner service by adding the command
 line parameter `--scanner <scanner_url>`.
 
+### GitHub actions
+
+You can use the SPDX-builder in a GitHub Action. This can be found on 
+<https://github.com/philips-software/spdx-action>.
+The Action performs an ORT scan, pushes the data to SPDX-builder and can use
+a self hosted license scanner service and upload service like BOM-Bar. (plain upload
+function for a spdx-file, so you can also use this for other systems.)
+
 ## How to test the software
 
 The unit test suite is run via the standard Gradle command:
