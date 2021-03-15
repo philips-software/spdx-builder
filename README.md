@@ -1,4 +1,35 @@
+<div align="center">
+
 # SPDX-Builder
+
+[![Release](https://img.shields.io/github/release/philips-software/spdx-builder.svg)](https://github.com/philips-software/spdx-builder/releases)
+
+CI/CD tool to generate Bill-of-Materials reports in SPDX format.
+> **Status**: Experimental research prototype
+
+</div>
+
+## Contents
+
+- [SPDX-Builder](#spdx-builder)
+- [Contents](#contents)
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+    - [Basic usage](#basic-usage)
+    - [Uploading the resulting SPDX file](#uploading-the-resulting-spdx-file)
+    - [SPDX document information](#spdx-document-information)
+    - [Manual curation](#manual-curation)
+    - [Integration with license scanner service](#integration-with-license-scanner-service)
+    - [GitHub actions](#github-actions)
+- [How to test the software](#how-to-test-the-software)
+- [Known issues](#known-issues)
+- [Contact / Getting help](#contact--getting-help)
+- [License](#license)
+- [Credits and references](#credits-and-references)
+
+## SPDX-Builder
 
 CI/CD tool to generate Bill-of-Materials reports in SPDX format.
 
