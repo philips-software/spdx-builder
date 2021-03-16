@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Parses consecutive lines of a textual tree into unique packages and their relations.
  */
 class TreeParser {
-    private static final Pattern ID_PATTERN = compile("^(\\w+):(\\w+):(\\w+)");
+    private static final Pattern ID_PATTERN = compile("^([@\\w-\\.]+):([@\\w-\\.]+):([\\w-\\.]+)");
 
     private final BillOfMaterials bom;
     private final Map<PackageURL, Package> packages = new HashMap<>();
@@ -200,6 +200,8 @@ class TreeParser {
         final var clean = (cleanup != null) ? line.replaceAll(cleanup, "") : line;
         final var indent = firstPackageCharacter(clean);
         final var name = clean.substring(indent);
+        //TODO Just for debugging
+        System.out.println(indentStack.size()+ "->" + name);
         if (name.isBlank()) {
             return this;
         }
