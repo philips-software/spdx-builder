@@ -45,6 +45,7 @@ public class SpdxWriter implements BomWriter {
             generatePackageIdentifiers(bom);
             writePackages(doc, bom);
             writeCustomLicenses(doc);
+            System.out.println("Total: " + bom.getPackages().size() + " packages and " + bom.getRelations().size() + " relations");
         } catch (IOException e) {
             throw new SpdxException("Could not write SPDX file: " + e.getMessage());
         }

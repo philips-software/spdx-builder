@@ -9,6 +9,7 @@ formats:
     description: "Default Maven Java tree output"
     tool: "mvn dependency:tree"
     cleanup: "^\\[INFO]\\s"
+    skip: ":test$"
     namespace:
       regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
       group: 1

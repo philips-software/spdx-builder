@@ -127,6 +127,20 @@ class TreeParserTest {
                     .isInstanceOf(TreeException.class)
                     .hasMessageContaining("'Unknown'");
         }
+
+        @Test
+        void skipsPackageAndSubtree() {
+            parser.withSkip("skip$");
+
+            parser.parse(PACKAGE1);
+            parser.parse("->" + PACKAGE2 + " skip");
+            parser.parse("--->" + PACKAGE2);
+            parser.parse("->" + PACKAGE3);
+
+            assertThat(bom.getPackages()).containsExactly(
+                    new Package(TYPE, NAMESPACE, NAME, "1"),
+                    new Package(TYPE, NAMESPACE, NAME, "3"));
+        }
     }
 
     @Nested

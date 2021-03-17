@@ -32,11 +32,13 @@ class TreeParser {
     private final BillOfMaterials bom;
     private final Map<PackageURL, Package> packages = new HashMap<>();
     private final Stack<Integer> indentStack = new Stack<>();
-    private final Stack<Package> packageStack = new Stack<>();
+    private final Stack<@NullOr Package> packageStack = new Stack<>();
+    private int skipLevel = Integer.MAX_VALUE;
     private @NullOr Pattern startSection;
     private @NullOr Pattern endSection;
     private @NullOr String cleanup;
     private Pattern identifierPattern = compile("\\w");
+    private @NullOr Pattern skipPattern;
     private @NullOr Pattern typePattern;
     private int typeGroup = 0;
     private Pattern namespacePattern = ID_PATTERN;
@@ -99,6 +101,16 @@ class TreeParser {
      */
     TreeParser withIdentifier(String regEx) {
         identifierPattern = compile(regEx);
+        return this;
+    }
+
+    /**
+     * Specifies which packages (and dependent subpackages) to skip.
+     *
+     * @param regEx regular expression to match a package that is to be skipped
+     */
+    TreeParser withSkip(String regEx) {
+        skipPattern = compile(regEx);
         return this;
     }
 
@@ -193,35 +205,30 @@ class TreeParser {
      * @param line line of ascii characters
      */
     TreeParser parse(String line) {
-        if (ignore(line)) {
+        if (ignoredLine(line)) {
             return this;
         }
 
-        final var clean = (cleanup != null) ? line.replaceAll(cleanup, "") : line;
+        final var clean = clean(line);
         final var indent = firstPackageCharacter(clean);
         final var name = clean.substring(indent);
         if (name.isBlank()) {
             return this;
         }
-        final var purl = purlFromLine(name);
-        final var pkg = storePackage(purl);
 
-        while (!indentStack.isEmpty() && indent <= indentStack.peek()) {
-            indentStack.pop();
-            packageStack.pop();
+        popUntil(indent);
+
+        if (!ignoredPackage(name)) {
+            final var pkg = processPackage(indent, name);
+            pushPackage(indent, pkg);
+        } else {
+            pushPackage(indent, null);
         }
-
-        if (!indentStack.isEmpty() && indent > indentStack.peek()) {
-            bom.addRelation(packageStack.peek(), pkg, extractRelationship(name));
-        }
-
-        indentStack.push(indent);
-        packageStack.push(pkg);
 
         return this;
     }
 
-    private boolean ignore(String line) {
+    private boolean ignoredLine(String line) {
         if (!started) {
             assert startSection != null;
             started = startSection.matcher(line).find();
@@ -232,12 +239,29 @@ class TreeParser {
         return ended;
     }
 
+    private String clean(String line) {
+        return (cleanup != null) ? line.replaceAll(cleanup, "") : line;
+    }
+
     private int firstPackageCharacter(String line) {
         final var matcher = identifierPattern.matcher(line);
         if (!matcher.find()) {
             return line.length();
         }
         return matcher.start();
+    }
+
+    private boolean ignoredPackage(String name) {
+        if (indentStack.size() < skipLevel) {
+            if (skipPattern != null && skipPattern.matcher(name).find()) {
+                skipLevel = indentStack.size() + 1;
+                return true;
+            } else {
+                skipLevel = Integer.MAX_VALUE;
+                return false;
+            }
+        }
+        return true;
     }
 
     private PackageURL purlFromLine(String line) {
@@ -287,6 +311,17 @@ class TreeParser {
         }
     }
 
+    private Package processPackage(int indent, String name) {
+        final var purl = purlFromLine(name);
+        final Package pkg =  storePackage(purl);
+
+        if (!indentStack.isEmpty() && indent > indentStack.peek()) {
+            bom.addRelation(packageStack.peek(), pkg, extractRelationship(name));
+        }
+
+        return pkg;
+    }
+
     private Package storePackage(PackageURL purl) {
         return packages.computeIfAbsent(purl, purl1 -> {
             final var pkg = Package.fromPurl(purl1);
@@ -294,4 +329,18 @@ class TreeParser {
             return pkg;
         });
     }
+
+    private void popUntil(int indent) {
+        while (!indentStack.isEmpty() && indent <= indentStack.peek()) {
+            indentStack.pop();
+            packageStack.pop();
+        }
+    }
+
+    private void pushPackage(int indent, @NullOr Package pkg) {
+        indentStack.push(indent);
+        //noinspection ConstantConditions
+        packageStack.push(pkg);
+    }
+
 }

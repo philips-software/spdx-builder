@@ -75,6 +75,8 @@ class TreeFormatsTest {
                     "[INFO] --- maven-dependency-plugin:3.1.2:tree ---",
                     "[INFO] com.group:artifact:jar:1.2",
                     "[INFO] +- com.group:contained:jar:1.2.3:compile",
+                    "[INFO] +- com.group:skipped:jar:1.2.3:test",
+                    "[INFO] |  +- com.group:skipped:jar:1.2.3:compile",
                     "[INFO] -----------------------------------",
                     "[INFO] group:ignore:666:compile");
 
