@@ -22,7 +22,7 @@ import picocli.CommandLine.Command;
 /**
  * CLI command to export the SBOM from a textual tree representation to an SPDX file.
  */
-@Command(name = "tree")
+@Command(name = "tree", description = "Converts the package tree from your build tool into a bill-of-materials.")
 public class TreeCommand extends AbstractCommand {
     @CommandLine.Option(names = {"-f", "--format"}, description = "Format of the tree to parse", required = true)
     String format;

@@ -25,7 +25,7 @@ import java.net.URI;
 /**
  * CLI command to generate an SPDX file from an ORT Analyzer YAML.
  */
-@Command(name = "ort")
+@Command(name = "ort", description = "Converts the output of the OSS Review Toolkit Analyzer into a bill-of-materials.")
 public class OrtCommand extends AbstractCommand {
     @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")

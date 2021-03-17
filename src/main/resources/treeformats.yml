@@ -6,8 +6,20 @@ formats:
       "" : "maven"
   - format: maven
     parent: java
-    description: "Default Standard Maven Java tree output"
+    description: "Default Maven Java tree output"
     tool: "mvn dependency:tree"
+    cleanup: "^\\[INFO]\\s"
+    namespace:
+      regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
+      group: 1
+    name:
+      regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
+      group: 2
+    version:
+      regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
+      group: 4
+    start: "^\\[INFO]\\s-+\\smaven-dependency-plugin"
+    end: "^\\[INFO]\\s-+$"
   - format: gradle
     parent: java
     description: "Default Gradle Java tree output"

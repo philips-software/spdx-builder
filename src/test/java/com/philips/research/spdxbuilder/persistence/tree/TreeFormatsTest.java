@@ -67,6 +67,22 @@ class TreeFormatsTest {
                     new Package("maven", "com.group", "upgraded", "2.3.4"));
         }
 
+        @Test
+        void maven() {
+            format.configure(parser, "maven");
+
+            parse("[INFO] group:ignore:666:compile",
+                    "[INFO] --- maven-dependency-plugin:3.1.2:tree ---",
+                    "[INFO] com.group:artifact:jar:1.2",
+                    "[INFO] +- com.group:contained:jar:1.2.3:compile",
+                    "[INFO] -----------------------------------",
+                    "[INFO] group:ignore:666:compile");
+
+            assertThat(bom.getPackages()).containsExactly(
+                    new Package("maven", "com.group", "artifact", "1.2"),
+                    new Package("maven", "com.group", "contained", "1.2.3"));
+        }
+
         private void parse(String... lines) {
             for (var l : lines) {
                 parser.parse(l);
