@@ -17,26 +17,39 @@ import pl.tlinkowski.annotation.basic.NullOr;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Map;
 
 public class TreeReader implements BomReader {
+    private final TreeFormats formats;
+    private final String format;
+
+    public TreeReader(String format) {
+        formats = new TreeFormats();
+        this.format = format;
+    }
+
     @Override
     public void read(BillOfMaterials bom) {
         try (final var reader = new BufferedReader(new InputStreamReader(System.in))) {
-            final var parser = new TreeParser(bom)
-                    //TODO Just temporary fix to see if it works...
-                    .withTypes(Map.of("","maven"))
-                    .withStartSection("^compileClasspath")
-                    .withEndSection("^\\s*$");
+            //TODO Get a configured parser from TreeFormats instance?
+            final var parser = new TreeParser(bom);
+            formats.configure(parser, format);
 
             @NullOr String line = "";
             while (line != null) {
-                parser.parse(line);
+                parse(parser, line);
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            //TODO Proper exception handling
-            throw new TreeException("Ehhh...");
+            throw new TreeException("Failed to read tree from stdin");
+        }
+    }
+
+    private void parse(TreeParser parser, String line) {
+        try {
+            parser.parse(line);
+        } catch (TreeException e) {
+            System.err.println(line);
+            throw e;
         }
     }
 }
