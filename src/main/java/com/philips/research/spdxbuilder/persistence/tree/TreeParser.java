@@ -313,7 +313,7 @@ class TreeParser {
 
     private Package processPackage(int indent, String name) {
         final var purl = purlFromLine(name);
-        final Package pkg =  storePackage(purl);
+        final Package pkg = storePackage(purl);
 
         if (!indentStack.isEmpty() && indent > indentStack.peek()) {
             bom.addRelation(packageStack.peek(), pkg, extractRelationship(name));

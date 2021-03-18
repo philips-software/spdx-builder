@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.core.domain;
 
 import com.github.packageurl.PackageURL;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,13 @@ class PackageTest {
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
         assertThat(pkg.getPurl()).isEqualTo(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
         assertThat(pkg.getConcludedLicense()).isEmpty();
+    }
+
+    @Test
+    void createsInstanceWithoutNamespace() {
+        final var pkg = new Package(TYPE, null, NAME, VERSION);
+
+        assertThat(pkg.getNamespace()).isEmpty();
     }
 
     @Test

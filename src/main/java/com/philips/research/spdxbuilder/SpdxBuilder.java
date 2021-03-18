@@ -13,12 +13,12 @@ import picocli.CommandLine;
 
 public class SpdxBuilder {
     public static void main(String... args) {
+        final var cmd = new CommandLine(new Runner());
         try {
-            new CommandLine(new Runner())
-                    .setExecutionExceptionHandler(SpdxBuilder::exceptionHandler)
-                    .execute(args);
+            cmd.setExecutionExceptionHandler(SpdxBuilder::exceptionHandler);
+            cmd.execute(args);
         } catch (BusinessException e) {
-            System.err.println("Conversion failed: " + e.getMessage());
+            printError(cmd, "Conversion failed: " + e.getMessage());
             System.exit(1);
         }
     }

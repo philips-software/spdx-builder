@@ -36,4 +36,19 @@ formats:
       group: 1
     start: "^runtimeClasspath" # Only runtime dependencies
     end: "^\\s*$" # Empty line
+  - format: npm
+    description: "Default NPM tree output"
+    tool: "npm list --all --production"
+    identifier: "[@\\w]"
+    types:
+      "": "npm"
+    namespace:
+      regex: "^(\\S+)/"
+      group: 1
+    name:
+      regex: "^(\\S+/)?(.+)@[^@]+$"
+      group: 2
+    version:
+      regex: "@([^@\\s]+)(\\s\\S+)?$"
+      group: 1
 

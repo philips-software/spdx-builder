@@ -85,6 +85,21 @@ class TreeFormatsTest {
                     new Package("maven", "com.group", "contained", "1.2.3"));
         }
 
+        @Test
+        void npm() {
+            format.configure(parser, "npm");
+
+            parse("package@1.2 /path/to/source/code/",
+                    "├─┬ sub-package@2.0",
+                    "│ ├── sub-package@2.0 deduped",
+                    "│ ├── @scope/sub-package@2.1");
+
+            assertThat(bom.getPackages()).containsExactly(
+                    new Package("npm", "", "package", "1.2"),
+                    new Package("npm", "", "sub-package", "2.0"),
+                    new Package("npm", "@scope", "sub-package", "2.1"));
+        }
+
         private void parse(String... lines) {
             for (var l : lines) {
                 parser.parse(l);

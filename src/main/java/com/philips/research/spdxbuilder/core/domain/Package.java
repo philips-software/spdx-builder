@@ -37,9 +37,9 @@ public final class Package {
     private @NullOr String description;
     private @NullOr String attribution;
 
-    public Package(String type, String namespace, String name, String version) {
+    public Package(String type, @NullOr String namespace, String name, String version) {
         this.type = type;
-        this.namespace = namespace;
+        this.namespace = (namespace != null) ? namespace : "";
         this.name = name;
         this.version = version;
     }
@@ -66,18 +66,22 @@ public final class Package {
 
     public PackageURL getPurl() {
         if (purl == null) {
-            try {
-                return PackageURLBuilder.aPackageURL()
-                        .withType(type)
-                        .withNamespace(namespace)
-                        .withName(name)
-                        .withVersion(version)
-                        .build();
-            } catch (MalformedPackageURLException e) {
-                throw new IllegalArgumentException(e);
-            }
+            return implicitPurl();
         }
         return purl;
+    }
+
+    private PackageURL implicitPurl() {
+        try {
+            return PackageURLBuilder.aPackageURL()
+                    .withType(type)
+                    .withNamespace(namespace)
+                    .withName(name)
+                    .withVersion(version)
+                    .build();
+        } catch (MalformedPackageURLException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public Package setPurl(PackageURL purl) {
@@ -211,11 +215,11 @@ public final class Package {
     public boolean equals(@NullOr Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Package aPackage = (Package) o;
-        return Objects.equals(type, aPackage.type) &&
-                Objects.equals(namespace, aPackage.namespace) &&
-                Objects.equals(name, aPackage.name) &&
-                Objects.equals(version, aPackage.version);
+        Package other = (Package) o;
+        return Objects.equals(type, other.type)
+                && Objects.equals(namespace, other.namespace)
+                && Objects.equals(name, other.name)
+                && Objects.equals(version, other.version);
     }
 
     @Override

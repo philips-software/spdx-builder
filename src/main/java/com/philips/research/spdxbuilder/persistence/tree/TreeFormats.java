@@ -21,6 +21,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -29,7 +30,7 @@ import java.util.function.Consumer;
 /**
  * Recursive parser configurer using parameters stored in an external file.
  */
-class TreeFormats {
+public class TreeFormats {
     public static final String FORMATS_FILE = "/treeformats.yml";
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -60,14 +61,19 @@ class TreeFormats {
         definition.format(parser);
     }
 
-    void printFormats() {
-        formats.forEach(fmt -> {
-            System.out.println("Format: '" + fmt.format + "'");
-            if (!fmt.tool.isBlank()) {
-                System.out.println("'\nTool example: " + fmt.tool);
-            }
-            System.out.println(fmt.description);
-        });
+    public void printFormats() {
+        formats.stream()
+                .sorted(Comparator.comparing(fmt -> fmt.format))
+                .forEach(fmt -> {
+                    System.out.println("Format: '" + fmt.format + "'");
+                    System.out.println(fmt.description);
+                    if (!fmt.tool.isBlank()) {
+                        System.out.println("Example use: " + fmt.tool + " | spdx-builder tree -f " + fmt.format);
+                    } else {
+                        System.out.println("(Abstract format; not intended for direct command line use.)");
+                    }
+                    System.out.println();
+                });
     }
 
     static class Formats {
