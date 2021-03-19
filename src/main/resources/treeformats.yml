@@ -51,4 +51,5 @@ formats:
     version:
       regex: "@([^@\\s]+)(\\s\\S+)?$"
       group: 1
+    end: "^\\s*$" # Empty line
 

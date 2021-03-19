@@ -76,13 +76,16 @@ class TreeFormatsTest {
                     "[INFO] com.group:artifact:jar:1.2",
                     "[INFO] +- com.group:contained:jar:1.2.3:compile",
                     "[INFO] +- com.group:skipped:jar:1.2.3:test",
+                    "[INFO] |  +- com.group:skipped:jar:1.2.3:test",
                     "[INFO] |  +- com.group:skipped:jar:1.2.3:compile",
+                    "[INFO] +- com.group:contained:war:2.0:compile",
                     "[INFO] -----------------------------------",
                     "[INFO] group:ignore:666:compile");
 
             assertThat(bom.getPackages()).containsExactly(
                     new Package("maven", "com.group", "artifact", "1.2"),
-                    new Package("maven", "com.group", "contained", "1.2.3"));
+                    new Package("maven", "com.group", "contained", "1.2.3"),
+                    new Package("maven", "com.group", "contained", "2.0"));
         }
 
         @Test
@@ -92,7 +95,10 @@ class TreeFormatsTest {
             parse("package@1.2 /path/to/source/code/",
                     "├─┬ sub-package@2.0",
                     "│ ├── sub-package@2.0 deduped",
-                    "│ ├── @scope/sub-package@2.1");
+                    "│ ├── @scope/sub-package@2.1",
+                    "",
+                    "past-the-end@666"
+            );
 
             assertThat(bom.getPackages()).containsExactly(
                     new Package("npm", "", "package", "1.2"),
