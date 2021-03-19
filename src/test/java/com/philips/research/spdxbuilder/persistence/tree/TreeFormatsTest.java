@@ -95,10 +95,7 @@ class TreeFormatsTest {
             parse("package@1.2 /path/to/source/code/",
                     "├─┬ sub-package@2.0",
                     "│ ├── sub-package@2.0 deduped",
-                    "│ ├── @scope/sub-package@2.1",
-                    "",
-                    "past-the-end@666"
-            );
+                    "│ ├── @scope/sub-package@2.1");
 
             assertThat(bom.getPackages()).containsExactly(
                     new Package("npm", "", "package", "1.2"),

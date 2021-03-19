@@ -7,7 +7,6 @@ package com.philips.research.spdxbuilder.core.domain;
 
 import com.github.packageurl.PackageURL;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

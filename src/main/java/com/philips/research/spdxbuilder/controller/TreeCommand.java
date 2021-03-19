@@ -15,12 +15,15 @@ import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
+import com.philips.research.spdxbuilder.persistence.bom_base.BomBaseKnowledgeBase;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
 import com.philips.research.spdxbuilder.persistence.tree.TreeFormats;
 import com.philips.research.spdxbuilder.persistence.tree.TreeReader;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import pl.tlinkowski.annotation.basic.NullOr;
+
+import java.net.URI;
 
 /**
  * CLI command to export the SBOM from a textual tree representation to an SPDX file.
@@ -29,6 +32,9 @@ import pl.tlinkowski.annotation.basic.NullOr;
 public class TreeCommand extends AbstractCommand {
     @CommandLine.Option(names = {"-f", "--format"}, description = "Format of the tree to parse")
     @NullOr String format;
+
+    @CommandLine.Option(names = {"--kb", "--bombase"}, description = "Add package metadata from BOM-base knowledge base", paramLabel = "SERVER_URL")
+    @NullOr URI bomBase;
 
     @Override
     public void run() {
@@ -45,6 +51,8 @@ public class TreeCommand extends AbstractCommand {
         final BomReader reader = new TreeReader(format);
         final BomWriter writer = new SpdxWriter(spdxFile);
 
-        return new ConversionInteractor(reader, writer);
+        return bomBase != null
+                ? new ConversionInteractor(reader, writer).setKnowledgeBase(new BomBaseKnowledgeBase(bomBase))
+                : new ConversionInteractor(reader, writer);
     }
 }

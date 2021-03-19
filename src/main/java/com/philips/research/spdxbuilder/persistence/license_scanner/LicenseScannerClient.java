@@ -28,7 +28,7 @@ import java.util.Optional;
 /**
  * REST client for the License Scanner Service.
  *
- * @see <a href="https://github.com/philips-labs/license-scanner">License Scanner Service</a>
+ * @see <a href="https://github.com/philips-software/license-scanner">License Scanner Service</a>
  */
 public class LicenseScannerClient {
     private static final ObjectMapper MAPPER = new ObjectMapper()

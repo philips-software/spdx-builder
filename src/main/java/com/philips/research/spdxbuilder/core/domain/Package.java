@@ -71,6 +71,11 @@ public final class Package {
         return purl;
     }
 
+    public Package setPurl(PackageURL purl) {
+        this.purl = purl;
+        return this;
+    }
+
     private PackageURL implicitPurl() {
         try {
             return PackageURLBuilder.aPackageURL()
@@ -82,11 +87,6 @@ public final class Package {
         } catch (MalformedPackageURLException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    public Package setPurl(PackageURL purl) {
-        this.purl = purl;
-        return this;
     }
 
     public Optional<Party> getOriginator() {
