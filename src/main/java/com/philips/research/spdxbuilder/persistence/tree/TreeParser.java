@@ -342,5 +342,4 @@ class TreeParser {
         //noinspection ConstantConditions
         packageStack.push(pkg);
     }
-
 }
