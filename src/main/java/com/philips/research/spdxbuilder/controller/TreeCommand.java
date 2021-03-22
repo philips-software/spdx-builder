@@ -48,7 +48,7 @@ public class TreeCommand extends AbstractCommand {
 
     @Override
     protected ConversionService createService() {
-        final BomReader reader = new TreeReader(format);
+        final BomReader reader = new TreeReader(System.in, format);
         final BomWriter writer = new SpdxWriter(spdxFile);
 
         return bomBase != null

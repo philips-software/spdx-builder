@@ -16,31 +16,34 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class TreeReader implements BomReader {
     private final TreeFormats formats;
     private final String format;
+    private final InputStream stream;
 
-    public TreeReader(String format) {
+    public TreeReader(InputStream stream, String format) {
         formats = new TreeFormats();
         this.format = format;
+        this.stream = stream;
     }
 
     @Override
     public void read(BillOfMaterials bom) {
-        try (final var reader = new BufferedReader(new InputStreamReader(System.in))) {
+        try (final var reader = new BufferedReader(new InputStreamReader(stream))) {
             //TODO Get a configured parser from TreeFormats instance?
             final var parser = new TreeParser(bom);
             formats.configure(parser, format);
 
-            @NullOr String line = "";
+            @NullOr String line = reader.readLine();
             while (line != null) {
                 parse(parser, line);
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            throw new TreeException("Failed to read tree from stdin");
+            throw new TreeException("Failed to read the tree data");
         }
     }
 

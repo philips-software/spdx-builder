@@ -63,7 +63,7 @@ that remains after removing the indentation:
 # (Applied to the indented fragment.)
 types:
   "": <type> # Default package type if none is specified
-  "<identifier>": <type> # (Optional) marker-to-type conversion
+  "<marker>": <type> # (Optional) marker-to-type conversion
 type:
   regex: <regex> # Regular expression extracting the type marker 
   group: <index> # Matching group holding the type marker (defaults to 1)
@@ -91,7 +91,7 @@ a specific relationship.
 # (Applied to the indented fragment.)
 relationships:
   "": <type> # Default relationship if none is specified
-  "<identifier>": <type> # (Optional) marker-to-relationship conversion
+  "<marker>": <type> # (Optional) marker-to-relationship conversion
 relationship: # (Optional) relationship marker pattern 
   regex: <regex> # Regular expression extracting the (optional) relationship marker 
   group: <index> # Matching group holding the relationship marker (defaults to 1)
