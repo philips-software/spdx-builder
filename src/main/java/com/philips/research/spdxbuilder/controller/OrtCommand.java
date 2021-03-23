@@ -86,10 +86,10 @@ public class OrtCommand extends AbstractCommand {
 
         config.curations.forEach(curation -> {
             if (curation.license != null) {
-                service.curatePackageLicense(curation.purl, curation.license);
+                service.curatePackageLicense(curation.getPurl(), curation.license);
             }
             if (curation.source != null) {
-                service.curatePackageSource(curation.purl, curation.source);
+                service.curatePackageSource(curation.getPurl(), curation.source);
             }
         });
     }

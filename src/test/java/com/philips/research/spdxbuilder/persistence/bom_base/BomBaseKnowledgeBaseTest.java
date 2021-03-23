@@ -10,6 +10,7 @@
 
 package com.philips.research.spdxbuilder.persistence.bom_base;
 
+import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.KnowledgeBase;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.LicenseParser;
@@ -23,8 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class BomBaseKnowledgeBaseTest {
     private static final String TYPE = "type";
@@ -72,8 +72,9 @@ class BomBaseKnowledgeBaseTest {
         when(meta.getDeclaredLicense()).thenReturn(Optional.of(DECLARED_LICENSE));
         when(meta.getDetectedLicense()).thenReturn(Optional.of(DETECTED_LICENSE));
 
-        knowledgeBase.enhance(bom);
+        final var success = knowledgeBase.enhance(bom);
 
+        assertThat(success).isTrue();
         assertThat(pkg.getSummary()).contains(TITLE);
         assertThat(pkg.getDescription()).contains(DESCRIPTION);
         assertThat(pkg.getHomePage()).contains(new URL(HOMEPAGE));
@@ -86,5 +87,18 @@ class BomBaseKnowledgeBaseTest {
         assertThat(pkg.getSourceLocation()).contains(URI.create(SOURCE_LOCATION));
         assertThat(pkg.getDeclaredLicense()).contains(LicenseParser.parse(DECLARED_LICENSE));
         assertThat(pkg.getDetectedLicense()).contains(LicenseParser.parse(DETECTED_LICENSE));
+    }
+
+    @Test
+    void notifiesEnhancementFailure() {
+        bom.addPackage(new Package(TYPE, NAMESPACE, NAME, VERSION + "1"));
+        bom.addPackage(new Package(TYPE, NAMESPACE, NAME, VERSION + "2"));
+        //noinspection unchecked
+        when(client.readPackage(any(PackageURL.class))).thenReturn(Optional.empty(), Optional.of(meta));
+
+        final var success = knowledgeBase.enhance(bom);
+
+        assertThat(success).isFalse();
+        verify(client, times(3)).readPackage(any(PackageURL.class));
     }
 }

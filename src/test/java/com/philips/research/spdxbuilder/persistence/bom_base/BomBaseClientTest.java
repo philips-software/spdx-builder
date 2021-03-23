@@ -57,11 +57,20 @@ class BomBaseClientTest {
     }
 
     @Test
-    void throws_errorStatus() {
+    void empty_packageNotFound() throws Exception {
         mockServer.enqueue(new MockResponse().setResponseCode(404));
+
+        final var meta = client.readPackage(new PackageURL(PURL));
+
+        assertThat(meta).isEmpty();
+    }
+
+    @Test
+    void throws_errorStatus() {
+        mockServer.enqueue(new MockResponse().setResponseCode(500));
 
         assertThatThrownBy(() -> client.readPackage(new PackageURL(PURL)))
                 .isInstanceOf(BomBaseException.class)
-                .hasMessageContaining("responded with status 404");
+                .hasMessageContaining("responded with status 500");
     }
 }

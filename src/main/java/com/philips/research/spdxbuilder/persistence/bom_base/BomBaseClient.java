@@ -57,6 +57,9 @@ class BomBaseClient {
     private <T> Optional<T> query(Call<T> query) {
         try {
             final var response = query.execute();
+            if (response.code() == 404) {
+                return Optional.empty();
+            }
             if (!response.isSuccessful()) {
                 throw new BomBaseException("BOM-base server responded with status " + response.code());
             }

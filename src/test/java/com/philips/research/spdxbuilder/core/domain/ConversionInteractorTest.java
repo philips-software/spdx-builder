@@ -5,10 +5,8 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
-import com.philips.research.spdxbuilder.core.BomReader;
-import com.philips.research.spdxbuilder.core.BomWriter;
-import com.philips.research.spdxbuilder.core.ConversionService;
-import com.philips.research.spdxbuilder.core.KnowledgeBase;
+import com.philips.research.spdxbuilder.core.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -16,6 +14,7 @@ import java.net.URI;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class ConversionInteractorTest {
@@ -41,9 +40,14 @@ class ConversionInteractorTest {
     private final Package project = new Package(TYPE, GROUP, PROJECT, VERSION);
     private final Package pkg = new Package(TYPE, GROUP, NAME, VERSION);
 
+    @BeforeEach
+    void beforeEach() {
+        when(knowledgeBase.enhance(any(BillOfMaterials.class))).thenReturn(true);
+    }
+
     @Test
     void convertsBillOfMaterials() {
-        interactor.convert();
+        interactor.convert(false);
 
         verify(reader).read(bom);
         verify(knowledgeBase).enhance(bom);
@@ -51,11 +55,27 @@ class ConversionInteractorTest {
     }
 
     @Test
+    void throws_enhancementFailure() {
+        when(knowledgeBase.enhance(any(BillOfMaterials.class))).thenReturn(false);
+
+        assertThatThrownBy(() -> interactor.convert(false))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Enhancement of metadata failed");
+    }
+
+    @Test
+    void continues_enhancementFailure() {
+        when(knowledgeBase.enhance(any(BillOfMaterials.class))).thenReturn(false);
+
+        interactor.convert(true);
+    }
+
+    @Test
     void skipsEnhancement_noKnowledgeBaseConfigured() {
         //noinspection ConstantConditions
         ((ConversionInteractor) interactor).setKnowledgeBase(null);
 
-        interactor.convert();
+        interactor.convert(false);
 
         verify(knowledgeBase, never()).enhance(bom);
     }
