@@ -23,6 +23,10 @@ public interface PackageMetadata {
 
     Optional<String> getAttribution();
 
+    Optional<String> getSupplier();
+
+    Optional<String> getOriginator();
+
     Optional<URI> getDownloadLocation();
 
     Optional<String> getSha1();

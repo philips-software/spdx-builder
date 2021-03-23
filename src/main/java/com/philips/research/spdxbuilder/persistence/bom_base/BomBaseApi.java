@@ -51,6 +51,16 @@ public interface BomBaseApi {
         }
 
         @Override
+        public Optional<String> getSupplier() {
+            return getStringAttribute("supplier");
+        }
+
+        @Override
+        public Optional<String> getOriginator() {
+            return getStringAttribute("originator");
+        }
+
+        @Override
         public Optional<URI> getDownloadLocation() {
             return getUriAttribute("download_location");
         }

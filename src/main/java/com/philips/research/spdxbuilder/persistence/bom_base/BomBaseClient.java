@@ -67,5 +67,4 @@ class BomBaseClient {
             throw new BomBaseException("The BOM-base knowledge base is not reachable at " + server);
         }
     }
-
 }

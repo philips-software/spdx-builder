@@ -26,6 +26,7 @@ class PackageTest {
         assertThat(pkg.getType()).isEqualTo(TYPE);
         assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
         assertThat(pkg.getName()).isEqualTo(NAME);
+        assertThat(pkg.getFullName()).isEqualTo(NAMESPACE + '/' + NAME);
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
         assertThat(pkg.getPurl()).isEqualTo(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
         assertThat(pkg.getConcludedLicense()).isEmpty();
@@ -36,6 +37,7 @@ class PackageTest {
         final var pkg = new Package(TYPE, null, NAME, VERSION);
 
         assertThat(pkg.getNamespace()).isEmpty();
+        assertThat(pkg.getFullName()).isEqualTo(NAME);
     }
 
     @Test

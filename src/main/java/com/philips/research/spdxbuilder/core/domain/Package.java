@@ -60,6 +60,11 @@ public final class Package {
         return name;
     }
 
+    public String getFullName() {
+        final var prefix = !namespace.isBlank() ? namespace + '/' : "";
+        return prefix + name;
+    }
+
     public String getVersion() {
         return version;
     }
