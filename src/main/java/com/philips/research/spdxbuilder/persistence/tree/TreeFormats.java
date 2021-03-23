@@ -12,12 +12,13 @@ package com.philips.research.spdxbuilder.persistence.tree;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import pl.tlinkowski.annotation.basic.NullOr;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ import java.util.function.Consumer;
 public class TreeFormats {
     public static final String FORMATS_FILE = "/treeformats.yml";
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     private final List<FormatDefinition> formats;
@@ -47,6 +47,16 @@ public class TreeFormats {
             return MAPPER.readValue(stream, Formats.class).formats;
         } catch (IOException e) {
             throw new RuntimeException("Failed to load tree formats", e);
+        }
+    }
+
+    public TreeFormats extend(File file) {
+        try (final InputStream stream = new FileInputStream(file)) {
+            final var definition = MAPPER.readValue(stream, Formats.class);
+            this.formats.addAll(definition.formats);
+            return this;
+        } catch (IOException e) {
+            throw new TreeException("Failed to load custom formats: " + e.getMessage());
         }
     }
 

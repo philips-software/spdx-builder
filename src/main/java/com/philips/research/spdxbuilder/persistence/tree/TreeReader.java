@@ -14,18 +14,18 @@ import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import pl.tlinkowski.annotation.basic.NullOr;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class TreeReader implements BomReader {
     private final TreeFormats formats;
     private final String format;
     private final InputStream stream;
 
-    public TreeReader(InputStream stream, String format) {
+    public TreeReader(InputStream stream, String format, @NullOr File extension) {
         formats = new TreeFormats();
+        if (extension != null) {
+            formats.extend(extension);
+        }
         this.format = format;
         this.stream = stream;
     }

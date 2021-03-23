@@ -3,12 +3,14 @@
 ## Usage
 
 ```shell
-<print_tree_output> | spdx-builder tree -f <format> -o <output_file>
+<print_tree_output> | spdx-builder tree -f <format> -o <output_file> --bombase <bombase_url>
 ```
 
 Where "print_tree_output" is the relevant command of the project build
 environment to list the hierarchy of packages and their dependencies, and "
 format" specifies the shorthand name of the formatting for the resulting tree.
+The "bombase_url" refers to the knowledge base that supplies the metadata for
+the packages parsed from the dependency tree.
 
 _Note: The list of supported formats is output when no format option is
 specified.
@@ -19,13 +21,14 @@ is automatically appended._
 
 ## Tree format specification
 
-Built-in formats are specified in
-a [YAML file](../src/main/resources/treeformats.yml).
+Custom tree formats can be parsed by providing the `--custom <formats_file>`
+option. The "formats_file" has the same format as
+the [internal formats file](../src/main/resources/treeformats.yml):
 
-The YAML file contains a `formats` array, containing objects that each specify a
-format that is applied using the format name in the `format` field. When a
-format specifies a `parent`, the format is (recursively) based on the indicated
-format:
+The YAML file consists of a `formats` array, containing objects that each
+specify a format that is applied using the format name in the `format` field.
+When a format specifies a `parent`, the format is (recursively) based on the
+indicated format:
 
 ```yaml
 format: "<format>" # Shorthand name of the format

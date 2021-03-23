@@ -23,6 +23,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import pl.tlinkowski.annotation.basic.NullOr;
 
+import java.io.File;
 import java.net.URI;
 
 /**
@@ -32,6 +33,9 @@ import java.net.URI;
 public class TreeCommand extends AbstractCommand {
     @CommandLine.Option(names = {"-f", "--format"}, description = "Format of the tree to parse")
     @NullOr String format;
+
+    @CommandLine.Option(names = {"--custom"}, description = "Custom formats extension file")
+    @NullOr File formatExtension;
 
     @CommandLine.Option(names = {"--kb", "--bombase"}, description = "Add package metadata from BOM-base knowledge base", paramLabel = "SERVER_URL")
     @NullOr URI bomBase;
@@ -48,7 +52,7 @@ public class TreeCommand extends AbstractCommand {
 
     @Override
     protected ConversionService createService() {
-        final BomReader reader = new TreeReader(System.in, format);
+        final BomReader reader = new TreeReader(System.in, format, formatExtension);
         final BomWriter writer = new SpdxWriter(spdxFile);
 
         return bomBase != null

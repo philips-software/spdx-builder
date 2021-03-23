@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,22 +30,23 @@ class TreeReaderTest {
 
     @Test
     void readsTreeFromStream() {
-        final var stream = stream("[INFO] --- maven-dependency-plugin:3.1.2:tree ---",
-                "[INFO] group:artifact:jar:1",
-                "[INFO] +-- group:sub:jar:2");
+        final var stream = stream(
+                "ns/main@1",
+                "+-> ns/sub@2");
 
-        new TreeReader(stream, "maven").read(bom);
+        new TreeReader(stream, "custom", Path.of("src", "test", "resources", "custom_formats.yml").toFile())
+                .read(bom);
 
         assertThat(bom.getPackages()).containsExactly(
-                new Package("maven", "group", "artifact", "1"),
-                new Package("maven", "group", "sub", "2"));
+                new Package("custom", "ns", "main", "1"),
+                new Package("custom", "ns", "sub", "2"));
     }
 
     @Test
     void throws_streamFailure() throws Exception {
         final var stream = mock(InputStream.class);
         when(stream.available()).thenThrow(new IOException("Failing stream"));
-        final var reader = new TreeReader(stream, "maven");
+        final var reader = new TreeReader(stream, "maven", null);
 
         assertThatThrownBy(() -> reader.read(bom))
                 .isInstanceOf(TreeException.class)
@@ -54,7 +56,7 @@ class TreeReaderTest {
     @Test
     void throws_parsingFailure() {
         final var stream = stream("Not a valid package");
-        final var reader = new TreeReader(stream, "npm");
+        final var reader = new TreeReader(stream, "npm", null);
 
         assertThatThrownBy(() -> reader.read(bom))
                 .isInstanceOf(TreeException.class)

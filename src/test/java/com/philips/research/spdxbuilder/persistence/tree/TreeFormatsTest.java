@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.nio.file.Path;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -48,6 +51,23 @@ class TreeFormatsTest {
     class Formats {
         private final BillOfMaterials bom = new BillOfMaterials();
         private final TreeParser parser = new TreeParser(bom);
+
+        @Test
+        void readsExternalFormats() {
+            format.extend(Path.of("src", "test", "resources", "custom_formats.yml").toFile())
+                    .configure(parser, "custom");
+
+            parse("namespace/name@version");
+
+            assertThat(bom.getPackages()).contains(new Package("custom", "namespace", "name", "version"));
+        }
+
+        @Test
+        void throws_externalConfigurationUnavailable() {
+            assertThatThrownBy(() -> format.extend(new File("not_a_file")))
+                    .isInstanceOf(TreeException.class)
+                    .hasMessageContaining("not_a_file");
+        }
 
         @Test
         void gradle() {

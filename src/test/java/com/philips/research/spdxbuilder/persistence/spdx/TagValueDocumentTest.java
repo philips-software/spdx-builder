@@ -19,12 +19,21 @@ interface DocumentModification {
 }
 
 class TagValueDocumentTest {
+    public static final String COMMENT = "My comment";
     private static final String TAG = "Tag";
     private static final String VALUE = "Value";
     private static final String MULTI_VALUE = "Line1\nLine2";
     private static final String TEMPLATE = "%s: %s\n";
     private static final String MULTI_LINE_TEMPLATE = "%s: <text>%s</text>\n";
-    public static final String COMMENT = "My comment";
+
+    private static void assertOutput(String expected, DocumentModification test) throws IOException {
+        final var stream = new ByteArrayOutputStream();
+        try (final var doc = new TagValueDocument(stream)) {
+            test.invoke(doc);
+        } finally {
+            assertThat(stream.toString()).isEqualTo(expected);
+        }
+    }
 
     @Test
     void writesEmptyLine() throws Exception {
@@ -63,25 +72,16 @@ class TagValueDocumentTest {
 
     @Test
     void writesOptionalTag() throws Exception {
-        assertOutput(String.format(TEMPLATE, TAG, VALUE), (doc)->doc.optionallyAddValue(TAG, Optional.of(VALUE)));
+        assertOutput(String.format(TEMPLATE, TAG, VALUE), (doc) -> doc.optionallyAddValue(TAG, Optional.of(VALUE)));
     }
 
     @Test
     void skipsOptionalTag() throws Exception {
-        assertOutput("", (doc)->doc.optionallyAddValue(TAG, Optional.empty()));
+        assertOutput("", (doc) -> doc.optionallyAddValue(TAG, Optional.empty()));
     }
 
     @Test
     void writesTextValue() throws Exception {
         assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, MULTI_VALUE), (doc) -> doc.addValue(TAG, MULTI_VALUE));
-    }
-
-    private static void assertOutput(String expected, DocumentModification test) throws IOException {
-        final var stream = new ByteArrayOutputStream();
-        try (final var doc = new TagValueDocument(stream)) {
-            test.invoke(doc);
-        } finally {
-            assertThat(stream.toString()).isEqualTo(expected);
-        }
     }
 }
