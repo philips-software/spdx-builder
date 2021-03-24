@@ -53,10 +53,11 @@ formats:
       group: 1
   - format: rust
     description: "Default Rust (=Cargo) tree output"
-    tool: "cargo tree -e no-dev"
+    tool: "cargo tree -e no-dev,no-build"
     types:
       "" : "cargo"
-    identifier: "[-\\w]"
+    identifier: "[-\\[\\w]"
+    skip: "^\\[.+]$"
     name:
       regex: "^([-\\w]+)\\s"
       group: 1

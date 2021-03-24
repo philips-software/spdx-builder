@@ -130,12 +130,16 @@ class TreeFormatsTest {
 
             parse("top-one v1.2 (/Users/blah/work/bom/rust/src/tools/top)",
                     "├── first v2.0",
-                    "│   ├── second v0.1n (proc-macro)");
+                    "│   ├── second v0.1n (proc-macro)",
+                    "",
+                    "[ignore me]",
+                    "another v3.0");
 
             assertThat(bom.getPackages()).containsExactly(
                     new Package("cargo", "", "top-one", "v1.2"),
                     new Package("cargo", "", "first", "v2.0"),
-                    new Package("cargo", "", "second", "v0.1n"));
+                    new Package("cargo", "", "second", "v0.1n"),
+                    new Package("cargo", "", "another", "v3.0"));
         }
 
         private void parse(String... lines) {
