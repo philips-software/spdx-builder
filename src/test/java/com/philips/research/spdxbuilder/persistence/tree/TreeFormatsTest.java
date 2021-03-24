@@ -123,6 +123,21 @@ class TreeFormatsTest {
                     new Package("npm", "@scope", "sub-package", "2.1"));
         }
 
+
+        @Test
+        void rust() {
+            format.configure(parser, "rust");
+
+            parse("top-one v1.2 (/Users/blah/work/bom/rust/src/tools/top)",
+                    "├── first v2.0",
+                    "│   ├── second v0.1n (proc-macro)");
+
+            assertThat(bom.getPackages()).containsExactly(
+                    new Package("cargo", "", "top-one", "v1.2"),
+                    new Package("cargo", "", "first", "v2.0"),
+                    new Package("cargo", "", "second", "v0.1n"));
+        }
+
         private void parse(String... lines) {
             for (var l : lines) {
                 parser.parse(l);

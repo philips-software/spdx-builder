@@ -51,4 +51,16 @@ formats:
     version:
       regex: "@([^@\\s]+)(\\s\\S+)?$"
       group: 1
+  - format: rust
+    description: "Default Rust (=Cargo) tree output"
+    tool: "cargo tree -e no-dev"
+    types:
+      "" : "cargo"
+    identifier: "[-\\w]"
+    name:
+      regex: "^([-\\w]+)\\s"
+      group: 1
+    version:
+      regex: "^\\S+\\s(\\S+)(\\s.+)?$"
+      group: 1
 
