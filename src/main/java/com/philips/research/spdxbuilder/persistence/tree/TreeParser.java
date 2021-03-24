@@ -39,6 +39,7 @@ class TreeParser {
     private @NullOr String cleanup;
     private Pattern identifierPattern = compile("\\w");
     private @NullOr Pattern skipPattern;
+    private @NullOr Pattern internalPattern;
     private @NullOr Pattern typePattern;
     private int typeGroup = 0;
     private Pattern namespacePattern = ID_PATTERN;
@@ -111,6 +112,16 @@ class TreeParser {
      */
     TreeParser withSkip(String regEx) {
         skipPattern = compile(regEx);
+        return this;
+    }
+
+    /**
+     * Specifies which packages to treat as internal dependencies.
+     *
+     * @param regEx regular expression to match an internal package.
+     */
+    TreeParser withInternal(String regEx) {
+        internalPattern = compile(regEx);
         return this;
     }
 
@@ -218,11 +229,11 @@ class TreeParser {
 
         popUntil(indent);
 
-        if (!ignoredPackage(name)) {
+        if (skippedPackage(name)) {
+            pushPackage(indent, null);
+        } else {
             final var pkg = processPackage(indent, name);
             pushPackage(indent, pkg);
-        } else {
-            pushPackage(indent, null);
         }
 
         return this;
@@ -251,7 +262,7 @@ class TreeParser {
         return matcher.start();
     }
 
-    private boolean ignoredPackage(String name) {
+    private boolean skippedPackage(String name) {
         if (indentStack.size() < skipLevel) {
             if (skipPattern != null && skipPattern.matcher(name).find()) {
                 skipLevel = indentStack.size() + 1;
@@ -315,6 +326,9 @@ class TreeParser {
         final var purl = purlFromLine(name);
         final Package pkg = storePackage(purl);
 
+        if (internalPattern != null && internalPattern.matcher(name).find()) {
+            pkg.setInternal(true);
+        }
         if (!indentStack.isEmpty() && indent > indentStack.peek()) {
             bom.addRelation(packageStack.peek(), pkg, extractRelationship(name));
         }

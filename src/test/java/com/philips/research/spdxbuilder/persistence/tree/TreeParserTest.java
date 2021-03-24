@@ -62,7 +62,7 @@ class TreeParserTest {
         }
 
         @Test
-        void parsesCustomArtefact() {
+        void parsesCustomPackageDefinition() {
             parser.withName("^([^/]*)/", 1)
                     .withVersion("^[^/]*/([^/]*)@", 1)
                     .withNamespace("([^@]*)$", 1);
@@ -140,6 +140,17 @@ class TreeParserTest {
             assertThat(bom.getPackages()).containsExactly(
                     new Package(TYPE, NAMESPACE, NAME, "1"),
                     new Package(TYPE, NAMESPACE, NAME, "3"));
+        }
+
+        @Test
+        void marksInternalPackages() {
+            parser.withInternal("internal$");
+
+            parser.parse(PACKAGE1);
+            parser.parse("->" + PACKAGE2 + " internal");
+
+            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
+            assertThat(bom.getPackages().get(1).isInternal()).isTrue();
         }
     }
 

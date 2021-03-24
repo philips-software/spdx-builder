@@ -53,15 +53,16 @@ formats:
       group: 1
   - format: rust
     description: "Default Rust (=Cargo) tree output"
-    tool: "cargo tree -e no-dev,no-build"
+    tool: "cargo tree -e no-dev,no-build --locked"
     types:
       "" : "cargo"
     identifier: "[-\\[\\w]"
     skip: "^\\[.+]$"
+    internal: "\\([^*]+\\)"
     name:
       regex: "^([-\\w]+)\\s"
       group: 1
     version:
-      regex: "^\\S+\\s(\\S+)(\\s.+)?$"
+      regex: "^\\S+\\sv(\\S+)(\\s.+)?$"
       group: 1
 

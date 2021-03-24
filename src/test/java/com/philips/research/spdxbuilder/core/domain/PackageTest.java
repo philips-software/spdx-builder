@@ -28,6 +28,7 @@ class PackageTest {
         assertThat(pkg.getName()).isEqualTo(NAME);
         assertThat(pkg.getFullName()).isEqualTo(NAMESPACE + '/' + NAME);
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
+        assertThat(pkg.isInternal()).isFalse();
         assertThat(pkg.getPurl()).isEqualTo(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
         assertThat(pkg.getConcludedLicense()).isEmpty();
     }
@@ -63,6 +64,13 @@ class PackageTest {
         pkg.setPurl(purl);
 
         assertThat(pkg.getPurl()).isEqualTo(purl);
+    }
+
+    @Test
+    void tracksInternalPackages() {
+        pkg.setInternal(true);
+
+        assertThat(pkg.isInternal()).isTrue();
     }
 
     @Test

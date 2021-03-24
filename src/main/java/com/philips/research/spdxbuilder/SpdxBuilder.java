@@ -20,7 +20,7 @@ public class SpdxBuilder {
 
     private static int exceptionHandler(Exception e, CommandLine cmd, CommandLine.ParseResult parseResult) {
         if (e instanceof BusinessException) {
-            printError(cmd, "Conversion failed: " + e.getMessage());
+            printError(cmd, "Conversion aborted: " + e.getMessage());
             return 1;
         }
 

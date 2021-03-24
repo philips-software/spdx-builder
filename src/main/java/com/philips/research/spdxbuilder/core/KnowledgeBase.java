@@ -24,13 +24,15 @@ public abstract class KnowledgeBase {
      */
     public boolean enhance(BillOfMaterials bom) {
         final var success = new AtomicBoolean(true);
-        bom.getPackages().forEach(pkg -> {
-            final var found = enhance(pkg);
-            if (!found) {
-                System.err.println("WARNING: No metadata for " + pkg);
-                success.set(false);
-            }
-        });
+        bom.getPackages().stream()
+                .filter(pkg -> !pkg.isInternal())
+                .forEach(pkg -> {
+                    final var found = enhance(pkg);
+                    if (!found) {
+                        System.err.println("WARNING: No metadata for " + pkg);
+                        success.set(false);
+                    }
+                });
         return success.get();
     }
 

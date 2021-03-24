@@ -23,6 +23,7 @@ public final class Package {
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
+    private boolean internal;
     private @NullOr PackageURL purl;
     private @NullOr Party supplier;
     private @NullOr Party originator;
@@ -67,6 +68,15 @@ public final class Package {
 
     public String getVersion() {
         return version;
+    }
+
+    public boolean isInternal() {
+        return internal;
+    }
+
+    public Package setInternal(boolean internal) {
+        this.internal = internal;
+        return this;
     }
 
     public PackageURL getPurl() {

@@ -128,18 +128,22 @@ class TreeFormatsTest {
         void rust() {
             format.configure(parser, "rust");
 
-            parse("top-one v1.2 (/Users/blah/work/bom/rust/src/tools/top)",
-                    "├── first v2.0",
-                    "│   ├── second v0.1n (proc-macro)",
+            parse("top-internal v1.2 (/Users/blah)",
+                    "├── internal v1.3 (/Users/blah) (*)",
+                    "├── external v2.0",
+                    "│   ├── second v0.1n (*)",
                     "",
                     "[ignore me]",
                     "another v3.0");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("cargo", "", "top-one", "v1.2"),
-                    new Package("cargo", "", "first", "v2.0"),
-                    new Package("cargo", "", "second", "v0.1n"),
-                    new Package("cargo", "", "another", "v3.0"));
+                    new Package("cargo", "", "top-internal", "1.2"),
+                    new Package("cargo", "", "internal", "1.3"),
+                    new Package("cargo", "", "external", "2.0"),
+                    new Package("cargo", "", "second", "0.1n"),
+                    new Package("cargo", "", "another", "3.0"));
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+            assertThat(bom.getPackages().get(2).isInternal()).isFalse();
         }
 
         private void parse(String... lines) {

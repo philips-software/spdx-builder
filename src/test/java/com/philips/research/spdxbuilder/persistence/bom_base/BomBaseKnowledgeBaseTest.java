@@ -90,6 +90,15 @@ class BomBaseKnowledgeBaseTest {
     }
 
     @Test
+    void skipsEnhancementOfInternalPackages() {
+        bom.addPackage(pkg.setInternal(true));
+
+        knowledgeBase.enhance(bom);
+
+        verify(client, never()).readPackage(any(PackageURL.class));
+    }
+
+    @Test
     void notifiesEnhancementFailure() {
         bom.addPackage(new Package(TYPE, NAMESPACE, NAME, VERSION + "1"));
         bom.addPackage(new Package(TYPE, NAMESPACE, NAME, VERSION + "2"));

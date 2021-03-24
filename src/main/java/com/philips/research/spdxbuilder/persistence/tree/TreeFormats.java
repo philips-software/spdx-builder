@@ -99,6 +99,7 @@ public class TreeFormats {
         @NullOr Map<String, String> types;
         @NullOr String cleanup;
         @NullOr String skip;
+        @NullOr String internal;
         @NullOr String identifier;
         @NullOr MatchMask namespace;
         @NullOr MatchMask name;
@@ -115,6 +116,7 @@ public class TreeFormats {
             applyRegex(cleanup, parser::withCleanup);
             applyRegex(skip, parser::withSkip);
             applyRegex(identifier, parser::withIdentifier);
+            applyRegex(internal, parser::withInternal);
             applyMask(namespace, parser::withNamespace);
             applyMask(name, parser::withName);
             applyMask(version, parser::withVersion);
