@@ -74,6 +74,7 @@ type:
 # Package URL construction
 # (Applied to the indented fragment.)
 skip: <regex> # (Optional) identification of an excluded package (and nested subpackages).
+internal: <regex> # (Optional) identification of application packages.
 namespace: # (Optional) namespace matcher
   regex: <regex> # Pattern to capture the Package URL namespace
   group: <index> # Matching group holding the namespace (defaults to 1)

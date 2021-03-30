@@ -58,7 +58,8 @@ public abstract class AbstractCommand implements Runnable {
             spdxFile = new File(spdxFile.getPath() + ".spdx");
         }
 
-        createService().convert(forceContinue);
+        final var service = createService();
+        service.convert(forceContinue);
 
         if (uploadUrl != null) {
             System.out.println("Uploading '" + spdxFile.getName() + "' to " + uploadUrl);

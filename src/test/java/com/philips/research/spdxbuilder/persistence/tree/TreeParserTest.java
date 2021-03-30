@@ -147,7 +147,7 @@ class TreeParserTest {
             parser.withInternal("internal$");
 
             parser.parse(PACKAGE1);
-            parser.parse("->" + PACKAGE2 + " internal");
+            parser.parse(PACKAGE2 + " internal");
 
             assertThat(bom.getPackages().get(0).isInternal()).isFalse();
             assertThat(bom.getPackages().get(1).isInternal()).isTrue();

@@ -57,9 +57,9 @@ public class OrtCommand extends AbstractCommand {
         try (final var stream = new FileInputStream(configFile)) {
             return Configuration.parse(stream);
         } catch (IOException e) {
-            System.out.println("Configuration error: " + e.getMessage());
-            System.out.println("Supported YAML configuration file format is:");
-            System.out.println(Configuration.example());
+            System.err.println("Configuration error: " + e.getMessage());
+            System.err.println("Supported YAML configuration file format is:");
+            System.err.println(Configuration.example());
 
             throw new BusinessException("Failed to read configuration");
         }
