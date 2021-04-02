@@ -19,6 +19,14 @@ _Note: If no "output_file" is specified, the output is written to a file named
 `bom.spdx` in the current directory. If the file has no extension, `.spdx`
 is automatically appended._
 
+When a project consists of multiple trees, a pre-processing script can be used
+to first merge the generated trees into a single input to SPDX-Builder. If the
+separate trees are in different formats, these sections can be separated by
+a `### <new_format` marker fragment (that can be anywhere in the line) to switch
+to a different tree format. The tree indentation level is maintained across
+format changes, making it even possible (by adding indents) to insert a sub-tree
+in a different format.
+
 ## Tree format specification
 
 Custom tree formats can be parsed by providing the `--custom <formats_file>`

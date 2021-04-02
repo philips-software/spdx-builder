@@ -33,7 +33,6 @@ public class TreeReader implements BomReader {
     @Override
     public void read(BillOfMaterials bom) {
         try (final var reader = new BufferedReader(new InputStreamReader(stream))) {
-            //TODO Get a configured parser from TreeFormats instance?
             final var parser = new TreeParser(bom);
             formats.configure(parser, format);
 
@@ -49,7 +48,8 @@ public class TreeReader implements BomReader {
 
     private void parse(TreeParser parser, String line) {
         try {
-            parser.parse(line);
+            parser.parse(line)
+                    .ifPresent(format -> formats.configure(parser.clearFormat(), format));
         } catch (TreeException e) {
             System.err.println(line);
             throw e;

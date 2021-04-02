@@ -19,6 +19,7 @@ import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  */
 class TreeParser {
     private static final Pattern ID_PATTERN = compile("^([\\w-\\.]+):([\\w-\\.]+):([\\w-\\.]+)");
+    private static final Pattern FORMAT_PATTERN = compile("###\\s*(\\w+)");
 
     private final BillOfMaterials bom;
     private final Map<PackageURL, Package> packages = new HashMap<>();
@@ -37,30 +39,62 @@ class TreeParser {
     private @NullOr Pattern startSection;
     private @NullOr Pattern endSection;
     private @NullOr String cleanup;
-    private Pattern identifierPattern = compile("\\w");
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private Pattern identifierPattern;
     private @NullOr Pattern skipPattern;
     private @NullOr Pattern internalPattern;
     private @NullOr Pattern typePattern;
-    private int typeGroup = 0;
-    private Pattern namespacePattern = ID_PATTERN;
-    private int namespaceGroup = 1;
-    private Pattern namePattern = ID_PATTERN;
-    private int nameGroup = 2;
-    private Pattern versionPattern = ID_PATTERN;
-    private int versionGroup = 3;
+    private int typeGroup;
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private Pattern namespacePattern;
+    private int namespaceGroup;
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private Pattern namePattern;
+    private int nameGroup;
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private Pattern versionPattern;
+    private int versionGroup;
     private @NullOr Pattern relationshipPattern;
-    private int relationshipGroup = 0;
-    private Map<String, String> typeMapping = Map.of("", "");
-    private Map<String, Relation.Type> relationshipMapping = Map.of("", Relation.Type.DYNAMIC_LINK);
-    private boolean started = true;
-    private boolean ended = false;
+    private int relationshipGroup;
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private Map<String, String> typeMapping;
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private Map<String, Relation.Type> relationshipMapping;
+    private boolean started;
+    private boolean ended;
 
     TreeParser(BillOfMaterials bom) {
         this.bom = bom;
+        clearFormat();
     }
 
     private static Pattern compile(String regEx) {
         return Pattern.compile(regEx);
+    }
+
+    TreeParser clearFormat() {
+        startSection = null;
+        endSection = null;
+        cleanup = null;
+        identifierPattern = compile("\\w");
+        skipPattern = null;
+        internalPattern = null;
+        typePattern = null;
+        typeGroup = 0;
+        namespacePattern = ID_PATTERN;
+        namespaceGroup = 1;
+        namePattern = ID_PATTERN;
+        nameGroup = 2;
+        versionPattern = ID_PATTERN;
+        versionGroup = 3;
+        relationshipPattern = null;
+        relationshipGroup = 0;
+        typeMapping = Map.of("", "");
+        relationshipMapping = Map.of("", Relation.Type.DYNAMIC_LINK);
+        started = true;
+        ended = false;
+
+        return this;
     }
 
     /**
@@ -214,17 +248,23 @@ class TreeParser {
      * are hierarchically indented from containing packages.
      *
      * @param line line of ascii characters
+     * @return next format if format pattern was found
      */
-    TreeParser parse(String line) {
+    Optional<String> parse(String line) {
         if (ignoredLine(line)) {
-            return this;
+            return Optional.empty();
+        }
+
+        final var match = FORMAT_PATTERN.matcher(line);
+        if (match.find()) {
+            return Optional.ofNullable(match.group(1));
         }
 
         final var clean = clean(line);
         final var indent = firstPackageCharacter(clean);
         final var name = clean.substring(indent);
         if (name.isBlank()) {
-            return this;
+            return Optional.empty();
         }
 
         popUntil(indent);
@@ -236,7 +276,7 @@ class TreeParser {
             pushPackage(indent, pkg);
         }
 
-        return this;
+        return Optional.empty();
     }
 
     private boolean ignoredLine(String line) {

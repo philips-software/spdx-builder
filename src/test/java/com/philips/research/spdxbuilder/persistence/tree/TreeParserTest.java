@@ -232,7 +232,7 @@ class TreeParserTest {
     }
 
     @Nested
-    class constrainToSection {
+    class SectionDelimiters {
         @BeforeEach
         void beforeEach() {
             parser.withTypes(Map.of("", TYPE));
@@ -276,6 +276,21 @@ class TreeParserTest {
 
             assertThat(bom.getPackages()).hasSize(1)
                     .contains(new Package(TYPE, NAMESPACE, NAME, "2"));
+        }
+    }
+
+    @Nested
+    class SwitchingFormats {
+        @BeforeEach
+        void beforeEach() {
+            parser.withTypes(Map.of("", TYPE));
+        }
+
+        @Test
+        void detectsFormatMarker() {
+            assertThat(parser.parse(PACKAGE1)).isEmpty();
+            assertThat(parser.parse("### Format")).contains("Format");
+            assertThat(parser.parse("######## Format #####")).contains("Format");
         }
     }
 }

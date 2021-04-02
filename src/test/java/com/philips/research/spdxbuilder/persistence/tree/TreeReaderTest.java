@@ -12,6 +12,7 @@ package com.philips.research.spdxbuilder.persistence.tree;
 
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,24 @@ class TreeReaderTest {
         assertThat(bom.getPackages()).containsExactly(
                 new Package("custom", "ns", "main", "1"),
                 new Package("custom", "ns", "sub", "2"));
+    }
+
+    @Test
+    void switchesFormats() {
+        final var stream = stream(
+                "ns/main@1",
+                "### rust",
+                "├── sub v2");
+
+        new TreeReader(stream, "npm", null).read(bom);
+
+        assertThat(bom.getPackages()).containsExactly(
+                new Package("npm", "ns", "main", "1"),
+                new Package("cargo", "", "sub", "2"));
+        final var pkg1 = bom.getPackages().get(0);
+        final var pkg2 = bom.getPackages().get(1);
+        assertThat(bom.getRelations()).containsExactly(
+                new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK));
     }
 
     @Test
