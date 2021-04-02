@@ -142,6 +142,7 @@ Must-have:
 
 Should-have:
 
+- [ ] (Optionally) Add source artefacts as "GENERATED_FROM" relationship
 - [ ] Support output "flavors" for the purpose of the generated SBOM.
 
 Other ideas:
