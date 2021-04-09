@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.IOException;
@@ -93,15 +95,26 @@ class Configuration {
         @NullOr URI namespace;
     }
 
+    //TODO This seems only relevant for ORT import
     static class Project {
         String id;
         @NullOr URI purl;
         @NullOr List<String> excluded;
     }
 
+    //TODO Add way to mark internal packages using wildcard
     static class Curation {
         URI purl;
+        //FIXME Is the source code location even appropriate here? (drop)
         @NullOr URI source;
         @NullOr String license;
+
+        PackageURL getPurl() {
+            try {
+                return new PackageURL(purl.toASCIIString());
+            } catch (MalformedPackageURLException e) {
+                throw new IllegalArgumentException("Not a valid package URL: " + purl);
+            }
+        }
     }
 }

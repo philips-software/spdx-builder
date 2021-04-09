@@ -26,9 +26,19 @@ class PackageTest {
         assertThat(pkg.getType()).isEqualTo(TYPE);
         assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
         assertThat(pkg.getName()).isEqualTo(NAME);
+        assertThat(pkg.getFullName()).isEqualTo(NAMESPACE + '/' + NAME);
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
+        assertThat(pkg.isInternal()).isFalse();
         assertThat(pkg.getPurl()).isEqualTo(new PackageURL("pkg:" + TYPE + '/' + NAMESPACE + '/' + NAME + '@' + VERSION));
         assertThat(pkg.getConcludedLicense()).isEmpty();
+    }
+
+    @Test
+    void createsInstanceWithoutNamespace() {
+        final var pkg = new Package(TYPE, null, NAME, VERSION);
+
+        assertThat(pkg.getNamespace()).isEmpty();
+        assertThat(pkg.getFullName()).isEqualTo(NAME);
     }
 
     @Test
@@ -54,6 +64,13 @@ class PackageTest {
         pkg.setPurl(purl);
 
         assertThat(pkg.getPurl()).isEqualTo(purl);
+    }
+
+    @Test
+    void tracksInternalPackages() {
+        pkg.setInternal(true);
+
+        assertThat(pkg.isInternal()).isTrue();
     }
 
     @Test

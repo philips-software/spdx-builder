@@ -11,7 +11,6 @@
 package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.philips.research.spdxbuilder.core.KnowledgeBase;
-import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import com.philips.research.spdxbuilder.core.domain.Package;
@@ -23,7 +22,7 @@ import java.util.Optional;
  * Knowledge base implementation for the License Scanner service.
  * See https://github.com/philips-software/license-scanner
  */
-public class LicenseKnowledgeBase implements KnowledgeBase {
+public class LicenseKnowledgeBase extends KnowledgeBase {
     final LicenseScannerClient licenseClient;
 
     public LicenseKnowledgeBase(URI uri) {
@@ -35,13 +34,9 @@ public class LicenseKnowledgeBase implements KnowledgeBase {
     }
 
     @Override
-    public void enhance(BillOfMaterials bom) {
-        bom.getPackages().forEach(this::updateLicense);
-    }
-
-    private void updateLicense(Package pkg) {
-        detectLicense(pkg)
-                .ifPresent(l -> {
+    public boolean enhance(Package pkg) {
+        return detectLicense(pkg)
+                .map(l -> {
                     final var scanned = LicenseParser.parse(l.getLicense());
                     final var declared = pkg.getDeclaredLicense().orElse(scanned);
                     pkg.setDetectedLicense(scanned);
@@ -55,7 +50,8 @@ public class LicenseKnowledgeBase implements KnowledgeBase {
                             licenseClient.contest(pkg.getPurl(), declaredText);
                         }
                     }
-                });
+                    return l;
+                }).isPresent();
     }
 
     private Optional<LicenseScannerClient.LicenseInfo> detectLicense(Package pkg) {

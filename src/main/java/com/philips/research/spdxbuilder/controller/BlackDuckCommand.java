@@ -25,7 +25,7 @@ import java.net.URL;
 /**
  * CLI command to export the SBOM from Black Duck to an SPDX file.
  */
-@Command(name = "blackduck", aliases = {"bd"})
+@Command(name = "blackduck", aliases = {"bd"}, description = "Extracts a bill-of-materials from a project version in Synoptic Black Duck.")
 public class BlackDuckCommand extends AbstractCommand {
     @Parameters(index = "0", description = "Project name")
     String project;

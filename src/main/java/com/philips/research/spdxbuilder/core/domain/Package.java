@@ -23,6 +23,7 @@ public final class Package {
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
+    private boolean internal;
     private @NullOr PackageURL purl;
     private @NullOr Party supplier;
     private @NullOr Party originator;
@@ -37,9 +38,9 @@ public final class Package {
     private @NullOr String description;
     private @NullOr String attribution;
 
-    public Package(String type, String namespace, String name, String version) {
+    public Package(String type, @NullOr String namespace, String name, String version) {
         this.type = type;
-        this.namespace = namespace;
+        this.namespace = (namespace != null) ? namespace : "";
         this.name = name;
         this.version = version;
     }
@@ -60,22 +61,27 @@ public final class Package {
         return name;
     }
 
+    public String getFullName() {
+        final var prefix = !namespace.isBlank() ? namespace + '/' : "";
+        return prefix + name;
+    }
+
     public String getVersion() {
         return version;
     }
 
+    public boolean isInternal() {
+        return internal;
+    }
+
+    public Package setInternal(boolean internal) {
+        this.internal = internal;
+        return this;
+    }
+
     public PackageURL getPurl() {
         if (purl == null) {
-            try {
-                return PackageURLBuilder.aPackageURL()
-                        .withType(type)
-                        .withNamespace(namespace)
-                        .withName(name)
-                        .withVersion(version)
-                        .build();
-            } catch (MalformedPackageURLException e) {
-                throw new IllegalArgumentException(e);
-            }
+            return implicitPurl();
         }
         return purl;
     }
@@ -83,6 +89,19 @@ public final class Package {
     public Package setPurl(PackageURL purl) {
         this.purl = purl;
         return this;
+    }
+
+    private PackageURL implicitPurl() {
+        try {
+            return PackageURLBuilder.aPackageURL()
+                    .withType(type)
+                    .withNamespace(namespace)
+                    .withName(name)
+                    .withVersion(version)
+                    .build();
+        } catch (MalformedPackageURLException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public Optional<Party> getOriginator() {
@@ -211,11 +230,11 @@ public final class Package {
     public boolean equals(@NullOr Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Package aPackage = (Package) o;
-        return Objects.equals(type, aPackage.type) &&
-                Objects.equals(namespace, aPackage.namespace) &&
-                Objects.equals(name, aPackage.name) &&
-                Objects.equals(version, aPackage.version);
+        Package other = (Package) o;
+        return Objects.equals(type, other.type)
+                && Objects.equals(namespace, other.namespace)
+                && Objects.equals(name, other.name)
+                && Objects.equals(version, other.version);
     }
 
     @Override
@@ -225,7 +244,6 @@ public final class Package {
 
     @Override
     public String toString() {
-        return String.format("%s:%s/%s@%s", type, namespace, name, version);
+        return getPurl().canonicalize();
     }
-
 }

@@ -25,7 +25,7 @@ import java.net.URI;
 /**
  * CLI command to generate an SPDX file from an ORT Analyzer YAML.
  */
-@Command(name = "ort")
+@Command(name = "ort", description = "Converts the output of the OSS Review Toolkit Analyzer into a bill-of-materials.")
 public class OrtCommand extends AbstractCommand {
     @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")
@@ -57,9 +57,9 @@ public class OrtCommand extends AbstractCommand {
         try (final var stream = new FileInputStream(configFile)) {
             return Configuration.parse(stream);
         } catch (IOException e) {
-            System.out.println("Configuration error: " + e.getMessage());
-            System.out.println("Supported YAML configuration file format is:");
-            System.out.println(Configuration.example());
+            System.err.println("Configuration error: " + e.getMessage());
+            System.err.println("Supported YAML configuration file format is:");
+            System.err.println(Configuration.example());
 
             throw new BusinessException("Failed to read configuration");
         }
@@ -86,10 +86,10 @@ public class OrtCommand extends AbstractCommand {
 
         config.curations.forEach(curation -> {
             if (curation.license != null) {
-                service.curatePackageLicense(curation.purl, curation.license);
+                service.curatePackageLicense(curation.getPurl(), curation.license);
             }
             if (curation.source != null) {
-                service.curatePackageSource(curation.purl, curation.source);
+                service.curatePackageSource(curation.getPurl(), curation.source);
             }
         });
     }
