@@ -65,4 +65,19 @@ formats:
     version:
       regex: "^\\S+\\sv(\\S+)(\\s.+)?$"
       group: 1
-
+  - format: python
+    description: "Base definitions for Python group and artifact identifiers."
+    identifier: "[\\w]"
+    types:
+      "" : "pypi"
+  - format: pipenv
+    parent: python
+    description: "Default Python pipenv tree output"
+    tool: "pipenv graph --bare"
+    skip: ":test$"
+    name:
+      regex: "^(.+?)[=\\s]"
+      group: 1
+    version:
+      regex: "(==|installed:\\s)([^\\]]+)\\]?$"
+      group: 2
