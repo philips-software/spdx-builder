@@ -13,7 +13,7 @@ The "bombase_url" refers to the knowledge base that supplies the metadata for
 the packages parsed from the dependency tree.
 
 _Note: The list of supported formats is output when no format option is
-specified.
+specified._
 
 _Note: If no "output_file" is specified, the output is written to a file named
 `bom.spdx` in the current directory. If the file has no extension, `.spdx`
@@ -108,3 +108,28 @@ relationship: # (Optional) relationship marker pattern
   regex: <regex> # Regular expression extracting the (optional) relationship marker 
   group: <index> # Matching group holding the relationship marker (defaults to 1)
 ```
+
+## Supported trees
+
+We do not yet support all formats. Although you can get a list of supported outputs by not specifing a format and run the command, sometimes it's also handy to have a list in the documentation. Here is a list with supported formats and their command which you can use to create the list from your project:
+
+```shell
+spdx-builder tree
+```
+
+| Format | Example Command                                            |
+| ------ | ---------------------------------------------------------- |
+| maven  | `mvn dependency:tree`                                      |
+| gradle | `gradlew -q dependencies --configuration runtimeClasspath` |
+| npm    | `npm list --all --production`                              |
+| rust   | `cargo tree -e no-dev,no-build --locked`                   |
+| pipenv | `pipenv graph --bare`                                      |
+
+You can also look [into the configuration file](../src/main/resources/treeformats.yml) to see all formats and some nice regular expressions. 
+
+### My tree format is missing
+If you have another tree format, you can use the custom configuration file, or you can be awesome and add your favourite format by creating a PR! :)
+
+Files to change:
+- [src/main/resources/treeformats.yml](../src/main/resources/treeformats.yml)
+- [src/test/java/com/philips/research/spdxbuilder/persistence/tree/TreeFormatsTest.java](../src/test/java/com/philips/research/spdxbuilder/persistence/tree/TreeFormatsTest.java)
