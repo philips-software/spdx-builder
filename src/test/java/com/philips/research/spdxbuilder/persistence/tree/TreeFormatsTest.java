@@ -165,19 +165,19 @@ class TreeFormatsTest {
                     "  - base58 [required: >=2, installed: 2.1.0]");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("pipenv", "", "alembic", "1.5.8"),
-                    new Package("pipenv", "", "Mako", "1.1.4"),
-                    new Package("pipenv", "", "MarkupSafe", "1.1.1"),
-                    new Package("pipenv", "", "python-dateutil", "2.8.1"),
-                    new Package("pipenv", "", "six", "1.15.0"),
-                    new Package("pipenv", "", "python-editor", "1.0.4"),
-                    new Package("pipenv", "", "SQLAlchemy", "1.4.2"),
-                    new Package("pipenv", "", "greenlet", "1.0.0"),
-                    new Package("pipenv", "", "apache-libcloud", "3.3.1"),
-                    new Package("pipenv", "", "requests", "2.25.1"),
-                    new Package("pipenv", "", "certifi", "2020.12.5"),
-                    new Package("pipenv", "", "barista-python-client", "1.3.5"),
-                    new Package("pipenv", "", "base58", "2.1.0"));
+                    new Package("pypi", "", "alembic", "1.5.8"),
+                    new Package("pypi", "", "mako", "1.1.4"),
+                    new Package("pypi", "", "markupsafe", "1.1.1"),
+                    new Package("pypi", "", "python-dateutil", "2.8.1"),
+                    new Package("pypi", "", "six", "1.15.0"),
+                    new Package("pypi", "", "python-editor", "1.0.4"),
+                    new Package("pypi", "", "sqlalchemy", "1.4.2"),
+                    new Package("pypi", "", "greenlet", "1.0.0"),
+                    new Package("pypi", "", "apache-libcloud", "3.3.1"),
+                    new Package("pypi", "", "requests", "2.25.1"),
+                    new Package("pypi", "", "certifi", "2020.12.5"),
+                    new Package("pypi", "", "barista-python-client", "1.3.5"),
+                    new Package("pypi", "", "base58", "2.1.0"));
         }
 
         private void parse(String... lines) {

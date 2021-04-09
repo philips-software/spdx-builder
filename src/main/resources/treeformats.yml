@@ -69,7 +69,7 @@ formats:
     description: "Base definitions for Python group and artifact identifiers."
     identifier: "[\\w]"
     types:
-      "" : "pipenv"
+      "" : "pypi"
   - format: pipenv
     parent: python
     description: "Default Python pipenv tree output"
