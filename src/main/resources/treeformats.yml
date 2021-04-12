@@ -70,6 +70,16 @@ formats:
     identifier: "[\\w]"
     types:
       "" : "pypi"
+  - format: pip
+    parent: python
+    description: "Non-hierarchical Python pip freeze format."
+    tool: "pip freeze"
+    name:
+      regex: "^([^=]+)="
+      group: 1
+    version:
+      regex: "=([^=]+)$"
+      group: 1
   - format: pipenv
     parent: python
     description: "Default Python pipenv tree output"

@@ -123,6 +123,7 @@ spdx-builder tree
 | gradle | `gradlew -q dependencies --configuration runtimeClasspath` |
 | npm    | `npm list --all --production`                              |
 | rust   | `cargo tree -e no-dev,no-build --locked`                   |
+| pip    | `pip freeze`                                               |
 | pipenv | `pipenv graph --bare`                                      |
 
 You can also look [into the configuration file](../src/main/resources/treeformats.yml) to see all formats and some nice regular expressions. 
