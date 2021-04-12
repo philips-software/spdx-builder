@@ -147,6 +147,28 @@ class TreeFormatsTest {
         }
 
         @Test
+        void pip() {
+            format.configure(parser, "pip");
+
+            parse("absl-py==0.12.0",
+                    "alabaster==0.7.12",
+                    "alembic==1.5.8",
+                    "apache-libcloud==3.3.1",
+                    "astunparse==1.6.3",
+                    "Babel==2.9.0",
+                    "barista-python-client==1.3.5");
+
+            assertThat(bom.getPackages()).containsExactly(
+                    new Package("pypi", "", "absl-py", "0.12.0"),
+                    new Package("pypi", "", "alabaster", "0.7.12"),
+                    new Package("pypi", "", "alembic", "1.5.8"),
+                    new Package("pypi", "", "apache-libcloud", "3.3.1"),
+                    new Package("pypi", "", "astunparse", "1.6.3"),
+                    new Package("pypi", "", "babel", "2.9.0"),
+                    new Package("pypi", "", "barista-python-client", "1.3.5"));
+        }
+
+        @Test
         void pipenv() {
             format.configure(parser, "pipenv");
 
