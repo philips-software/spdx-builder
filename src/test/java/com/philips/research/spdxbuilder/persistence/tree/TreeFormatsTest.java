@@ -161,6 +161,7 @@ class TreeFormatsTest {
                     "apache-libcloud==3.3.1",
                     "  - requests [required: >=2.5.0, installed: 2.25.1]",
                     "    - certifi [required: >=2017.4.17, installed: 2020.12.5]",
+                    "  - gast [required: ==0.3.3, installed: 0.3.4]",
                     "barista-python-client==1.3.5",
                     "  - base58 [required: >=2, installed: 2.1.0]");
 
@@ -176,6 +177,7 @@ class TreeFormatsTest {
                     new Package("pypi", "", "apache-libcloud", "3.3.1"),
                     new Package("pypi", "", "requests", "2.25.1"),
                     new Package("pypi", "", "certifi", "2020.12.5"),
+                    new Package("pypi", "", "gast", "0.3.4"),
                     new Package("pypi", "", "barista-python-client", "1.3.5"),
                     new Package("pypi", "", "base58", "2.1.0"));
         }
