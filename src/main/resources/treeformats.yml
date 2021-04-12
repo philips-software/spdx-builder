@@ -89,5 +89,5 @@ formats:
       regex: "^(.+?)[=\\s]"
       group: 1
     version:
-      regex: "(==|installed:\\s)([^\\]]+)\\]?$"
+      regex: "(\\S==|installed:\\s)([^\\]]+)\\]?$"
       group: 2
