@@ -150,36 +150,18 @@ class TreeFormatsTest {
         void pipenv() {
             format.configure(parser, "pipenv");
 
-            parse("alembic==1.5.8",
-                    "  - Mako [required: Any, installed: 1.1.4]",
-                    "    - MarkupSafe [required: >=0.9.2, installed: 1.1.1]",
-                    "  - python-dateutil [required: Any, installed: 2.8.1]",
-                    "    - six [required: >=1.5, installed: 1.15.0]",
-                    "  - python-editor [required: >=0.3, installed: 1.0.4]",
-                    "  - SQLAlchemy [required: >=1.3.0, installed: 1.4.2]",
-                    "    - greenlet [required: !=0.4.17, installed: 1.0.0]",
-                    "apache-libcloud==3.3.1",
-                    "  - requests [required: >=2.5.0, installed: 2.25.1]",
-                    "    - certifi [required: >=2017.4.17, installed: 2020.12.5]",
-                    "  - gast [required: ==0.3.3, installed: 0.3.4]",
-                    "barista-python-client==1.3.5",
-                    "  - base58 [required: >=2, installed: 2.1.0]");
+            parse("top==1.5.8",
+                    "  - Second [required: Any, installed: 1.1.4]",
+                    "    - Third [required: >=0.9.2, installed: 1.1.1]",
+                    "  - second-item [required: Any, installed: 2.8.1]",
+                    "    - exact-match [required: ==0.3.3, installed: 0.3.3]");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("pypi", "", "alembic", "1.5.8"),
-                    new Package("pypi", "", "mako", "1.1.4"),
-                    new Package("pypi", "", "markupsafe", "1.1.1"),
-                    new Package("pypi", "", "python-dateutil", "2.8.1"),
-                    new Package("pypi", "", "six", "1.15.0"),
-                    new Package("pypi", "", "python-editor", "1.0.4"),
-                    new Package("pypi", "", "sqlalchemy", "1.4.2"),
-                    new Package("pypi", "", "greenlet", "1.0.0"),
-                    new Package("pypi", "", "apache-libcloud", "3.3.1"),
-                    new Package("pypi", "", "requests", "2.25.1"),
-                    new Package("pypi", "", "certifi", "2020.12.5"),
-                    new Package("pypi", "", "gast", "0.3.4"),
-                    new Package("pypi", "", "barista-python-client", "1.3.5"),
-                    new Package("pypi", "", "base58", "2.1.0"));
+                    new Package("pypi", "", "top", "1.5.8"),
+                    new Package("pypi", "", "second", "1.1.4"),
+                    new Package("pypi", "", "third", "1.1.1"),
+                    new Package("pypi", "", "second-item", "2.8.1"),
+                    new Package("pypi", "", "exact-match", "0.3.3"));
         }
 
         private void parse(String... lines) {
