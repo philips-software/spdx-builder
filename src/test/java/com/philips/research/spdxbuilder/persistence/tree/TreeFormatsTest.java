@@ -93,7 +93,7 @@ class TreeFormatsTest {
 
             parse("[INFO] group:ignore:666:compile",
                     "[INFO] --- maven-dependency-plugin:3.1.2:tree ---",
-                    "[INFO] com.group:artifact:jar:1.2",
+                    "[INFO] COM.GROUP:ARTIFACT:jar:1.2",
                     "[INFO] +- com.group:contained:jar:1.2.3:compile",
                     "[INFO] +- com.group:skipped:jar:1.2.3:test",
                     "[INFO] |  +- com.group:skipped:jar:1.2.3:test",
@@ -103,7 +103,7 @@ class TreeFormatsTest {
                     "[INFO] group:ignore:666:compile");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("maven", "com.group", "artifact", "1.2"),
+                    new Package("maven", "COM.GROUP", "ARTIFACT", "1.2"),
                     new Package("maven", "com.group", "contained", "1.2.3"),
                     new Package("maven", "com.group", "contained", "2.0"));
         }
@@ -150,22 +150,15 @@ class TreeFormatsTest {
         void pip() {
             format.configure(parser, "pip");
 
-            parse("absl-py==0.12.0",
-                    "alabaster==0.7.12",
-                    "alembic==1.5.8",
-                    "apache-libcloud==3.3.1",
-                    "astunparse==1.6.3",
-                    "Babel==2.9.0",
-                    "barista-python-client==1.3.5");
+            parse(
+                    "first==1.0.0",
+                    "NO-CAPITALS==1.2.3",
+                    "converts_underscore==2.0.0");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("pypi", "", "absl-py", "0.12.0"),
-                    new Package("pypi", "", "alabaster", "0.7.12"),
-                    new Package("pypi", "", "alembic", "1.5.8"),
-                    new Package("pypi", "", "apache-libcloud", "3.3.1"),
-                    new Package("pypi", "", "astunparse", "1.6.3"),
-                    new Package("pypi", "", "babel", "2.9.0"),
-                    new Package("pypi", "", "barista-python-client", "1.3.5"));
+                    new Package("pypi", "", "first", "1.0.0"),
+                    new Package("pypi", "", "no-capitals", "1.2.3"),
+                    new Package("pypi", "", "converts-underscore", "2.0.0"));
         }
 
         @Test
@@ -175,14 +168,14 @@ class TreeFormatsTest {
             parse("top==1.5.8",
                     "  - Second [required: Any, installed: 1.1.4]",
                     "    - Third [required: >=0.9.2, installed: 1.1.1]",
-                    "  - second-item [required: Any, installed: 2.8.1]",
+                    "  - no_underscore [required: Any, installed: 2.8.1]",
                     "    - exact-match [required: ==0.3.3, installed: 0.3.3]");
 
             assertThat(bom.getPackages()).containsExactly(
                     new Package("pypi", "", "top", "1.5.8"),
                     new Package("pypi", "", "second", "1.1.4"),
                     new Package("pypi", "", "third", "1.1.1"),
-                    new Package("pypi", "", "second-item", "2.8.1"),
+                    new Package("pypi", "", "no-underscore", "2.8.1"),
                     new Package("pypi", "", "exact-match", "0.3.3"));
         }
 
