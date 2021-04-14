@@ -9,8 +9,10 @@
 Where "print_tree_output" is the relevant command of the project build
 environment to list the hierarchy of packages and their dependencies, and "
 format" specifies the shorthand name of the formatting for the resulting tree.
-The "bombase_url" refers to the knowledge base that supplies the metadata for
-the packages parsed from the dependency tree.
+The "bombase_url" refers to
+the [BOM-Base](https://github.com/philips-software/bom-base) knowledge base
+instance that supplies the metadata for the packages parsed from the dependency
+tree.
 
 _Note: The list of supported formats is output when no format option is
 specified._
@@ -27,9 +29,35 @@ to a different tree format. The tree indentation level is maintained across
 format changes, making it even possible (by adding indents) to insert a sub-tree
 in a different format.
 
+## Supported trees
+
+Various common tree formats are already included, including:
+
+- Maven dependency tree (`mvn dependency:tree`)
+- Gradle dependency
+  tree (`gradlew -q dependencies --configuration runtimeClasspath`)
+- NPM packages list (`npm list --all --production`)
+- Rust dependency tree (`cargo tree -e no-dev,no-build --locked`)
+- Python pip freeze (`pip freeze`)
+- Python pipenv graph (`pipenv graph --bare`)
+
+All supported formats are listed if no format is provided in the invocation:
+
+```shell
+spdx-builder tree
+```
+
+If your format is not supported, or your build tool produces a slightly
+different format, you can
+use [this configuration file](../src/main/resources/treeformats.yml)
+for inspiration to build your custom format.
+
+Feel free to contribute your format specification back to SPDX-Builder, so
+others can also benefit from your work!
+
 ## Tree format specification
 
-Custom tree formats can be parsed by providing the `--custom <formats_file>`
+Custom tree formats can be added by providing the `--custom <formats_file>`
 option. The "formats_file" has the same format as
 the [internal formats file](../src/main/resources/treeformats.yml):
 
@@ -94,9 +122,9 @@ version:
   group: <index> # Matching group holding the version (defaults to 1)
 ```
 
-The relationship between packages defaults to dynamically linked. This default
+The relationship between packages defaults to "dynamically linked". This default
 can be overridden for the format, and markers can be used to map a dependency to
-a specific relationship.
+a specific relationship:
 
 ```yaml
 # Package relation
@@ -109,28 +137,3 @@ relationship: # (Optional) relationship marker pattern
   group: <index> # Matching group holding the relationship marker (defaults to 1)
 ```
 
-## Supported trees
-
-We do not yet support all formats. Although you can get a list of supported outputs by not specifing a format and run the command, sometimes it's also handy to have a list in the documentation. Here is a list with supported formats and their command which you can use to create the list from your project:
-
-```shell
-spdx-builder tree
-```
-
-| Format | Example Command                                            |
-| ------ | ---------------------------------------------------------- |
-| maven  | `mvn dependency:tree`                                      |
-| gradle | `gradlew -q dependencies --configuration runtimeClasspath` |
-| npm    | `npm list --all --production`                              |
-| rust   | `cargo tree -e no-dev,no-build --locked`                   |
-| pip    | `pip freeze`                                               |
-| pipenv | `pipenv graph --bare`                                      |
-
-You can also look [into the configuration file](../src/main/resources/treeformats.yml) to see all formats and some nice regular expressions. 
-
-### My tree format is missing
-If you have another tree format, you can use the custom configuration file, or you can be awesome and add your favourite format by creating a PR! :)
-
-Files to change:
-- [src/main/resources/treeformats.yml](../src/main/resources/treeformats.yml)
-- [src/test/java/com/philips/research/spdxbuilder/persistence/tree/TreeFormatsTest.java](../src/test/java/com/philips/research/spdxbuilder/persistence/tree/TreeFormatsTest.java)
