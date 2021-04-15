@@ -48,19 +48,19 @@ public interface BlackDuckApi {
 
     @Headers(BILL_OF_MATERIALS_6_JSON)
     @GET("/api/projects/{projectId}/versions/{versionId}/hierarchical-components?limit=9999")
-    Call<ItemsJson<ComponentJson>> hierarchicalRoot(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
+    Call<ItemsJson<ComponentVersionJson>> getRootComponentVersions(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
 
     @Headers(BILL_OF_MATERIALS_6_JSON)
     @GET("/api/projects/{projectId}/versions/{versionId}/components/{componentId}/versions/{componentVersionId}/hierarchical-components/{hierarchicalId}/children?limit=999")
-    Call<ItemsJson<ComponentJson>> hierarchicalChildComponents(@Path("projectId") UUID projectId,
-                                                               @Path("versionId") UUID versionId,
-                                                               @Path("componentId") UUID componentId,
-                                                               @Path("componentVersionId") UUID componentVersionId,
-                                                               @Path("hierarchicalId") long hierarchicalId);
+    Call<ItemsJson<ComponentVersionJson>> getChildComponentVersions(@Path("projectId") UUID projectId,
+                                                                    @Path("versionId") UUID versionId,
+                                                                    @Path("componentId") UUID componentId,
+                                                                    @Path("componentVersionId") UUID componentVersionId,
+                                                                    @Path("hierarchicalId") long hierarchicalId);
 
     @Headers(COMPONENT_DETAIL_4_JSON)
     @GET("/api/components/{componentId}")
-    Call<ComponentDetailsJson> componentDetails(@Path("componentId") UUID componentId);
+    Call<ComponentJson> getComponent(@Path("componentId") UUID componentId);
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     class AuthJson {
@@ -131,12 +131,11 @@ public interface BlackDuckApi {
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
-    class ComponentJson implements BlackDuckComponent {
+    class ComponentVersionJson implements BlackDuckComponent {
         String componentName;
         String componentVersionName;
         URI componentVersion;
 
-        boolean ignored;
         List<String> usages = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
         List<LicenseJson> licenses = new ArrayList<>();
@@ -235,6 +234,7 @@ public interface BlackDuckApi {
         }
 
         String getType() {
+            //TODO Would this not fail too often? (Use 1:1 mapping as fallback instead?)
             final var type = TYPE_MAPPING.get(externalNamespace);
             return (type != null) ? type : "generic";
         }
@@ -286,7 +286,7 @@ public interface BlackDuckApi {
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
-    class ComponentDetailsJson implements BlackDuckComponentDetails {
+    class ComponentJson implements BlackDuckComponentDetails {
         String description;
         @NullOr URL url;
 

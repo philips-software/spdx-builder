@@ -107,22 +107,22 @@ public class BlackDuckClient {
 
     List<BlackDuckComponent> getComponents(UUID projectId, UUID versionId) {
         //noinspection unchecked
-        return query(api.hierarchicalRoot(projectId, versionId))
-                //TODO Remove any ignored components. (Are these even indicated?)
+        return query(api.getRootComponentVersions(projectId, versionId))
+                //FIXME Remove any ignored components. (Are these even indicated?)
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
     }
 
     List<BlackDuckComponent> getDependencies(UUID projectId, UUID versionId, BlackDuckComponent component) {
         //noinspection unchecked
-        return query(api.hierarchicalChildComponents(projectId, versionId,
+        return query(api.getChildComponentVersions(projectId, versionId,
                 component.getId(), component.getVersionId(), component.getHierarchicalId()))
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
     }
 
     BlackDuckComponentDetails getComponentDetails(BlackDuckComponent component) {
-        return query(api.componentDetails(component.getId())).orElseThrow();
+        return query(api.getComponent(component.getId())).orElseThrow();
     }
 
     <T> Optional<T> query(Call<T> request) {

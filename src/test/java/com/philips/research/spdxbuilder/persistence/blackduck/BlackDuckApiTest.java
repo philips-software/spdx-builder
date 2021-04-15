@@ -7,7 +7,7 @@ package com.philips.research.spdxbuilder.persistence.blackduck;
 
 import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.License;
-import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ComponentJson;
+import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ComponentVersionJson;
 import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.LicenseJson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +25,7 @@ class BlackDuckApiTest {
         private static final String LICENSE = "Apache-2.0";
         private static final String LICENSE2 = "MIT";
 
-        private final ComponentJson component = new ComponentJson();
+        private final ComponentVersionJson component = new ComponentVersionJson();
 
         @BeforeEach
         void beforeEach() {
