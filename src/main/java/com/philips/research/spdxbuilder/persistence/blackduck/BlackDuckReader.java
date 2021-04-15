@@ -100,7 +100,7 @@ public class BlackDuckReader implements BomReader {
 
         final var details = client.getComponentDetails(component);
         final var pkg = Package.fromPurl(purl)
-                .setDeclaredLicense(component.getLicense())
+                .setConcludedLicense(component.getLicense())
                 .setSummary(component.getName());
         details.getDescription().ifPresent(pkg::setDescription);
         details.getHomepage().ifPresent(pkg::setHomePage);
