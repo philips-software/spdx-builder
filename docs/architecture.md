@@ -196,41 +196,67 @@ populating the SBOM.
 
 ### Black Duck input
 
-Black Duck does not natively provide an SPDX export function, but instead refers
-to an [open source script](https://github.com/blackducksoftware/hub-spdx). The
-resulting output, however, excluded generic external package references that
-allows correlation of packages to external sources (or other SBOM documents). A
-support question to Synopsys resulted
-in [this Python script](https://github.com/matthewb66/bd_export_spdx2.2) by a
-Black Duck consultant, which provides Package URL references but is due to its
+Black Duck does not natively include an SPDX export function, but instead refers
+to an open source [script](https://github.com/blackducksoftware/hub-spdx). The
+resulting output does not include any generic external package references that
+would allow correlation of packages to external sources (or other SBOM
+documents).
+
+A support request to Synopsys about this topic resulted in a
+new [Python script](https://github.com/matthewb66/bd_export_spdx2.2) by a Black
+Duck consultant, which provides Package URL references but is due to its
 dependency on [Black Duck Open Hub](https://www.openhub.net)
 not sufficiently performant to realistically export typical JavaScript projects
 containing over 1000 package dependencies.
 
 A major limitation of the standard Black Duck API is that despite the existence
-of the "direct-dependencies" API per "origin" in the BOM, it does NOT
-consistently expose this information for all projects. Black Duck support
+of the "direct-dependencies" API per "origin" in the BOM, it _does not
+consistently expose this information_ for all projects. Black Duck support
 confirmed this limitation and instead suggested the use of
 the ["BOM Hierarchical Component" API](https://blackduck.philips.com/api-doc/public.html#_bom_hierarchical_component_endpoints)
-. This API needs to be explicitly enabled on the server due to its (potential)
-performance impact.
+. Note that this API needs to be explicitly enabled on the server due to its
+(potential) performance impact.
 
-Black Duck stores SBOM data in a "version" of a "project". Each SBOM consists of
-detected "component versions"
+The figure below shows an impression about how Black Duck structures its SBOM
+data:
 
 ![UML class diagram](blackduck.png "Black Duck SBOM representation")
-(To do)
+
+Black Duck stores SBOM data in a "version" of a "project". Each SBOM consists of
+components versions, which can be queried recursively using the "hierarchical
+id" of the parent to obtain their children.
+
+Note that Black Duck does not explicitly model relationships, and the "usage"
+indication is therefore shared between any references to the component version.
 
 ### Build tool Tree input
 
-(To do)
+The bill-of-materials structure can be parsed from a textual representation of
+the as-built tree that is (preferably) generated from the build tool. The
+minimal information necessary is a package name, package version, and
+hierarchical relation (=indent level).
+
+The `TreeReader` feeds the tree line-by-line into the configurable `TreeParser`,
+which is responsible to convert the input into properly formatted Package URL
+values and hierarchical relationships. Configuration is handled by
+the `TreeFormats` class which takes its configuration from
+the [`treeformats.yml` file](../src/main/resources/treeformats.yml) or
+optionally from an external format file. (A description of the format is
+found in the [usage documentation](usage_with_tree.md).)
+
+Parsing is makes heavy use of regular expressions both for identification of
+markers and to isolate fragments from the input line.
 
 ### Knowledge base enhancement
 
-(To do)
+After building a bill-of-materials, any registered knowledge base is used to
+enhance the metadata of the registered components. Depending on the type of
+knowledge base, this can be limited to license scanning results or extend to any
+piece of metadata available from the (external) source.
 
 ### SPDX output
 
-(To do)
+The SPDX output is built on a tag-value writer to output values with encoding
+of `NOASSERTION` (=no value) and `NONE` (=empty value).
 
 (End of document)

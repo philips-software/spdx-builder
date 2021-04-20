@@ -4,27 +4,51 @@ title Black Duck BOM representation
 
 class License {
     UUID
-    name:String
+    licenseType:{CONJUNCTIVE,DISJUNCTIVE}
+    licenseDisplay:String
     spdxId:String
 }
+License --> "*" License: licenses
+note bottom of License
+    Nested grouping
+    of AND/OR terms.
+end note
 
 class Origin {
     UUID
     externalNamespace:String
     externalId:String
 }
-note left of Origin: Provides\nPackage URL
+note left of Origin
+    Exact format of
+    externalId
+    depends on the
+    externalNamespace
+end note
 
 class ComponentVersion {
-    UUID + UUID
-    name:String
-    version:String
-    description:String
-    ignored:boolean
+    UUID
+    componentName:String
+    componentVersionName:String
+    usages:{see note}[]
 }
 ComponentVersion o--> "*" License: licenses\n<AND/OR>
 ComponentVersion o-d-> "*" Origin: origins
 ComponentVersion --> "*" ComponentVersion: children
+note right of ComponentVersion
+    Possible usages values: SOURCE_CODE,
+    STATICALLY_LINKED, DYNAMICALLY_LINKED,
+    SEPARATE_WORK, MERELY_AGGREGATED,
+    IMPLEMENTATION_OF_STANDARD, PREREQUISITE,
+    DEV_TOOL_EXCLUDED, UNSPECIFIED
+end note
+
+class  Component {
+    UUID
+    description:String
+    homepage:URI
+}
+ComponentVersion -u-> "1" Component: component
 
 class ProjectVersion{
     UUID
