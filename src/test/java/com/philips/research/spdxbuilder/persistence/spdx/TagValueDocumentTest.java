@@ -84,4 +84,14 @@ class TagValueDocumentTest {
     void writesTextValue() throws Exception {
         assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, MULTI_VALUE), (doc) -> doc.addValue(TAG, MULTI_VALUE));
     }
+
+    @Test
+    void escapesMultiLineStartTag() throws Exception {
+        assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, "<text>"), (doc) -> doc.addValue(TAG, "<text>"));
+    }
+
+    @Test
+    void escapesMultiLineEndTag() throws Exception{
+        assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, "</text> \nX"), (doc) -> doc.addValue(TAG, "</text>\nX"));
+    }
 }
