@@ -74,7 +74,7 @@ public class BlackDuckReader implements BomReader {
     }
 
     private void exportPackages(BillOfMaterials bom) {
-        System.out.print("Building list of components");
+        System.out.print("Building list of components ");
         final var components = client.getComponents(project.getId(), projectVersion.getId());
         addChildren(bom, null, components);
     }

@@ -11,7 +11,7 @@ specified project version.
 A project version in Black Duck is exported to an SPDX file by:
 
 ```shell
-spdx-builder blackduck -o <output_file> <project> <version>
+spdx-builder blackduck -o <output_file> <project> <version> --url <server_url> --token <access_token>
 ```
 
 _Note: If no "output_file" is specified, the output is written to a file named
@@ -20,6 +20,9 @@ is automatically appended._
 
 _Note: The "project" and "version" can be limited to the unique prefixes for a
 project version._
+
+_Note: The server URL and access token default to values found in
+the `BLACKDUCK_URL` and `BLACKDUCK_API_TOKEN` environment variables._
 
 To enable the Hierarchical BOM in the Black Duck server in case of a Docker
 Swarm installation:
