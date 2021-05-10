@@ -136,7 +136,7 @@ class PackageJson {
             try {
                 packageUrl = new PackageURL(purl.toASCIIString());
             } catch (MalformedPackageURLException e) {
-                // Ignore invalid PURL
+                throw new IllegalArgumentException("'" + purl + "' is not a valid Package URL");
             }
         }
         final var result = (packageUrl != null)

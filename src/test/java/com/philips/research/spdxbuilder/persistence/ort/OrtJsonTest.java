@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class OrtJsonTest {
     private static final String TYPE = "Type";
@@ -40,6 +41,15 @@ class OrtJsonTest {
             assertThat(result.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(result.getName()).isEqualTo(NAME);
             assertThat(result.getVersion()).isEqualTo(VERSION);
+        }
+
+        @Test
+        void throws_invalidPackageUrlFormat() {
+            pkg.purl = URI.create("Not_a_valid_PURL");
+
+            assertThatThrownBy(pkg::createPackage)
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("not a valid Package URL");
         }
 
         @Test
