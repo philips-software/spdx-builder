@@ -54,7 +54,7 @@ class TreeFormatsTest {
 
             parse("namespace/name@version");
 
-            assertThat(bom.getPackages()).contains(new Package("custom", "namespace", "name", "version"));
+            assertThat(bom.getPackages()).contains(new Package("namespace", "name", "version"));
         }
 
         @Test
@@ -77,9 +77,9 @@ class TreeFormatsTest {
                     "group:ignored:666");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("maven", "com.group", "artifact", "1.2"),
-                    new Package("maven", "com.group", "artifact", "1.2.1"),
-                    new Package("maven", "com.group", "upgraded", "2.3.4"));
+                    new Package("com.group", "artifact", "1.2"),
+                    new Package("com.group", "artifact", "1.2.1"),
+                    new Package("com.group", "upgraded", "2.3.4"));
         }
 
         @Test
@@ -98,9 +98,9 @@ class TreeFormatsTest {
                     "[INFO] group:ignore:666:compile");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("maven", "COM.GROUP", "ARTIFACT", "1.2"),
-                    new Package("maven", "com.group", "contained", "1.2.3"),
-                    new Package("maven", "com.group", "contained", "2.0"));
+                    new Package("COM.GROUP", "ARTIFACT", "1.2"),
+                    new Package("com.group", "contained", "1.2.3"),
+                    new Package("com.group", "contained", "2.0"));
         }
 
         @Test
@@ -113,9 +113,9 @@ class TreeFormatsTest {
                     "│ ├── @scope/sub-package@2.1");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("npm", "", "package", "1.2"),
-                    new Package("npm", "", "sub-package", "2.0"),
-                    new Package("npm", "@scope", "sub-package", "2.1"));
+                    new Package("", "package", "1.2"),
+                    new Package("", "sub-package", "2.0"),
+                    new Package("@scope", "sub-package", "2.1"));
         }
 
 
@@ -132,11 +132,11 @@ class TreeFormatsTest {
                     "another v3.0");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("cargo", "", "top-internal", "1.2"),
-                    new Package("cargo", "", "internal", "1.3"),
-                    new Package("cargo", "", "external", "2.0"),
-                    new Package("cargo", "", "second", "0.1n"),
-                    new Package("cargo", "", "another", "3.0"));
+                    new Package("", "top-internal", "1.2"),
+                    new Package("", "internal", "1.3"),
+                    new Package("", "external", "2.0"),
+                    new Package("", "second", "0.1n"),
+                    new Package("", "another", "3.0"));
             assertThat(bom.getPackages().get(0).isInternal()).isTrue();
             assertThat(bom.getPackages().get(2).isInternal()).isFalse();
         }
@@ -151,9 +151,9 @@ class TreeFormatsTest {
                     "converts_underscore==2.0.0");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("pypi", "", "first", "1.0.0"),
-                    new Package("pypi", "", "no-capitals", "1.2.3"),
-                    new Package("pypi", "", "converts-underscore", "2.0.0"));
+                    new Package("", "first", "1.0.0"),
+                    new Package("", "no-capitals", "1.2.3"),
+                    new Package("", "converts-underscore", "2.0.0"));
         }
 
         @Test
@@ -167,11 +167,11 @@ class TreeFormatsTest {
                     "    - exact-match [required: ==0.3.3, installed: 0.3.3]");
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package("pypi", "", "top", "1.5.8"),
-                    new Package("pypi", "", "second", "1.1.4"),
-                    new Package("pypi", "", "third", "1.1.1"),
-                    new Package("pypi", "", "no-underscore", "2.8.1"),
-                    new Package("pypi", "", "exact-match", "0.3.3"));
+                    new Package("", "top", "1.5.8"),
+                    new Package("", "second", "1.1.4"),
+                    new Package("", "third", "1.1.1"),
+                    new Package("", "no-underscore", "2.8.1"),
+                    new Package("", "exact-match", "0.3.3"));
         }
 
         private void parse(String... lines) {

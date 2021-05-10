@@ -34,8 +34,8 @@ class TreeReaderTest {
                 .read(bom);
 
         assertThat(bom.getPackages()).containsExactly(
-                new Package("custom", "ns", "main", "1"),
-                new Package("custom", "ns", "sub", "2"));
+                new Package("ns", "main", "1"),
+                new Package("ns", "sub", "2"));
     }
 
     @Test
@@ -48,8 +48,8 @@ class TreeReaderTest {
         new TreeReader(stream, "npm", null).read(bom);
 
         assertThat(bom.getPackages()).containsExactly(
-                new Package("npm", "ns", "main", "1"),
-                new Package("cargo", "", "sub", "2"));
+                new Package("ns", "main", "1"),
+                new Package("", "sub", "2"));
         final var pkg1 = bom.getPackages().get(0);
         final var pkg2 = bom.getPackages().get(1);
         assertThat(bom.getRelations()).containsExactly(

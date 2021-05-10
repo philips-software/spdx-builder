@@ -30,6 +30,11 @@ public class LicenseKnowledgeBase extends KnowledgeBase {
 
     @Override
     public boolean enhance(Package pkg) {
+        final var purl = pkg.getPurl();
+        if (purl.isEmpty()) {
+            return false;
+        }
+
         return detectLicense(pkg)
                 .map(l -> {
                     final var scanned = LicenseParser.parse(l.getLicense());
@@ -42,7 +47,8 @@ public class LicenseKnowledgeBase extends KnowledgeBase {
                         final var scannedText = dictionary.expand(scanned);
                         final var declaredText = dictionary.expand(declared);
                         if (!scannedText.equals(declaredText)) {
-                            licenseClient.contest(pkg.getPurl(), declaredText);
+                            //noinspection OptionalGetWithoutIsPresent
+                            licenseClient.contest(pkg.getPurl().get(), declaredText);
                         }
                     }
                     return l;
@@ -51,7 +57,8 @@ public class LicenseKnowledgeBase extends KnowledgeBase {
 
     private Optional<LicenseScannerClient.LicenseInfo> detectLicense(Package pkg) {
         try {
-            return licenseClient.scanLicense(pkg.getPurl(), pkg.getSourceLocation().orElse(null));
+            //noinspection OptionalGetWithoutIsPresent
+            return licenseClient.scanLicense(pkg.getPurl().get(), pkg.getSourceLocation().orElse(null));
         } catch (LicenseScannerException e) {
             System.err.println("ERROR: " + e.getMessage());
             return Optional.empty();

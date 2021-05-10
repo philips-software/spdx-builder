@@ -134,7 +134,7 @@ public abstract class License {
         public String toString() {
             return licenses.stream()
                     .map(license -> (license instanceof ComboLicense)
-                            ? String.format("(%s)", license.toString())
+                            ? String.format("(%s)", license)
                             : license.toString())
                     .sorted(String::compareToIgnoreCase)
                     .collect(Collectors.joining(operation));

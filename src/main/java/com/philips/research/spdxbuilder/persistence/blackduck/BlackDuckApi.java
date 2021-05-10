@@ -102,12 +102,18 @@ public interface BlackDuckApi {
         public Optional<String> getDescription() {
             return Optional.ofNullable(description);
         }
+
+        @Override
+        public Optional<License> getLicense() {
+            return Optional.empty();
+        }
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     class ProjectVersionJson implements BlackDuckProduct {
         String versionName;
         @NullOr String releaseComments;
+        @NullOr LicenseJson license;
         LinkJson _meta;
 
         @Override
@@ -123,6 +129,11 @@ public interface BlackDuckApi {
         @Override
         public Optional<String> getDescription() {
             return Optional.ofNullable(releaseComments);
+        }
+
+        @Override
+        public Optional<License> getLicense() {
+            return (license != null) ? Optional.of(license.getLicense()) : Optional.empty();
         }
     }
 
@@ -220,7 +231,7 @@ public interface BlackDuckApi {
         String externalNamespace;
         String externalId;
 
-        public PackageURL getPurl() {
+        PackageURL getPurl() {
             try {
                 return PackageURLBuilder.aPackageURL()
                         .withType(getType())

@@ -37,7 +37,6 @@ class OrtJsonTest {
         void createsPackage() {
             final var result = pkg.createPackage();
 
-            assertThat(result.getType()).isEqualTo(TYPE.toLowerCase());
             assertThat(result.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(result.getName()).isEqualTo(NAME);
             assertThat(result.getVersion()).isEqualTo(VERSION);
@@ -72,7 +71,7 @@ class OrtJsonTest {
 
     @Nested
     class VcsJsonTest {
-        final Package result = new Package(TYPE, NAMESPACE, NAME, VERSION);
+        final Package result = new Package(NAMESPACE, NAME, VERSION);
 
         @Test
         void noLocation_emptyUrlField() {
