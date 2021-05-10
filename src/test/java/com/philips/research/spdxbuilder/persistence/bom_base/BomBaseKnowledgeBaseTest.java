@@ -5,6 +5,7 @@
 
 package com.philips.research.spdxbuilder.persistence.bom_base;
 
+import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.KnowledgeBase;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
@@ -22,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class BomBaseKnowledgeBaseTest {
-    private static final String TYPE = "type";
     private static final String NAMESPACE = "namespace";
     private static final String NAME = "name";
     private static final String VERSION = "version";
@@ -39,16 +39,25 @@ class BomBaseKnowledgeBaseTest {
     private static final String SOURCE_LOCATION = "http://example.com/source";
     private static final String DECLARED_LICENSE = "Declared license";
     private static final String DETECTED_LICENSE = "Detected license";
+    private static final PackageURL PURL = packageUrl("pkg:/maven/" + NAMESPACE + "/" + NAME + "@" + VERSION);
 
-    private final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
+    private final Package pkg = new Package(NAMESPACE, NAME, VERSION).setPurl(PURL);
     private final BillOfMaterials bom = new BillOfMaterials().addPackage(pkg);
     private final BomBaseClient client = mock(BomBaseClient.class);
     private final KnowledgeBase knowledgeBase = new BomBaseKnowledgeBase(client);
     private final PackageMetadata meta = mock(PackageMetadata.class);
 
+    static PackageURL packageUrl(String purl) {
+        try {
+            return new PackageURL(purl);
+        } catch (MalformedPackageURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     @BeforeEach
     void beforeEach() {
-        when(client.readPackage(pkg.getPurl())).thenReturn(Optional.of(meta));
+        when(client.readPackage(PURL)).thenReturn(Optional.of(meta));
     }
 
     @Test
@@ -95,14 +104,14 @@ class BomBaseKnowledgeBaseTest {
 
     @Test
     void notifiesEnhancementFailure() {
-        bom.addPackage(new Package(TYPE, NAMESPACE, NAME, VERSION + "1"));
-        bom.addPackage(new Package(TYPE, NAMESPACE, NAME, VERSION + "2"));
+        bom.addPackage(new Package(NAMESPACE, NAME, VERSION + "1").setPurl(packageUrl("pkg:maven/second@2")));
+        bom.addPackage(new Package(NAMESPACE, NAME, VERSION + "2"));
         //noinspection unchecked
         when(client.readPackage(any(PackageURL.class))).thenReturn(Optional.empty(), Optional.of(meta));
 
         final var success = knowledgeBase.enhance(bom);
 
         assertThat(success).isFalse();
-        verify(client, times(3)).readPackage(any(PackageURL.class));
+        verify(client, times(2)).readPackage(any(PackageURL.class));
     }
 }

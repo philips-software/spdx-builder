@@ -6,6 +6,7 @@
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
 import com.github.packageurl.PackageURL;
+import com.philips.research.spdxbuilder.core.domain.License;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.json.JSONArray;
@@ -33,6 +34,7 @@ class BlackDuckClientTest {
     private static final UUID COMPONENT_ID = UUID.randomUUID();
     private static final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
     private static final String DESCRIPTION = "Description";
+    private static final String LICENSE = "Apache-2.0";
     private static final int PORT = 1080;
 
     private final MockWebServer server = new MockWebServer();
@@ -144,6 +146,7 @@ class BlackDuckClientTest {
                                     .put("name", PROJECT)
                                     .put("versionName", VERSION)
                                     .put("releaseComments", DESCRIPTION)
+                                    .put("license", new JSONObject().put("spdxId", LICENSE))
                                     .put("_meta", new JSONObject()
                                             .put("href", URI.create("https://server/something/" + VERSION_ID))))).toString()));
 
@@ -152,6 +155,7 @@ class BlackDuckClientTest {
             assertThat(projectVersion.getId()).isEqualTo(VERSION_ID);
             assertThat(projectVersion.getName()).isEqualTo(VERSION);
             assertThat(projectVersion.getDescription()).contains(DESCRIPTION);
+            assertThat(projectVersion.getLicense()).contains(License.of(LICENSE));
             final var request = server.takeRequest();
             assertThat(request.getMethod()).isEqualTo("GET");
             assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions?q=versionName%3A" + VERSION);

@@ -372,8 +372,8 @@ class TreeParser {
     }
 
     private Package storePackage(PackageURL purl) {
-        return packages.computeIfAbsent(purl, purl1 -> {
-            final var pkg = Package.fromPurl(purl1);
+        return packages.computeIfAbsent(purl, x -> {
+            final var pkg = new Package(purl);
             bom.addPackage(pkg);
             return pkg;
         });

@@ -91,7 +91,7 @@ class TagValueDocumentTest {
     }
 
     @Test
-    void escapesMultiLineEndTag() throws Exception{
+    void escapesMultiLineEndTag() throws Exception {
         assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, "</text> \nX"), (doc) -> doc.addValue(TAG, "</text>\nX"));
     }
 }

@@ -24,7 +24,7 @@ public class BomBaseKnowledgeBase extends KnowledgeBase {
 
     @Override
     public boolean enhance(Package pkg) {
-        return client.readPackage(pkg.getPurl())
+        return pkg.getPurl().flatMap(client::readPackage)
                 .map(meta -> {
                     meta.getTitle().ifPresent(pkg::setSummary);
                     meta.getDescription().ifPresent(pkg::setDescription);

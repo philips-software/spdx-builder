@@ -16,8 +16,8 @@ class BillOfMaterialsTest {
     private static final String VERSION = "Version";
 
     final BillOfMaterials bom = new BillOfMaterials();
-    final Package pkg = new Package(TYPE, NAMESPACE, NAME, VERSION);
-    final Package other = new Package(TYPE, NAMESPACE, "Other", VERSION);
+    final Package pkg = new Package(NAMESPACE, NAME, VERSION);
+    final Package other = new Package(NAMESPACE, "Other", VERSION);
 
     @Test
     void createsInstance() {

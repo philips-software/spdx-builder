@@ -33,11 +33,10 @@ class BlackDuckReaderTest {
     private static final String BLACK_DUCK_VERSION = "BlackDuckVersion";
     private static final UUID COMPONENT_ID = UUID.randomUUID();
     private static final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
-    private static final String TYPE = "maven";
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String SUMMARY = "Summary";
-    private static final PackageURL PACKAGE_URL = purlFrom(String.format("pkg:%s/%s/%s@%s", TYPE, NAMESPACE, NAME, VERSION));
+    private static final PackageURL PACKAGE_URL = purlFrom(String.format("pkg:maven/%s/%s@%s", NAMESPACE, NAME, VERSION));
 
     private final BlackDuckProduct project = mock(BlackDuckProduct.class);
     private final BlackDuckProduct projectVersion = mock(BlackDuckProduct.class);
@@ -130,14 +129,31 @@ class BlackDuckReaderTest {
         }
 
         @Test
+        void exportsProjectAsRootComponent() {
+            when(project.getDescription()).thenReturn(Optional.of(DESCRIPTION));
+            when(projectVersion.getDescription()).thenReturn(Optional.of(SUMMARY));
+            when(projectVersion.getLicense()).thenReturn(Optional.of(LICENSE));
+            when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of());
+
+            reader.read(bom);
+
+            final var root = bom.getPackages().get(0);
+            assertThat(root.getName()).isEqualTo(PROJECT);
+            assertThat(root.getVersion()).isEqualTo(VERSION);
+            assertThat(root.getDescription()).contains(DESCRIPTION);
+            assertThat(root.getSummary()).contains(SUMMARY);
+            assertThat(root.getConcludedLicense()).contains(LICENSE);
+        }
+
+        @Test
         void exportsComponent() throws Exception {
             when(component.getName()).thenReturn(SUMMARY);
 
             reader.read(bom);
 
-            assertThat(bom.getPackages()).hasSize(1);
-            final var pkg = bom.getPackages().get(0);
-            assertThat(pkg.getType()).isEqualTo(TYPE);
+            assertThat(bom.getPackages()).hasSize(2);
+            final var pkg = bom.getPackages().get(1);
+            assertThat(pkg.getPurl()).contains(PACKAGE_URL);
             assertThat(pkg.getName()).isEqualTo(NAME);
             assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(pkg.getVersion()).isEqualTo(VERSION);
@@ -149,12 +165,23 @@ class BlackDuckReaderTest {
         }
 
         @Test
+        void exportsComponentPerOrigin() {
+            final var purl1 = PACKAGE_URL;
+            final var purl2 = purlFrom("pkg:npm/second@2.0");
+            when(component.getPackageUrls()).thenReturn(List.of(purl1, purl2));
+
+            reader.read(bom);
+
+            assertThat(bom.getPackages()).hasSize(3); // Root + 2 origins of same component
+        }
+
+        @Test
         void skipsComponentWithoutOrigin() {
             when(component.getPackageUrls()).thenReturn(List.of());
 
             reader.read(bom);
 
-            assertThat(bom.getPackages()).isEmpty();
+            assertThat(bom.getPackages()).hasSize(1); // Only root
         }
 
         @Nested
@@ -175,16 +202,16 @@ class BlackDuckReaderTest {
             }
 
             @Test
-            void exportsRelationships() {
+            void exportsDependencyRelationships() {
                 when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent));
                 when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
 
                 reader.read(bom);
 
-                assertThat(bom.getPackages()).hasSize(2);
-                final var from = bom.getPackages().get(0);
-                final var to = bom.getPackages().get(1);
-                assertThat(bom.getRelations()).hasSize(1);
+                assertThat(bom.getPackages()).hasSize(3);
+                final var from = bom.getPackages().get(1);
+                final var to = bom.getPackages().get(2);
+                assertThat(bom.getRelations()).hasSize(2);
                 assertThat(bom.getRelations()).containsAnyOf(
                         new Relation(from, to, Relation.Type.DEPENDS_ON),
                         new Relation(to, from, Relation.Type.DEPENDS_ON));
@@ -211,8 +238,7 @@ class BlackDuckReaderTest {
 
             void assertRelationship(List<String> usages, Relation.Type relationship) {
                 when(component.getUsages()).thenReturn(usages);
-                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent, component));
-                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
+                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
                 final var bom = new BillOfMaterials();
 
                 new BlackDuckReader(client, TOKEN, PROJECT, VERSION).read(bom);

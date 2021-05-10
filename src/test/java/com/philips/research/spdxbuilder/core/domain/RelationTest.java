@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RelationTest {
-    private static final Package FROM = new Package("From", "NS", "Name", "Version");
-    private static final Package TO = new Package("To", "NS", "Name", "Version");
+    private static final Package FROM = new Package("NS", "Name", "Version");
+    private static final Package TO = new Package("NS", "Name", "Version");
 
     @Test
     void createsInstance() {

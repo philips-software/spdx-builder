@@ -85,12 +85,12 @@ public class SpdxWriter implements BomWriter {
     }
 
     private void writePackage(TagValueDocument doc, Package pkg, BillOfMaterials bom) throws IOException {
-        doc.addComment("Start of " + pkg.getType() + " package '" + pkg.getName() + "' version " + pkg.getVersion());
+        doc.addComment("Start of package '" + pkg);
         doc.addValue("PackageName", pkg.getFullName());
         doc.addValue("SPDXID", identifierFor(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
         doc.optionallyAddValue("PackageFileName", pkg.getFilename());
-        doc.addValue("ExternalRef", ExternalReference.purl(pkg));
+        doc.optionallyAddValue("ExternalRef", pkg.getPurl().map(ExternalReference::new));
         doc.optionallyAddValue("PackageSupplier", pkg.getSupplier().map(SpdxParty::from));
         doc.optionallyAddValue("PackageOriginator", pkg.getOriginator().map(SpdxParty::from));
         doc.addValue("PackageDownloadLocation", pkg.getSourceLocation());

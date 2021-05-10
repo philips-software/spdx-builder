@@ -46,7 +46,7 @@ class TreeParserTest {
         void parsesDefaultArtefact() {
             parser.parse(String.format("%s:%s:%s", NAMESPACE, NAME, VERSION));
 
-            assertThat(bom.getPackages()).contains(new Package(TYPE, NAMESPACE, NAME, VERSION));
+            assertThat(bom.getPackages()).contains(new Package(NAMESPACE, NAME, VERSION));
         }
 
         @Test
@@ -63,7 +63,7 @@ class TreeParserTest {
                     .withNamespace("([^@]*)$", 1);
             parser.parse(String.format("%s/%s@%s", NAME, VERSION, NAMESPACE));
 
-            assertThat(bom.getPackages()).contains(new Package(TYPE, NAMESPACE, NAME, VERSION));
+            assertThat(bom.getPackages()).contains(new Package(NAMESPACE, NAME, VERSION));
         }
 
         @Test
@@ -81,7 +81,7 @@ class TreeParserTest {
 
             parser.parse("[ignore:me]" + PACKAGE1);
 
-            assertThat(bom.getPackages()).contains(new Package(TYPE, NAMESPACE, NAME, "1"));
+            assertThat(bom.getPackages()).contains(new Package(NAMESPACE, NAME, "1"));
         }
 
         @Test
@@ -98,7 +98,7 @@ class TreeParserTest {
 
             parser.parse("abc123" + PACKAGE1);
 
-            assertThat(bom.getPackages()).contains(new Package(TYPE, NAMESPACE, NAME, "1"));
+            assertThat(bom.getPackages()).contains(new Package(NAMESPACE, NAME, "1"));
         }
 
         @Test
@@ -110,8 +110,8 @@ class TreeParserTest {
             parser.parse(PACKAGE2 + "  [Other]");
 
             assertThat(bom.getPackages()).contains(
-                    new Package("default", NAMESPACE, NAME, "1"),
-                    new Package("other", NAMESPACE, NAME, "2"));
+                    new Package(NAMESPACE, NAME, "1"),
+                    new Package(NAMESPACE, NAME, "2"));
         }
 
         @Test
@@ -133,8 +133,8 @@ class TreeParserTest {
             parser.parse("->" + PACKAGE3);
 
             assertThat(bom.getPackages()).containsExactly(
-                    new Package(TYPE, NAMESPACE, NAME, "1"),
-                    new Package(TYPE, NAMESPACE, NAME, "3"));
+                    new Package(NAMESPACE, NAME, "1"),
+                    new Package(NAMESPACE, NAME, "3"));
         }
 
         @Test
@@ -242,7 +242,7 @@ class TreeParserTest {
             parser.parse(PACKAGE2);
 
             assertThat(bom.getPackages()).hasSize(1)
-                    .contains(new Package(TYPE, NAMESPACE, NAME, "2"));
+                    .contains(new Package(NAMESPACE, NAME, "2"));
         }
 
         @Test
@@ -254,7 +254,7 @@ class TreeParserTest {
             parser.parse(PACKAGE2);
 
             assertThat(bom.getPackages()).hasSize(1)
-                    .contains(new Package(TYPE, NAMESPACE, NAME, "1"));
+                    .contains(new Package(NAMESPACE, NAME, "1"));
         }
 
         @Test
@@ -270,7 +270,7 @@ class TreeParserTest {
             parser.parse(PACKAGE3);
 
             assertThat(bom.getPackages()).hasSize(1)
-                    .contains(new Package(TYPE, NAMESPACE, NAME, "2"));
+                    .contains(new Package(NAMESPACE, NAME, "2"));
         }
     }
 

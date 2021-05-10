@@ -108,7 +108,6 @@ public class BlackDuckClient {
     List<BlackDuckComponent> getComponents(UUID projectId, UUID versionId) {
         //noinspection unchecked
         return query(api.getRootComponentVersions(projectId, versionId))
-                //FIXME Remove any ignored components. (Are these even indicated?)
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
     }

@@ -57,7 +57,7 @@ public class BlackDuckReader implements BomReader {
     private void exportProjectVersion(BillOfMaterials bom) {
         exportProjectMetadata(bom);
         System.out.println("Exporting Black Duck project '" + project.getName() + "', version '" + projectVersion.getName() + "'");
-        exportPackages(bom);
+        exportProjectComponents(bom);
         System.out.println("done");
     }
 
@@ -73,10 +73,16 @@ public class BlackDuckReader implements BomReader {
         bom.setTitle(project.getName() + " " + projectVersion.getName());
     }
 
-    private void exportPackages(BillOfMaterials bom) {
-        System.out.print("Building list of components ");
+    private void exportProjectComponents(BillOfMaterials bom) {
+        System.out.print("Building tree of components ");
+        final var root = new Package("", projectName, versionName);
+        project.getDescription().ifPresent(root::setDescription);
+        projectVersion.getDescription().ifPresent(root::setSummary);
+        projectVersion.getLicense().ifPresent(root::setDeclaredLicense);
+        bom.addPackage(root);
+
         final var components = client.getComponents(project.getId(), projectVersion.getId());
-        addChildren(bom, null, components);
+        addChildren(bom, root, components);
     }
 
     void addChildren(BillOfMaterials bom, @NullOr Package parent, List<BlackDuckComponent> components) {
@@ -99,7 +105,7 @@ public class BlackDuckReader implements BomReader {
         }
 
         final var details = client.getComponentDetails(component);
-        final var pkg = Package.fromPurl(purl)
+        final var pkg = new Package(purl)
                 .setConcludedLicense(component.getLicense())
                 .setSummary(component.getName());
         details.getDescription().ifPresent(pkg::setDescription);

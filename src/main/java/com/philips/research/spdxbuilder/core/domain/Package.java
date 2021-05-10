@@ -5,9 +5,7 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
-import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.github.packageurl.PackageURLBuilder;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
@@ -18,7 +16,6 @@ import java.util.*;
  * Single bill-of-materials package.
  */
 public final class Package {
-    private final String type;
     private final String namespace;
     private final String name;
     private final String version;
@@ -38,19 +35,15 @@ public final class Package {
     private @NullOr String description;
     private @NullOr String attribution;
 
-    public Package(String type, @NullOr String namespace, String name, String version) {
-        this.type = type;
+    public Package(PackageURL purl) {
+        this(purl.getNamespace(), purl.getName(), purl.getVersion());
+        setPurl(purl);
+    }
+
+    public Package(@NullOr String namespace, String name, String version) {
         this.namespace = (namespace != null) ? namespace : "";
         this.name = name;
         this.version = version;
-    }
-
-    public static Package fromPurl(PackageURL purl) {
-        return new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion());
-    }
-
-    public String getType() {
-        return type;
     }
 
     public String getNamespace() {
@@ -62,7 +55,7 @@ public final class Package {
     }
 
     public String getFullName() {
-        final var prefix = !namespace.isBlank() ? namespace + '/' : "";
+        final var prefix = namespace.isBlank() ? "" : namespace + '/';
         return prefix + name;
     }
 
@@ -79,29 +72,13 @@ public final class Package {
         return this;
     }
 
-    public PackageURL getPurl() {
-        if (purl == null) {
-            return implicitPurl();
-        }
-        return purl;
+    public Optional<PackageURL> getPurl() {
+        return Optional.ofNullable(purl);
     }
 
     public Package setPurl(PackageURL purl) {
         this.purl = purl;
         return this;
-    }
-
-    private PackageURL implicitPurl() {
-        try {
-            return PackageURLBuilder.aPackageURL()
-                    .withType(type)
-                    .withNamespace(namespace)
-                    .withName(name)
-                    .withVersion(version)
-                    .build();
-        } catch (MalformedPackageURLException e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
     public Optional<Party> getOriginator() {
@@ -231,19 +208,19 @@ public final class Package {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Package other = (Package) o;
-        return Objects.equals(type, other.type)
-                && Objects.equals(namespace, other.namespace)
+        return Objects.equals(namespace, other.namespace)
                 && Objects.equals(name, other.name)
                 && Objects.equals(version, other.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, namespace, name, version);
+        return Objects.hash(namespace, name, version);
     }
 
     @Override
     public String toString() {
-        return getPurl().canonicalize();
+        return getPurl().map(PackageURL::canonicalize)
+                .orElse(getFullName() + (version.isBlank() ? "" : " version " + version));
     }
 }

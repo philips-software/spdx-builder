@@ -5,6 +5,8 @@
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
+import com.philips.research.spdxbuilder.core.domain.License;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +16,6 @@ public interface BlackDuckProduct {
     String getName();
 
     Optional<String> getDescription();
+
+    Optional<License> getLicense();
 }

@@ -37,8 +37,8 @@ class ConversionInteractorTest {
     private final BillOfMaterials bom = new BillOfMaterials();
     private final ConversionService interactor = new ConversionInteractor(reader, writer, bom)
             .setKnowledgeBase(knowledgeBase);
-    private final Package project = new Package(TYPE, GROUP, PROJECT, VERSION);
-    private final Package pkg = new Package(TYPE, GROUP, NAME, VERSION);
+    private final Package project = new Package(GROUP, PROJECT, VERSION);
+    private final Package pkg = new Package(GROUP, NAME, VERSION);
 
     @BeforeEach
     void beforeEach() {
