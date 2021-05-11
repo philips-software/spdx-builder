@@ -75,7 +75,7 @@ public class BlackDuckReader implements BomReader {
 
     private void exportProjectComponents(BillOfMaterials bom) {
         System.out.print("Building tree of components ");
-        final var root = new Package("", projectName, versionName);
+        final var root = new Package("", project.getName(), projectVersion.getName());
         project.getDescription().ifPresent(root::setDescription);
         projectVersion.getDescription().ifPresent(root::setSummary);
         projectVersion.getLicense().ifPresent(root::setDeclaredLicense);

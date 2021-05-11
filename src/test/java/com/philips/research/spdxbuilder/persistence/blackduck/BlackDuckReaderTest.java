@@ -27,8 +27,10 @@ import static org.mockito.Mockito.*;
 class BlackDuckReaderTest {
     private static final String TOKEN = "Token";
     private static final String PROJECT = "Project";
+    private static final String PROJECT_SHORT = "ProjectShort";
     private static final UUID PROJECT_ID = UUID.randomUUID();
     private static final String VERSION = "Version";
+    private static final String VERSION_SHORT = "VersionShort";
     private static final UUID VERSION_ID = UUID.randomUUID();
     private static final String BLACK_DUCK_VERSION = "BlackDuckVersion";
     private static final UUID COMPONENT_ID = UUID.randomUUID();
@@ -41,7 +43,7 @@ class BlackDuckReaderTest {
     private final BlackDuckProduct project = mock(BlackDuckProduct.class);
     private final BlackDuckProduct projectVersion = mock(BlackDuckProduct.class);
     private final BlackDuckClient client = mock(BlackDuckClient.class);
-    private final BomReader reader = new BlackDuckReader(client, TOKEN, PROJECT, VERSION);
+    private final BomReader reader = new BlackDuckReader(client, TOKEN, PROJECT_SHORT, VERSION_SHORT);
     private final BillOfMaterials bom = new BillOfMaterials();
 
     private static PackageURL purlFrom(String purl) {
@@ -62,8 +64,8 @@ class BlackDuckReaderTest {
     class FindProjectVersion {
         @Test
         void authenticatesWithServer() {
-            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
-            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
+            when(client.findProject(PROJECT_SHORT)).thenReturn(Optional.of(project));
+            when(client.findProjectVersion(PROJECT_ID, VERSION_SHORT)).thenReturn(Optional.of(projectVersion));
 
             reader.read(bom);
 
@@ -72,21 +74,21 @@ class BlackDuckReaderTest {
 
         @Test
         void throws_projectNotFound() {
-            when(client.findProject(PROJECT)).thenReturn(Optional.empty());
+            when(client.findProject(PROJECT_SHORT)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> reader.read(bom))
                     .isInstanceOf(BlackDuckException.class)
-                    .hasMessageContaining(PROJECT);
+                    .hasMessageContaining(PROJECT_SHORT);
         }
 
         @Test
         void throws_projectVersionNotFound() {
-            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
-            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.empty());
+            when(client.findProject(PROJECT_SHORT)).thenReturn(Optional.of(project));
+            when(client.findProjectVersion(PROJECT_ID, VERSION_SHORT)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> reader.read(bom))
                     .isInstanceOf(BlackDuckException.class)
-                    .hasMessageContaining(VERSION);
+                    .hasMessageContaining(VERSION_SHORT);
         }
 
     }
@@ -103,8 +105,8 @@ class BlackDuckReaderTest {
         @BeforeEach
         void beforeEach() throws Exception {
             when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
-            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
-            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
+            when(client.findProject(PROJECT_SHORT)).thenReturn(Optional.of(project));
+            when(client.findProjectVersion(PROJECT_ID, VERSION_SHORT)).thenReturn(Optional.of(projectVersion));
             when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
             when(client.getComponentDetails(component)).thenReturn(details);
             when(component.getId()).thenReturn(COMPONENT_ID);
@@ -117,8 +119,6 @@ class BlackDuckReaderTest {
 
         @Test
         void exportsProjectInformation() {
-            when(client.findProject(PROJECT)).thenReturn(Optional.of(project));
-            when(client.findProjectVersion(PROJECT_ID, VERSION)).thenReturn(Optional.of(projectVersion));
             when(project.getName()).thenReturn(PROJECT);
             when(projectVersion.getName()).thenReturn(VERSION);
 
@@ -130,6 +130,8 @@ class BlackDuckReaderTest {
 
         @Test
         void exportsProjectAsRootComponent() {
+            when(project.getName()).thenReturn(PROJECT);
+            when(projectVersion.getName()).thenReturn(VERSION);
             when(project.getDescription()).thenReturn(Optional.of(DESCRIPTION));
             when(projectVersion.getDescription()).thenReturn(Optional.of(SUMMARY));
             when(projectVersion.getLicense()).thenReturn(Optional.of(LICENSE));
@@ -241,7 +243,7 @@ class BlackDuckReaderTest {
                 when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
                 final var bom = new BillOfMaterials();
 
-                new BlackDuckReader(client, TOKEN, PROJECT, VERSION).read(bom);
+                new BlackDuckReader(client, TOKEN, PROJECT_SHORT, VERSION_SHORT).read(bom);
 
                 assertThat(bom.getRelations()).hasSize(1);
                 final var relation = bom.getRelations().stream().findFirst().orElseThrow();
