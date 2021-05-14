@@ -32,7 +32,7 @@ class TreeParserTest {
     @Test
     void throws_missingPackageTypeConfiguration() {
         assertThatThrownBy(() -> parser.parse(PACKAGE1))
-                .hasMessageContaining("type=,");
+                .hasMessageContaining("package format");
     }
 
     @Nested
@@ -53,7 +53,7 @@ class TreeParserTest {
         void throws_incompleteIdentifier() {
             assertThatThrownBy(() -> parser.parse("incomplete"))
                     .isInstanceOf(TreeException.class)
-                    .hasMessageContaining("package identifier");
+                    .hasMessageContaining("package format");
         }
 
         @Test
@@ -120,7 +120,7 @@ class TreeParserTest {
 
             assertThatThrownBy(() -> parser.parse(PACKAGE1 + " [Unknown]"))
                     .isInstanceOf(TreeException.class)
-                    .hasMessageContaining("'Unknown'");
+                    .hasMessageContaining("Unknown");
         }
 
         @Test

@@ -11,4 +11,8 @@ public class TreeException extends BusinessException {
     public TreeException(String message) {
         super(message);
     }
+
+    public TreeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

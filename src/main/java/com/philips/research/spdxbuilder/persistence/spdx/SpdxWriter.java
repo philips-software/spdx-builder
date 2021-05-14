@@ -85,7 +85,7 @@ public class SpdxWriter implements BomWriter {
     }
 
     private void writePackage(TagValueDocument doc, Package pkg, BillOfMaterials bom) throws IOException {
-        doc.addComment("Start of package '" + pkg);
+        doc.addComment("Start of package " + pkg);
         doc.addValue("PackageName", pkg.getFullName());
         doc.addValue("SPDXID", identifierFor(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
