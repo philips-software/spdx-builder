@@ -311,11 +311,15 @@ class TreeParser {
     }
 
     private PackageURL purlFromLine(String line) {
-        final var type = extractType(line);
-        final var namespace = match(namespacePattern, line, namespaceGroup);
-        final var name = match(namePattern, line, nameGroup);
-        final var version = match(versionPattern, line, versionGroup);
-        return toPurl(type, namespace, name, version);
+        try {
+            final var type = extractType(line);
+            final var namespace = match(namespacePattern, line, namespaceGroup);
+            final var name = match(namePattern, line, nameGroup);
+            final var version = match(versionPattern, line, versionGroup);
+            return toPurl(type, namespace, name, version);
+        } catch (Exception e) {
+            throw new TreeException("Unsupported package format: '" + line + "'", e);
+        }
     }
 
     private String extractType(String line) {

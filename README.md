@@ -122,6 +122,7 @@ Must-have:
 
 Should-have:
 
+- [ ] Add hashes of build results (where possible).
 - [ ] (Optionally) Add source artefacts as "GENERATED_FROM" relationship.
 - [ ] Treat internal (=non-OSS) packages differently for output SBOM.
 - [ ] Support output "flavors" for the purpose of the generated SBOM.

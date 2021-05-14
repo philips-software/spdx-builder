@@ -118,7 +118,6 @@ class TreeFormatsTest {
                     new Package("@scope", "sub-package", "2.1"));
         }
 
-
         @Test
         void rust() {
             format.configure(parser, "rust");

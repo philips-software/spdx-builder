@@ -74,7 +74,7 @@ class TreeReaderTest {
 
         assertThatThrownBy(() -> reader.read(bom))
                 .isInstanceOf(TreeException.class)
-                .hasMessageContaining("package identifier");
+                .hasMessageContaining("package format");
     }
 
     @NotNull
