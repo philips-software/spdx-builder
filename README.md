@@ -115,21 +115,19 @@ A local ORT-based self-test (if ORT is installed locally) can be run by:
 Must-have:
 
 - [x] Properly expand Black Duck origin identifiers to package URLs.
-- [ ] Skip ignored packages from Black Duck output.
 - [ ] Recursively import sub-projects from Black Duck.
 - [ ] Abort if ORT Analyzer raised errors.
 - [ ] Support the new (more compact) ORT tree structure. (Currently breaks Gradle projects.)
+- [ ] Add hashes of build results (where possible).
+- [ ] (Optionally) Add source artefacts as "GENERATED_FROM" relationship.
 
 Should-have:
 
-- [ ] Add hashes of build results (where possible).
-- [ ] (Optionally) Add source artefacts as "GENERATED_FROM" relationship.
 - [ ] Treat internal (=non-OSS) packages differently for output SBOM.
 - [ ] Support output "flavors" for the purpose of the generated SBOM.
 
 Other ideas:
 
-- [ ] Support RDF/XML SPDX output format
 - [ ] Integration with [Quartermaster (QMSTR)](https://qmstr.org/).
 
 ## Contact / Getting help

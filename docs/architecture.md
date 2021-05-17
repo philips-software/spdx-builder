@@ -5,54 +5,59 @@
 ### Purpose
 
 This document provides a comprehensive architectural overview of the system,
-using a number of different architectural views to depict differnt aspects of
-the system. It is intended to convey the significant architectural decisions
-which have been made on the system.
+using a number of different architectural views to depict aspects of the system.
+The document is intended to convey the significant architectural decisions which
+have been made on the system.
 
 ### Scope
 
-The system is an **experimental** bill-of-materials formatting tool that
-converts the output of OSS Review Toolkit (ORT) to SPDX, while optionally
-integrating licenses from a knowledge base like
-the [License Scanner Service](https://github.com/philips-software/license-scanner)
-.
+The system is an **experimental** tool that generates bill-of-materials reports
+in SPDX 2.2 format from various sources to allow further analysis of the
+extracted SBOM data.
 
 ### Definition, Acronyms and Abbreviations
 
 Term | Description
 -----|------------
+Package URL | Universal package identifier, see [Package URL specification](https://github.com/package-url/purl-spec).
 PURL | Package URL
+SBOM | Software Bill-of-Materials
 SPDX | "The Software Package Data Exchange" - An open standard for communicating software bill of material information, including components, licenses, copyrights, and security references. SPDX reduces redundant work by providing a common format for companies and communities to share important data, thereby streamlining and improving compliance.
 
 ### References
 
+- [Black Duck](https://www.synopsys.com/software-integrity/security-testing/software-composition-analysis.html)
 - [BOM-Base](https://github.com/philips-softwre/bom-base)
 - [License Scanner Service](https://github.com/philips-softwre/license-scanner)
 - [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort)
+- [Package URL](https://github.com/package-url/purl-spec)
 - [SPDX License list](https://spdx.org/licenses/)
-- [Black Duck API](https://blackduck.philips.com/api-doc/public.html)
+- [SPDX specificationS](https://spdx.github.io/spdx-spec/)
 
 ## Goals and constraints
 
 Goals of SPDX-Builder are:
 
-1. Produce bill-of-materials reports in SPDX format for (almost) any software
-   development projects.
-2. Integrate independently scanned package licenses.
+1. Generate SBOM reports for (sample) software development projects.
+
+2. Produce SBOM reports in the standard SPDX format.
+
+3. Enhance data extracted from projects with metadata from an external knowledge
+   base.
 
 The stakeholders of this application are:
 
 - CI/CD operators, responsible for running automated build pipelines.
-- All consumers of SPDX bill-of-materials reports.
+- Consumers of bill-of-materials reports.
 
 The most significant requirements are:
 
+- The generated SBOM report shall comply with the SPDX 2.2 standard.
+
 - The tool shall be easy to integrate into CI/CD build pipelines.
-- The generated bill-of-materials report shall conform to the (latest) SPDX
-  standard.
-- Licenses from an optional external license "knowledge base" shall be
-  integrated in the report.
-- The tool shall leverage existing open source tooling where possible.
+
+- Metadata from an optional external knowledge base shall be seamlessly
+  integrated into the report.
 
 Design constraints are:
 
@@ -65,102 +70,111 @@ Design constraints are:
 ### Generate SPDX bill-of-materials report
 
 1. CI/CD pipeline starts bill-of-materials extraction.
-2. An external (open source) pre-processing tool is used to extract the package
-   structure and metadata from the package manager used in the project.
-3. The tool unifies the report format into the SPDX format.
 
-### Integrate validated metadata
+2. An external source extracts packages, relationships and metadata from the
+   build tools of a project.
 
-1. The tool reads packages and metadata from the pre-processing tool.
-2. The tool submits each package with its source code location to an external
-   metadata knowledge base.
-3. The metadata knowledge base provides its latest metadata result (if
-   available) for the package.
-4. The tool integrates the metadata with the package metadata, giving priority
-   to confirmed metadata.
-5. The tool contests all mismatches in unconfirmed metadata to the knowledge
-   base.
+3. SPDX-Builder retrieves the SBOM data from the selected source.
 
-Initially the metadata consists of licenses scanned from source code, but this
-can be expanded to other metadata.
+4. SPDX-Builder requests additional metadata from an external knowledge base for
+   every package.
 
-### Curate metadata
+5. The knowledge base provides its metadata per requested package.
 
-1. A project member identifies incorrect metadata for a package.
-2. The correction is provided as a curation to the tool.
-3. The tool overrides the metadata from other sources with the curated metadata.
+6. SPDX-Builder enhances each package with the received metadata.
+
+7. SPDX-Builder writes an SBOM report in valid SPDX format.
+
+8. SPDX-Builder (optionally) uploads the SPDX file to an archive.
+
+#### Variant: Source is OSS Review Toolkit Analyzer
+
+The Analyzer component
+of [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort)
+uses the build environment to retrieve detailed package metadata from the
+backing repository and other locations, yielding an SBOM in its proprietary
+format.
+
+In this case the knowledge base consists of
+the [License Scanner Service](https://github.com/philips-softwre/license-scanner)
+(or [BOM-Base](https://github.com/philips-softwre/bom-base) as compatible
+alternative) to add licenses scanned from the source files when the source
+location is available from the metadata provided by ORT.
+
+If the declared license provided by ORT does not match the scanned license from
+the knowledge base, this licenses is "contested" to the knowledge base. If the
+knowledge base indicates the scanned license is "confirmed", SPDX-Builder uses
+it as the concluded license (instead of the defaulting to the declared license).
+
+#### Variant: Source is Black Duck
+
+The "hierarchical BOM" API of Black Duck (if enabled) exposes packages and their
+relations via an online API that is queried by SPDX-Builder using an
+authentication token.
+
+As Black Duck provides an integrated SBOM management environment and knowledge
+base, the package metadata is not enhanced by an external knowledge base.
+
+#### Variant: Source is a textual package tree
+
+To reduce coupling with the build environment of projects, a textual tree of
+package versions with their hierarchical dependencies is generated by an
+appropriate build tool. (Note that manual configuration of a familiar build tool
+by a developer reduces the chance of accidental inclusion of directories
+containing documentation or e.g. usage samples.)
+
+The tree is parsed using the configured format, such that it can be converted
+into a tree of Package URLs.
+
+The [BOM-Base](https://github.com/philips-softwre/bom-base) knowledge base
+provides the metadata per Package URL. As harvesting package metadata by
+BOM-Base is an asynchronous process, the metadata may not be available on the
+first time a package is included in the SBOM. A later CI/CD run would include
+the metadata that has meanwhile been harvested (or curated) in BOM-Base.
 
 ## Logical view
 
 ### Overview
 
-SPDX-Builder is a command-line application that converts the output of
-the [OSS Review Toolkit (ORT)](https://github.com/oss-review-toolkit/ort)
-Analyzer tool into a SPDX bill-of-materials report in tag-value format, while (
-optionally)
-merging license information scanned from package source code by an external
-knowledge base like
-the [License Scanner service](https://github.com/philips-software/license-scanner)
-.
+SPDX-Builder is a command-line application that reads SBOM data from a source
+and outputs it in SPDX format. Depending on the source, the number of options
+to influence and enhance the metadata differ.
 
-### Bill-of-materials
+The output is formatted in tag-value format according to
+the [SPDX 2.2 specification](https://spdx.github.io/spdx-spec).
 
-The domain for this application consists of the classes and relations depicted
-in the figure below:
+### Software Bill-of-materials
 
-![UML class diagram](domain.png "Domain classes modeling a bill-of-materials")
+An SBOM consists of the elements depicted in the figure below:
 
-A `BillOfMaterials` is a container that holds `Package`s that are connected by
-typed `Relation`s. All other information is represented in attibutes of these
-domain classes.
+![UML class diagram](domain.png "Domain classes of a bill-of-materials")
 
-### Integration of license scan results
-
-If the URL to a license scanner is specified, the source code location (if
-available) of every package is submitted for scanning. The license scanner
-immediately responds with available license information, or else schedules the
-package for scanning later. This leads to two licenses per package:
-
-- "Declared license" is the license provided in the metadata from the package
-  manager.
-- "Detected license" is the license independently scanned from the package
-  source code files.
-
-SPDX-Builder uses these licenses to derive a "Concluded" license per package:
-
-1. If the declared and detected match or no detected license is available
-   (yet), the concluded license defaults to the declared license.
-2. If no declared license is available, then the detected license (if available)
-   is assumed.
-3. If the detected license was confirmed by a human curator, then it overrides
-   the declared license.
-4. if the detected license does not match the declared license but was not
-   confirmed by a human curator, then the declared license is used and the
-   mismatch indicated to the license scanner by "contesting" the detected
-   license.
+A `BillOfMaterials` is a container that holds `Package` instances that are
+connected by typed `Relation`s. All other information is represented in
+attributes of these classes.
 
 ## Process view
 
 ### Single threaded application
 
-The application runs on a single thread, blocking at every request to the
-license scanner service. Since most products consist of up to 1000 unique
-(transitive) dependencies and all requests are targeting the same server,
-submitting these requests in parallel would not dramatically speed up
-processing. For bigger projects most time is actually spent in parsing and
-sequentially writing files.
+The application runs on a single thread, blocking at every request to an
+external REST API. Sequentially reading textual input files and querying
+structured data from a server application (like Black Duck) takes most time.
+Querying a knowledge base for metadata for a few thousand packages typically
+takes just a few seconds.
 
 ## Deployment view
 
 The application is a stand-alone Java executable that is invoked from the
-command line.
+command line in a CI/CD pipeline. (The Java environment and application can be
+packaged together in a Docker container.)
 
 ## Implementation view
 
 ### Overview
 
 The service is coded in plain Java because no complex infrastructure is used
-that would benefit from an application framework.
+that would benefit from an application framework like Spring Boot.
 
 ### Layers
 
@@ -172,9 +186,9 @@ The invocation from the command line wires the concrete persistence
 implementation into the application, allowing the core layer to coordinate the
 conversion as:
 
-1. Read the package structure using the "BomReader"
-2. Enhance the packages using the "KnowledgeBase"
-3. Write the resulting SBOM using the "BomWriter"
+1. Read the package structure using the "BomReader" interface.
+2. Enhance the packages using the "KnowledgeBase" interface.
+3. Write the resulting SBOM using the "BomWriter" interface.
 
 ### Command line handling
 
@@ -193,6 +207,9 @@ structure.
 Because ORT does not filter at the source, the filters specified in the YAML
 file are first applied to remove the irrelevant projects and packages before
 populating the SBOM.
+
+_NOTE: ORT is changing its internal metadata format, resulting in degrading
+support by SPDX-Builder to read metadata produced by the ORT Analyzer._
 
 ### Black Duck input
 
@@ -241,8 +258,8 @@ which is responsible to convert the input into properly formatted Package URL
 values and hierarchical relationships. Configuration is handled by
 the `TreeFormats` class which takes its configuration from
 the [`treeformats.yml` file](../src/main/resources/treeformats.yml) or
-optionally from an external format file. (A description of the format is
-found in the [usage documentation](usage_with_tree.md).)
+optionally from an external format file. (A description of the format is found
+in the [usage documentation](usage_with_tree.md).)
 
 Parsing is makes heavy use of regular expressions both for identification of
 markers and to isolate fragments from the input line.
