@@ -1,0 +1,6 @@
+document:
+  title: "SPDX-Builder command line tool"
+  organization: "Philips Research"
+  comment: "This is an experimental tool"
+  key:
+  namespace: "https://research.philips.com/spdx-builder"
