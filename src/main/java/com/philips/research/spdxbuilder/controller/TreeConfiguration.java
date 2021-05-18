@@ -18,16 +18,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TreeConfiguration {
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE)
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
 
-    private final Document document;
+    private final Configuration config;
 
-    private TreeConfiguration(Document document) {
-        this.document = document;
+    private TreeConfiguration(Configuration config) {
+        this.config = config;
     }
 
     /**
@@ -39,7 +41,7 @@ public class TreeConfiguration {
     static TreeConfiguration parse(InputStream stream) {
         try (final var reader = new InputStreamReader(stream)) {
             final var config = MAPPER.readValue(reader, Configuration.class);
-            return new TreeConfiguration(config.getDocument());
+            return new TreeConfiguration(config);
         } catch (MismatchedInputException e) {
             throw new IllegalArgumentException("Configuration format error", e);
         } catch (IOException e) {
@@ -53,6 +55,7 @@ public class TreeConfiguration {
      * @param service target
      */
     void apply(ConversionService service) {
+        final var document = config.getDocument();
         service.setDocument(document.title, document.organization);
         if (document.comment != null) {
             service.setComment(document.comment);
@@ -65,8 +68,13 @@ public class TreeConfiguration {
         }
     }
 
+    List<String> getInternalGlobs() {
+        return config.internal;
+    }
+
     private static class Configuration {
         @NullOr Document document;
+        List<String> internal = new ArrayList<>();
 
         Document getDocument() {
             return (document != null) ? document : new Document();

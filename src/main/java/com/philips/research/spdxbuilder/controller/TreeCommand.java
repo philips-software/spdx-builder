@@ -54,7 +54,7 @@ public class TreeCommand extends AbstractCommand {
     @Override
     protected ConversionService createService() {
         final var config = readConfiguration();
-        final BomReader reader = new TreeReader(System.in, format, formatExtension);
+        final BomReader reader = new TreeReader(System.in, format, formatExtension, config.getInternalGlobs());
         final BomWriter writer = new SpdxWriter(spdxFile);
 
         final var service = bomBase != null

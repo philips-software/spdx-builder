@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,7 +31,7 @@ class TreeReaderTest {
                 "ns/main@1",
                 "+-> ns/sub@2");
 
-        new TreeReader(stream, "custom", Path.of("src", "test", "resources", "custom_formats.yml").toFile())
+        new TreeReader(stream, "custom", Path.of("src", "test", "resources", "custom_formats.yml").toFile(), List.of())
                 .read(bom);
 
         assertThat(bom.getPackages()).containsExactly(
@@ -45,7 +46,7 @@ class TreeReaderTest {
                 "### rust",
                 "├── sub v2");
 
-        new TreeReader(stream, "npm", null).read(bom);
+        new TreeReader(stream, "npm", null, List.of()).read(bom);
 
         assertThat(bom.getPackages()).containsExactly(
                 new Package("ns", "main", "1"),
@@ -57,10 +58,19 @@ class TreeReaderTest {
     }
 
     @Test
+    void passesInternalGlobPatterns() {
+        final var stream = stream("ns/internal@1");
+
+        new TreeReader(stream, "npm", null, List.of("*/int*")).read(bom);
+
+        assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+    }
+
+    @Test
     void throws_streamFailure() throws Exception {
         final var stream = mock(InputStream.class);
         when(stream.available()).thenThrow(new IOException("Failing stream"));
-        final var reader = new TreeReader(stream, "maven", null);
+        final var reader = new TreeReader(stream, "maven", null, List.of());
 
         assertThatThrownBy(() -> reader.read(bom))
                 .isInstanceOf(TreeException.class)
@@ -70,7 +80,7 @@ class TreeReaderTest {
     @Test
     void throws_parsingFailure() {
         final var stream = stream("Not a valid package");
-        final var reader = new TreeReader(stream, "npm", null);
+        final var reader = new TreeReader(stream, "npm", null, List.of());
 
         assertThatThrownBy(() -> reader.read(bom))
                 .isInstanceOf(TreeException.class)
