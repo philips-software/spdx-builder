@@ -57,9 +57,13 @@ public class TreeCommand extends AbstractCommand {
         final BomReader reader = new TreeReader(System.in, format, formatExtension);
         final BomWriter writer = new SpdxWriter(spdxFile);
 
-        return bomBase != null
+        final var service = bomBase != null
                 ? new ConversionInteractor(reader, writer).setKnowledgeBase(new BomBaseKnowledgeBase(bomBase))
                 : new ConversionInteractor(reader, writer);
+
+        config.apply(service);
+
+        return service;
     }
 
     private TreeConfiguration readConfiguration() {
