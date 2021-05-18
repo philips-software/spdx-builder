@@ -85,7 +85,7 @@ public class BillOfMaterials {
         return Optional.ofNullable(namespace);
     }
 
-    public BillOfMaterials setNamespace(URI namespace) {
+    public BillOfMaterials setNamespace(@NullOr URI namespace) {
         this.namespace = namespace;
         return this;
     }

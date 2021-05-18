@@ -19,6 +19,8 @@ import picocli.CommandLine.Command;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -26,11 +28,15 @@ import java.net.URI;
  */
 @Command(name = "tree", description = "Converts the package tree from your build tool into a bill-of-materials.")
 public class TreeCommand extends AbstractCommand {
-    @CommandLine.Option(names = {"-f", "--format"}, description = "Format of the tree to parse")
+    @CommandLine.Option(names = {"--format", "-f"}, description = "Format of the tree to parse")
     @NullOr String format;
 
     @CommandLine.Option(names = {"--custom"}, description = "Custom formats extension file")
     @NullOr File formatExtension;
+
+    @CommandLine.Option(names = {"--config", "-c"}, description = "Configuration YAML file", paramLabel = "FILE", defaultValue = ".spdx-builder.yml")
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    File configFile;
 
     @CommandLine.Option(names = {"--kb", "--bombase"}, description = "Add package metadata from BOM-base knowledge base", paramLabel = "SERVER_URL")
     @NullOr URI bomBase;
@@ -47,11 +53,20 @@ public class TreeCommand extends AbstractCommand {
 
     @Override
     protected ConversionService createService() {
+        final var config = readConfiguration();
         final BomReader reader = new TreeReader(System.in, format, formatExtension);
         final BomWriter writer = new SpdxWriter(spdxFile);
 
         return bomBase != null
                 ? new ConversionInteractor(reader, writer).setKnowledgeBase(new BomBaseKnowledgeBase(bomBase))
                 : new ConversionInteractor(reader, writer);
+    }
+
+    private TreeConfiguration readConfiguration() {
+        try (final var stream = new FileInputStream(configFile)) {
+            return TreeConfiguration.parse(stream);
+        } catch (IOException e) {
+            throw new BusinessException("Failed to read configuration file from " + configFile);
+        }
     }
 }

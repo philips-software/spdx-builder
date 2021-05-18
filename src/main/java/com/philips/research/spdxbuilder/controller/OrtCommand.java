@@ -53,19 +53,19 @@ public class OrtCommand extends AbstractCommand {
         return service;
     }
 
-    private Configuration readConfiguration() {
+    private OrtConfiguration readConfiguration() {
         try (final var stream = new FileInputStream(configFile)) {
-            return Configuration.parse(stream);
+            return OrtConfiguration.parse(stream);
         } catch (IOException e) {
             System.err.println("Configuration error: " + e.getMessage());
             System.err.println("Supported YAML configuration file format is:");
-            System.err.println(Configuration.example());
+            System.err.println(OrtConfiguration.example());
 
             throw new BusinessException("Failed to read configuration");
         }
     }
 
-    private void prepareReader(OrtReader reader, Configuration config) {
+    private void prepareReader(OrtReader reader, OrtConfiguration config) {
         config.projects.forEach(project -> {
             reader.defineProjectPackage(project.id, project.purl);
             if (project.excluded != null) {
@@ -74,7 +74,7 @@ public class OrtCommand extends AbstractCommand {
         });
     }
 
-    private void prepareConversion(ConversionService service, Configuration config) {
+    private void prepareConversion(ConversionService service, OrtConfiguration config) {
         service.setDocument(config.document.title, config.document.organization);
         service.setComment(config.document.comment);
         if (config.document.key != null) {
