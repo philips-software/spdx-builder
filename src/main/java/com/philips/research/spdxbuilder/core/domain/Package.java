@@ -20,6 +20,7 @@ public final class Package {
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
+    private final Set<License> detectedLicenses = new HashSet<>();
     private boolean internal;
     private @NullOr PackageURL purl;
     private @NullOr Party supplier;
@@ -29,7 +30,6 @@ public final class Package {
     private @NullOr URL homePage;
     private @NullOr License concludedLicense;
     private @NullOr License declaredLicense;
-    private @NullOr License detectedLicense;
     private @NullOr String copyright;
     private @NullOr String summary;
     private @NullOr String description;
@@ -136,12 +136,7 @@ public final class Package {
     }
 
     public Optional<License> getConcludedLicense() {
-        if (concludedLicense != null) {
-            return Optional.of(concludedLicense);
-        } else if (declaredLicense == null) {
-            return Optional.ofNullable(detectedLicense);
-        }
-        return Optional.of(declaredLicense);
+        return Optional.ofNullable(concludedLicense);
     }
 
     public Package setConcludedLicense(@NullOr License concludedLicense) {
@@ -158,12 +153,14 @@ public final class Package {
         return this;
     }
 
-    public Optional<License> getDetectedLicense() {
-        return Optional.ofNullable(detectedLicense);
+    public Collection<License> getDetectedLicenses() {
+        return detectedLicenses;
     }
 
-    public Package setDetectedLicense(@NullOr License license) {
-        this.detectedLicense = license;
+    public Package addDetectedLicense(License license) {
+        if (license.isDefined()) {
+            this.detectedLicenses.add(license);
+        }
         return this;
     }
 
@@ -220,7 +217,9 @@ public final class Package {
 
     @Override
     public String toString() {
-        return getPurl().map(PackageURL::canonicalize)
+        return getPurl()
+                .filter(p -> !isInternal())
+                .map(PackageURL::canonicalize)
                 .orElse(getFullName() + (version.isBlank() ? "" : " version " + version));
     }
 }

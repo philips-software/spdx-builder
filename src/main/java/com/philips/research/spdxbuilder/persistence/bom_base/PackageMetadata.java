@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.persistence.bom_base;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
 public interface PackageMetadata {
@@ -32,5 +33,5 @@ public interface PackageMetadata {
 
     Optional<String> getDeclaredLicense();
 
-    Optional<String> getDetectedLicense();
+    List<String> getDetectedLicenses();
 }

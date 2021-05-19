@@ -39,7 +39,7 @@ public class LicenseKnowledgeBase extends KnowledgeBase {
                 .map(l -> {
                     final var scanned = LicenseParser.parse(l.getLicense());
                     final var declared = pkg.getDeclaredLicense().orElse(scanned);
-                    pkg.setDetectedLicense(scanned);
+                    pkg.addDetectedLicense(scanned);
                     if (l.isConfirmed()) {
                         pkg.setConcludedLicense(scanned);
                     } else {

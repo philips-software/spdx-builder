@@ -13,9 +13,7 @@ import retrofit2.http.Path;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 public interface BomBaseApi {
@@ -81,12 +79,18 @@ public interface BomBaseApi {
         }
 
         @Override
-        public Optional<String> getDetectedLicense() {
-            return getStringAttribute("detected_license");
+        public List<String> getDetectedLicenses() {
+            return getStringListAttribute("detected_licenses");
         }
 
         private Optional<String> getStringAttribute(String tag) {
             return getAttribute(tag, str -> (String) str);
+        }
+
+        private List<String> getStringListAttribute(String tag) {
+            return getAttribute(tag, str -> (String) str)
+                    .map(str -> Arrays.asList(str.split("\n")))
+                    .orElse(List.of());
         }
 
         private Optional<URI> getUriAttribute(String tag) {

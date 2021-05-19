@@ -57,6 +57,32 @@ class TreeReaderTest {
                 new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK));
     }
 
+    @Test
+    void throws_streamFailure() throws Exception {
+        final var stream = mock(InputStream.class);
+        when(stream.available()).thenThrow(new IOException("Failing stream"));
+        final var reader = new TreeReader(stream, "maven", null, List.of());
+
+        assertThatThrownBy(() -> reader.read(bom))
+                .isInstanceOf(TreeException.class)
+                .hasMessageContaining("read the tree data");
+    }
+
+    @Test
+    void throws_parsingFailure() {
+        final var stream = stream("Not a valid package");
+        final var reader = new TreeReader(stream, "npm", null, List.of());
+
+        assertThatThrownBy(() -> reader.read(bom))
+                .isInstanceOf(TreeException.class)
+                .hasMessageContaining("package format");
+    }
+
+    @NotNull
+    private InputStream stream(String... lines) {
+        return new ByteArrayInputStream(String.join("\n", lines).getBytes());
+    }
+
     class InternalPackages {
         @Test
         void defaultsToReleaseOutput() {
@@ -88,31 +114,5 @@ class TreeReaderTest {
 
             assertThat(bom.getPackages().get(0).isInternal()).isTrue();
         }
-    }
-
-    @Test
-    void throws_streamFailure() throws Exception {
-        final var stream = mock(InputStream.class);
-        when(stream.available()).thenThrow(new IOException("Failing stream"));
-        final var reader = new TreeReader(stream, "maven", null, List.of());
-
-        assertThatThrownBy(() -> reader.read(bom))
-                .isInstanceOf(TreeException.class)
-                .hasMessageContaining("read the tree data");
-    }
-
-    @Test
-    void throws_parsingFailure() {
-        final var stream = stream("Not a valid package");
-        final var reader = new TreeReader(stream, "npm", null, List.of());
-
-        assertThatThrownBy(() -> reader.read(bom))
-                .isInstanceOf(TreeException.class)
-                .hasMessageContaining("package format");
-    }
-
-    @NotNull
-    private InputStream stream(String... lines) {
-        return new ByteArrayInputStream(String.join("\n", lines).getBytes());
     }
 }

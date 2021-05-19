@@ -31,7 +31,10 @@ class BomBaseApiTest {
         private static final String SHA256 = "sha256";
         private static final String SOURCE_LOCATION = "source_location";
         private static final String DECLARED_LICENSE = "declared_license";
-        private static final String DETECTED_LICENSE = "detected_license";
+        private static final String DETECTED_LICENSES = "detected_licenses";
+        private static final String DETECTED_LICENSE1 = "license1";
+        private static final String DETECTED_LICENSE2 = "license2";
+
         final PackageJson meta = new PackageJson();
 
         @Test
@@ -47,7 +50,7 @@ class BomBaseApiTest {
             meta.attributes.put(SHA256, SHA256);
             meta.attributes.put(SOURCE_LOCATION, SOURCE_URI);
             meta.attributes.put(DECLARED_LICENSE, DECLARED_LICENSE);
-            meta.attributes.put(DETECTED_LICENSE, DETECTED_LICENSE);
+            meta.attributes.put(DETECTED_LICENSES, DETECTED_LICENSE1 + '\n' + DETECTED_LICENSE2);
 
             assertThat(meta.getTitle()).contains(TITLE);
             assertThat(meta.getDescription()).contains(DESCRIPTION);
@@ -60,7 +63,7 @@ class BomBaseApiTest {
             assertThat(meta.getSha256()).contains(SHA256);
             assertThat(meta.getSourceLocation()).contains(URI.create(SOURCE_URI));
             assertThat(meta.getDeclaredLicense()).contains(DECLARED_LICENSE);
-            assertThat(meta.getDetectedLicense()).contains(DETECTED_LICENSE);
+            assertThat(meta.getDetectedLicenses()).containsExactly(DETECTED_LICENSE1, DETECTED_LICENSE2);
         }
 
         @Test
