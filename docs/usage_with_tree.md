@@ -14,12 +14,22 @@ the [BOM-Base](https://github.com/philips-software/bom-base) knowledge base
 instance that supplies the metadata for the packages parsed from the dependency
 tree.
 
+_Note: Configuration information (see below) is read from a file
+named `.spdx-builder.yml`. This name can be overridden on the command line._
+
 _Note: The list of supported formats is output when no format option is
 specified._
 
 _Note: If no "output_file" is specified, the output is written to a file named
 `bom.spdx` in the current directory. If the file has no extension, `.spdx`
 is automatically appended._
+
+Root packages of the tree are by default exported without a package URL to
+indicate they are not (yet) public. This can be overridden by the `--release`
+option on the command line. Some formats allow for deriving internal packages
+from the parsed tree structure, else additional internal packages can be
+indicated in the configuration file by package URLs that may contain "*" as
+wildcard.
 
 When a project consists of multiple trees, a pre-processing script can be used
 to first merge the generated trees into a single input to SPDX-Builder. If the
@@ -28,6 +38,27 @@ a `### <new_format` marker fragment (that can be anywhere in the line) to switch
 to a different tree format. The tree indentation level is maintained across
 format changes, making it even possible (by adding indents) to insert a sub-tree
 in a different format.
+
+## Configuration file format
+
+```yaml
+document:
+  title: <string> # Name of the product (=root of the tree)
+  organization: <string> # Organization publishing the SBOM
+  comment: <string> # (Optional) document level comment text
+  key: <string> # (Optional) document reference (is appendended to "SPDXRef-")
+  namespace: <url> # (Optional) base URL of the SPDX document namespace
+internal: # Package URL globs to match any product-internal packages
+  - <string> # (Simplified) package URL glob with optional "*" wildcards
+```
+
+Simplified package URL globs can take various forms:
+
+- `type/namespace/name@version`: Exact match ("pkg:" prefix is optional)
+- `type/namespace/name`: Matches any version
+- `type/name`: Matches any namespace
+- `name`: Matches any type and any namespace
+- 'so*ng': Matches names like "something" or "song" (but not "songs")
 
 ## Supported trees
 
