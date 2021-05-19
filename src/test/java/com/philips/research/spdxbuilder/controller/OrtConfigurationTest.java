@@ -13,7 +13,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ConfigurationTest {
+class OrtConfigurationTest {
     @Test
     void readsMinimalConfiguration() {
         final var config = read("---\n" +
@@ -89,12 +89,12 @@ class ConfigurationTest {
 
     @Test
     void providesSampleFormat() {
-        final var sample = Configuration.example();
+        final var sample = OrtConfiguration.example();
 
         assertThat(sample).contains("Document").contains("identifier").contains("License");
     }
 
-    private Configuration read(String string) {
-        return Configuration.parse(new ByteArrayInputStream(string.getBytes()));
+    private OrtConfiguration read(String string) {
+        return OrtConfiguration.parse(new ByteArrayInputStream(string.getBytes()));
     }
 }

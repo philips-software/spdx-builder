@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.persistence.tree;
 
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.PurlGlob;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -138,11 +139,22 @@ class TreeParserTest {
         }
 
         @Test
-        void marksInternalPackages() {
+        void marksInternalPackagesByRegex() {
             parser.withInternal("internal$");
 
             parser.parse(PACKAGE1);
             parser.parse(PACKAGE2 + " internal");
+
+            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
+            assertThat(bom.getPackages().get(1).isInternal()).isTrue();
+        }
+
+        @Test
+        void marksInternalPackagesByPurlGlob() {
+            parser.withInternal(new PurlGlob("*/int*"));
+
+            parser.parse(PACKAGE1);
+            parser.parse("namespace:internal:2");
 
             assertThat(bom.getPackages().get(0).isInternal()).isFalse();
             assertThat(bom.getPackages().get(1).isInternal()).isTrue();

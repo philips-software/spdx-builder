@@ -7,16 +7,20 @@ package com.philips.research.spdxbuilder.persistence.tree;
 
 import com.philips.research.spdxbuilder.core.BomReader;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.PurlGlob;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.*;
+import java.util.List;
 
 public class TreeReader implements BomReader {
     private final TreeFormats formats;
     private final String format;
     private final InputStream stream;
+    private final List<String> internalGlobs;
 
-    public TreeReader(InputStream stream, String format, @NullOr File extension) {
+    public TreeReader(InputStream stream, String format, @NullOr File extension, List<String> internalGlobs) {
+        this.internalGlobs = internalGlobs;
         formats = new TreeFormats();
         if (extension != null) {
             formats.extend(extension);
@@ -29,6 +33,7 @@ public class TreeReader implements BomReader {
     public void read(BillOfMaterials bom) {
         try (final var reader = new BufferedReader(new InputStreamReader(stream))) {
             final var parser = new TreeParser(bom);
+            internalGlobs.forEach(pattern -> parser.withInternal(new PurlGlob(pattern)));
             formats.configure(parser, format);
 
             @NullOr String line = reader.readLine();

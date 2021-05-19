@@ -9,13 +9,11 @@ import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.PurlGlob;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 import pl.tlinkowski.annotation.basic.NullOr;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Stack;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -30,6 +28,7 @@ class TreeParser {
     private final Map<PackageURL, Package> packages = new HashMap<>();
     private final Stack<Integer> indentStack = new Stack<>();
     private final Stack<@NullOr Package> packageStack = new Stack<>();
+    private final List<PurlGlob> internalGlobs = new ArrayList<>();
     private int skipLevel = Integer.MAX_VALUE;
     private @NullOr Pattern startSection;
     private @NullOr Pattern endSection;
@@ -151,6 +150,11 @@ class TreeParser {
      */
     TreeParser withInternal(String regEx) {
         internalPattern = compile(regEx);
+        return this;
+    }
+
+    TreeParser withInternal(PurlGlob glob) {
+        internalGlobs.add(glob);
         return this;
     }
 
@@ -365,7 +369,7 @@ class TreeParser {
         final var purl = purlFromLine(name);
         final Package pkg = storePackage(purl);
 
-        if (internalPattern != null && internalPattern.matcher(name).find()) {
+        if (isInternal(purl) || (internalPattern != null && internalPattern.matcher(name).find())) {
             pkg.setInternal(true);
         }
         if (!indentStack.isEmpty() && indent > indentStack.peek()) {
@@ -373,6 +377,10 @@ class TreeParser {
         }
 
         return pkg;
+    }
+
+    private boolean isInternal(PackageURL purl) {
+        return internalGlobs.stream().anyMatch(glob -> glob.matches(purl));
     }
 
     private Package storePackage(PackageURL purl) {
