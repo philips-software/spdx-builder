@@ -30,6 +30,7 @@ class TreeParser {
     private final Stack<@NullOr Package> packageStack = new Stack<>();
     private final List<PurlGlob> internalGlobs = new ArrayList<>();
     private int skipLevel = Integer.MAX_VALUE;
+    private boolean isRelease;
     private @NullOr Pattern startSection;
     private @NullOr Pattern endSection;
     private @NullOr String cleanup;
@@ -66,6 +67,17 @@ class TreeParser {
         return Pattern.compile(regEx);
     }
 
+    /**
+     * Indicates the root package(s) are final versions.
+     */
+    TreeParser withRelease() {
+        isRelease = true;
+        return this;
+    }
+
+    /**
+     * Clears al settings used in interpreting lines.
+     */
     TreeParser clearFormat() {
         startSection = null;
         endSection = null;
@@ -369,8 +381,10 @@ class TreeParser {
         final var purl = purlFromLine(name);
         final Package pkg = storePackage(purl);
 
-        if (isInternal(purl) || (internalPattern != null && internalPattern.matcher(name).find())) {
-            pkg.setInternal(true);
+        if (!(isRelease && indent == 0)) {
+            if ((indent == 0) || isInternal(purl) || matchesInternalRegex(name)) {
+                pkg.setInternal(true);
+            }
         }
         if (!indentStack.isEmpty() && indent > indentStack.peek()) {
             bom.addRelation(packageStack.peek(), pkg, extractRelationship(name));
@@ -381,6 +395,10 @@ class TreeParser {
 
     private boolean isInternal(PackageURL purl) {
         return internalGlobs.stream().anyMatch(glob -> glob.matches(purl));
+    }
+
+    private boolean matchesInternalRegex(String name) {
+        return internalPattern != null && internalPattern.matcher(name).find();
     }
 
     private Package storePackage(PackageURL purl) {
@@ -403,4 +421,5 @@ class TreeParser {
         //noinspection ConstantConditions
         packageStack.push(pkg);
     }
+
 }

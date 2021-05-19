@@ -18,6 +18,7 @@ public class TreeReader implements BomReader {
     private final String format;
     private final InputStream stream;
     private final List<String> internalGlobs;
+    private boolean isRelease;
 
     public TreeReader(InputStream stream, String format, @NullOr File extension, List<String> internalGlobs) {
         this.internalGlobs = internalGlobs;
@@ -29,10 +30,18 @@ public class TreeReader implements BomReader {
         this.stream = stream;
     }
 
+    public TreeReader setRelease(boolean enable) {
+        this.isRelease = enable;
+        return this;
+    }
+
     @Override
     public void read(BillOfMaterials bom) {
         try (final var reader = new BufferedReader(new InputStreamReader(stream))) {
             final var parser = new TreeParser(bom);
+            if (isRelease) {
+                parser.withRelease();
+            }
             internalGlobs.forEach(pattern -> parser.withInternal(new PurlGlob(pattern)));
             formats.configure(parser, format);
 

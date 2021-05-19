@@ -57,13 +57,37 @@ class TreeReaderTest {
                 new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK));
     }
 
-    @Test
-    void passesInternalGlobPatterns() {
-        final var stream = stream("ns/internal@1");
+    class InternalPackages {
+        @Test
+        void defaultsToReleaseOutput() {
+            final var stream = stream("ns/main@1");
 
-        new TreeReader(stream, "npm", null, List.of("*/int*")).read(bom);
+            new TreeReader(stream, "npm", null, List.of()).read(bom);
 
-        assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
+        }
+
+        @Test
+        void flagsProductReleaseOutput() {
+            final var stream = stream("ns/main@1");
+
+            new TreeReader(stream, "npm", null, List.of())
+                    .setRelease(true)
+                    .read(bom);
+
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+        }
+
+        @Test
+        void passesInternalGlobPatterns() {
+            final var stream = stream("ns/internal@1");
+
+            new TreeReader(stream, "npm", null, List.of("*/int*"))
+                    .setRelease(true)
+                    .read(bom);
+
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+        }
     }
 
     @Test

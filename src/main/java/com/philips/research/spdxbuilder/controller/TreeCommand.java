@@ -41,6 +41,9 @@ public class TreeCommand extends AbstractCommand {
     @CommandLine.Option(names = {"--kb", "--bombase"}, description = "Add package metadata from BOM-base knowledge base", paramLabel = "SERVER_URL")
     @NullOr URI bomBase;
 
+    @CommandLine.Option(names = {"--release"}, description = "Root packages expose their package URL", defaultValue = "false")
+    boolean isRelease;
+
     @Override
     public void run() {
         if (format == null) {
@@ -54,7 +57,8 @@ public class TreeCommand extends AbstractCommand {
     @Override
     protected ConversionService createService() {
         final var config = readConfiguration();
-        final BomReader reader = new TreeReader(System.in, format, formatExtension, config.getInternalGlobs());
+        final BomReader reader = new TreeReader(System.in, format, formatExtension, config.getInternalGlobs())
+                .setRelease(isRelease);
         final BomWriter writer = new SpdxWriter(spdxFile);
 
         final var service = bomBase != null
