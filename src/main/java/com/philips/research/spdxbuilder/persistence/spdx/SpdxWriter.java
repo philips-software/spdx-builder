@@ -6,10 +6,8 @@
 package com.philips.research.spdxbuilder.persistence.spdx;
 
 import com.philips.research.spdxbuilder.core.BomWriter;
-import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
-import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.Package;
-import com.philips.research.spdxbuilder.core.domain.Relation;
+import com.philips.research.spdxbuilder.core.domain.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,7 +65,7 @@ public class SpdxWriter implements BomWriter {
 
         doc.addEmptyLine();
         doc.addComment("Creation information");
-        final var creator = bom.getOrganization().map(SpdxParty::organization);
+        final var creator = bom.getOrganization().map(Party::getName);
         doc.addValue("Creator", creator);
         final var application = this.getClass().getPackage().getImplementationTitle();
         final var version = this.getClass().getPackage().getImplementationVersion();
@@ -90,11 +88,15 @@ public class SpdxWriter implements BomWriter {
         doc.addValue("SPDXID", identifierFor(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
         doc.optionallyAddValue("PackageFileName", pkg.getFilename());
-        doc.optionallyAddValue("ExternalRef", pkg.getPurl().map(ExternalReference::new));
-        doc.optionallyAddValue("PackageSupplier", pkg.getSupplier().map(SpdxParty::from));
+        if (pkg.isInternal()) {
+            doc.optionallyAddValue("PackageSupplier", bom.getOrganization().map(SpdxParty::from));
+        } else {
+            doc.optionallyAddValue("ExternalRef", pkg.getPurl().map(ExternalReference::new));
+            doc.optionallyAddValue("PackageSupplier", pkg.getSupplier().map(SpdxParty::from));
+        }
         doc.optionallyAddValue("PackageOriginator", pkg.getOriginator().map(SpdxParty::from));
         doc.addValue("PackageDownloadLocation", pkg.getSourceLocation());
-        doc.addValue("FilesAnalyzed", pkg.getDetectedLicense().isPresent());
+        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicenses().isEmpty());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             final var key = entry.getKey().replaceAll("-", "").toUpperCase();
             if (SUPPORTED_HASH_KEYS.contains(key)) {
@@ -108,7 +110,9 @@ public class SpdxWriter implements BomWriter {
             System.err.println("WARNING: No concluded license for package " + pkg);
         }
         doc.addValue("PackageLicenseDeclared", pkg.getDeclaredLicense());
-        doc.addValue("PackageLicenseInfoFromFiles", pkg.getDetectedLicense());
+        for (var license : pkg.getDetectedLicenses()) {
+            doc.addValue("PackageLicenseInfoFromFiles", license);
+        }
         doc.addValue("PackageCopyrightText", pkg.getCopyright());
         doc.optionallyAddValue("PackageSummary", pkg.getSummary());
         doc.optionallyAddValue("PackageDescription", pkg.getDescription());

@@ -41,7 +41,7 @@ public class ConversionInteractor implements ConversionService {
     @Override
     public void setDocument(String title, String organization) {
         bom.setTitle(title);
-        bom.setOrganization(organization);
+        bom.setOrganization(new Party(Party.Type.ORGANIZATION, organization));
     }
 
     @Override

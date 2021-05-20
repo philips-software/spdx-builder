@@ -44,7 +44,7 @@ class LicenseKnowledgeBaseTest {
 
         knowledgeBase.enhance(bom);
 
-        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
+        assertThat(pkg.getDetectedLicenses()).contains(LICENSE);
         verify(client, never()).contest(any(), any());
     }
 
@@ -56,7 +56,7 @@ class LicenseKnowledgeBaseTest {
 
         knowledgeBase.enhance(bom);
 
-        assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+        assertThat(pkg.getConcludedLicense()).isEmpty();
         verify(client).contest(PURL, LICENSE.toString());
     }
 

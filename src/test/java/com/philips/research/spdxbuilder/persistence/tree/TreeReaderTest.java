@@ -58,15 +58,6 @@ class TreeReaderTest {
     }
 
     @Test
-    void passesInternalGlobPatterns() {
-        final var stream = stream("ns/internal@1");
-
-        new TreeReader(stream, "npm", null, List.of("*/int*")).read(bom);
-
-        assertThat(bom.getPackages().get(0).isInternal()).isTrue();
-    }
-
-    @Test
     void throws_streamFailure() throws Exception {
         final var stream = mock(InputStream.class);
         when(stream.available()).thenThrow(new IOException("Failing stream"));
@@ -90,5 +81,38 @@ class TreeReaderTest {
     @NotNull
     private InputStream stream(String... lines) {
         return new ByteArrayInputStream(String.join("\n", lines).getBytes());
+    }
+
+    class InternalPackages {
+        @Test
+        void defaultsToReleaseOutput() {
+            final var stream = stream("ns/main@1");
+
+            new TreeReader(stream, "npm", null, List.of()).read(bom);
+
+            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
+        }
+
+        @Test
+        void flagsProductReleaseOutput() {
+            final var stream = stream("ns/main@1");
+
+            new TreeReader(stream, "npm", null, List.of())
+                    .setRelease(true)
+                    .read(bom);
+
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+        }
+
+        @Test
+        void passesInternalGlobPatterns() {
+            final var stream = stream("ns/internal@1");
+
+            new TreeReader(stream, "npm", null, List.of("*/int*"))
+                    .setRelease(true)
+                    .read(bom);
+
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+        }
     }
 }

@@ -7,7 +7,6 @@ package com.philips.research.spdxbuilder.core.domain;
 
 import com.github.packageurl.PackageURL;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +29,8 @@ class PackageTest {
         assertThat(pkg.isInternal()).isFalse();
         assertThat(pkg.getPurl()).isEmpty();
         assertThat(pkg.getConcludedLicense()).isEmpty();
+        assertThat(pkg.getDeclaredLicense()).isEmpty();
+        assertThat(pkg.getDetectedLicenses()).isEmpty();
     }
 
     @Test
@@ -67,44 +68,19 @@ class PackageTest {
     }
 
     @Test
+    void addsDetectedLicenses() {
+        pkg.addDetectedLicense(LICENSE);
+        pkg.addDetectedLicense(LICENSE);
+        pkg.addDetectedLicense(License.of("Something custom"));
+        pkg.addDetectedLicense(License.NONE);
+
+        assertThat(pkg.getDetectedLicenses()).hasSize(2);
+    }
+
+    @Test
     void implementsEquals() {
         EqualsVerifier.forClass(Package.class)
                 .withOnlyTheseFields("namespace", "name", "version")
                 .verify();
-    }
-
-    @Nested
-    class Licenses {
-        @Test
-        void licensesAreOptional() {
-            assertThat(pkg.getDetectedLicense()).isEmpty();
-            assertThat(pkg.getDeclaredLicense()).isEmpty();
-            assertThat(pkg.getConcludedLicense()).isEmpty();
-        }
-
-        @Test
-        void concludedLicenseDefaultsToDeclaredLicense() {
-            pkg.setDeclaredLicense(LICENSE);
-
-            assertThat(pkg.getDeclaredLicense()).contains(LICENSE);
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        }
-
-        @Test
-        void concludedLicenseDefaultsToConcluded_noDeclaredLicense() {
-            pkg.setDetectedLicense(LICENSE);
-
-            assertThat(pkg.getDetectedLicense()).contains(LICENSE);
-            assertThat(pkg.getDeclaredLicense()).isEmpty();
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        }
-
-        @Test
-        void concludedLicenseOverridesDeclaredLicense() {
-            pkg.setDeclaredLicense(License.of("Other"));
-            pkg.setConcludedLicense(LICENSE);
-
-            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        }
     }
 }

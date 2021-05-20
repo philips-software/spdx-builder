@@ -86,7 +86,7 @@ class ConversionInteractorTest {
         interactor.setComment(COMMENT);
 
         assertThat(bom.getTitle()).isEqualTo(PROJECT);
-        assertThat(bom.getOrganization()).contains(ORGANIZATION);
+        assertThat(bom.getOrganization().orElseThrow().getName()).isEqualTo(ORGANIZATION);
         assertThat(bom.getComment()).contains(COMMENT);
     }
 

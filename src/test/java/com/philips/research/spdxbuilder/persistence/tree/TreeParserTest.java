@@ -139,14 +139,24 @@ class TreeParserTest {
         }
 
         @Test
+        void marksRootPackagesInternalByDefault() {
+            parser.parse(PACKAGE1);
+            parser.parse("-> " + PACKAGE2);
+
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+            assertThat(bom.getPackages().get(1).isInternal()).isFalse();
+        }
+
+        @Test
         void marksInternalPackagesByRegex() {
             parser.withInternal("internal$");
 
             parser.parse(PACKAGE1);
-            parser.parse(PACKAGE2 + " internal");
+            parser.parse("-> " + PACKAGE2);
+            parser.parse("-> " + PACKAGE3 + " internal");
 
-            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
-            assertThat(bom.getPackages().get(1).isInternal()).isTrue();
+            assertThat(bom.getPackages().get(1).isInternal()).isFalse();
+            assertThat(bom.getPackages().get(2).isInternal()).isTrue();
         }
 
         @Test
@@ -154,7 +164,21 @@ class TreeParserTest {
             parser.withInternal(new PurlGlob("*/int*"));
 
             parser.parse(PACKAGE1);
-            parser.parse("namespace:internal:2");
+            parser.parse("-> " + PACKAGE2);
+            parser.parse("-> namespace:internal:2");
+
+            assertThat(bom.getPackages().get(1).isInternal()).isFalse();
+            assertThat(bom.getPackages().get(2).isInternal()).isTrue();
+        }
+
+        @Test
+        void overridesInternalRootPackagesWhenIsRelease() {
+            parser.withRelease()
+                    .withInternal("int")
+                    .withInternal(new PurlGlob("*/int"));
+
+            parser.parse("ns:int:1");
+            parser.parse("-> ns:int:2");
 
             assertThat(bom.getPackages().get(0).isInternal()).isFalse();
             assertThat(bom.getPackages().get(1).isInternal()).isTrue();

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -74,7 +75,7 @@ class BomBaseKnowledgeBaseTest {
 //        when(meta.getOriginator()).thenReturn(Optional.of(ORIGINATOR));
         when(meta.getSourceLocation()).thenReturn(Optional.of(URI.create(SOURCE_LOCATION)));
         when(meta.getDeclaredLicense()).thenReturn(Optional.of(DECLARED_LICENSE));
-        when(meta.getDetectedLicense()).thenReturn(Optional.of(DETECTED_LICENSE));
+        when(meta.getDetectedLicenses()).thenReturn(List.of(DETECTED_LICENSE));
 
         final var success = knowledgeBase.enhance(bom);
 
@@ -90,7 +91,7 @@ class BomBaseKnowledgeBaseTest {
 //        assertThat(pkg.getSupplier()).contains();
         assertThat(pkg.getSourceLocation()).contains(URI.create(SOURCE_LOCATION));
         assertThat(pkg.getDeclaredLicense()).contains(LicenseParser.parse(DECLARED_LICENSE));
-        assertThat(pkg.getDetectedLicense()).contains(LicenseParser.parse(DETECTED_LICENSE));
+        assertThat(pkg.getDetectedLicenses()).contains(LicenseParser.parse(DETECTED_LICENSE));
     }
 
     @Test

@@ -33,7 +33,7 @@ public class BomBaseKnowledgeBase extends KnowledgeBase {
                     meta.getSha1().ifPresent(hash -> pkg.addHash("SHA1", hash));
                     meta.getSha256().ifPresent(hash -> pkg.addHash("SHA256", hash));
                     meta.getDeclaredLicense().map(LicenseParser::parse).ifPresent(pkg::setDeclaredLicense);
-                    meta.getDetectedLicense().map(LicenseParser::parse).ifPresent(pkg::setDetectedLicense);
+                    meta.getDetectedLicenses().stream().map(LicenseParser::parse).forEach(pkg::addDetectedLicense);
                     return meta;
                 }).isPresent();
     }

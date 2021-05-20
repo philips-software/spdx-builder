@@ -18,7 +18,7 @@ public class BillOfMaterials {
     private final Set<Relation> relations = new HashSet<>();
     private @NullOr String title;
     private @NullOr String comment;
-    private @NullOr String organization;
+    private @NullOr Party organization;
     private @NullOr String identifier;
     private @NullOr URI namespace;
 
@@ -63,11 +63,11 @@ public class BillOfMaterials {
         return this;
     }
 
-    public Optional<String> getOrganization() {
+    public Optional<Party> getOrganization() {
         return Optional.ofNullable(organization);
     }
 
-    public BillOfMaterials setOrganization(String organization) {
+    public BillOfMaterials setOrganization(Party organization) {
         this.organization = organization;
         return this;
     }
