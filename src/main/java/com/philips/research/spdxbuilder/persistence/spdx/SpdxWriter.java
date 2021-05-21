@@ -6,8 +6,10 @@
 package com.philips.research.spdxbuilder.persistence.spdx;
 
 import com.philips.research.spdxbuilder.core.BomWriter;
+import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
+import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.Package;
-import com.philips.research.spdxbuilder.core.domain.*;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 
 import java.io.File;
 import java.io.FileOutputStream;

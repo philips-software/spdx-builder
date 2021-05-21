@@ -27,4 +27,6 @@ interface BlackDuckComponent {
     License getLicense();
 
     long getHierarchicalId();
+
+    boolean isSubproject();
 }

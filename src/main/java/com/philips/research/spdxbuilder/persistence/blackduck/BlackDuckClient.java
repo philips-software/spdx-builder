@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class BlackDuckClient {
     private static final ObjectMapper MAPPER = new ObjectMapper()
@@ -105,11 +106,19 @@ public class BlackDuckClient {
                 .map(result -> result.items.get(0));
     }
 
-    List<BlackDuckComponent> getComponents(UUID projectId, UUID versionId) {
+    List<BlackDuckComponent> getRootComponents(UUID projectId, UUID versionId) {
         //noinspection unchecked
-        return query(api.getRootComponentVersions(projectId, versionId))
+        final var components = query(api.getRootComponentVersions(projectId, versionId))
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
+        //noinspection unchecked
+        final var subprojects = query(api.getBomComponents(projectId, versionId))
+                .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
+                .orElse(List.of()).stream()
+                .filter(BlackDuckComponent::isSubproject)
+                .collect(Collectors.toList());
+        components.addAll(subprojects);
+        return components;
     }
 
     List<BlackDuckComponent> getDependencies(UUID projectId, UUID versionId, BlackDuckComponent component) {

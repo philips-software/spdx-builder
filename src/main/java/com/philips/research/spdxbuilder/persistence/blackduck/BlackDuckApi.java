@@ -47,6 +47,10 @@ public interface BlackDuckApi {
     Call<ItemsJson<ProjectVersionJson>> findProjectVersions(@Path("projectId") UUID projectId, @Query("q") String filter);
 
     @Headers(BILL_OF_MATERIALS_6_JSON)
+    @GET("/api/projects/{projectId}/versions/{versionId}/components?limit=9999")
+    Call<ItemsJson<ComponentVersionJson>> getBomComponents(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
+
+    @Headers(BILL_OF_MATERIALS_6_JSON)
     @GET("/api/projects/{projectId}/versions/{versionId}/hierarchical-components?limit=9999")
     Call<ItemsJson<ComponentVersionJson>> getRootComponentVersions(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
 
@@ -138,6 +142,7 @@ public interface BlackDuckApi {
     }
 
     class LinksJson {
+        URI href;
         List<LinkJson> links = new ArrayList<>();
     }
 
@@ -146,6 +151,7 @@ public interface BlackDuckApi {
         String componentName;
         String componentVersionName;
         URI componentVersion;
+        String componentType;
 
         List<String> usages = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
@@ -196,6 +202,11 @@ public interface BlackDuckApi {
                     .findAny()
                     .map(link -> UriHelper.longFromUri(link.href, 1))
                     .orElse(0L);
+        }
+
+        @Override
+        public boolean isSubproject() {
+            return "SUB_PROJECT".equals(componentType);
         }
 
         @Override
