@@ -5,7 +5,6 @@
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
-import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.ComponentVersionJson;
 import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckApi.LicenseJson;
@@ -73,25 +72,6 @@ class BlackDuckApiTest {
             final var license = component.getLicense();
 
             assertThat(license).isEqualTo(License.of(LICENSE).or(License.of(LICENSE2)));
-        }
-    }
-
-    @Nested
-    class PackageUrlConversion {
-        @Test
-        void convertsOriginToPackageURL() throws Exception {
-            assertPurl("maven", "Group:Name:Version", new PackageURL("pkg:maven/Group/Name@Version"));
-            assertPurl("maven", "::Name:Version", new PackageURL("pkg:maven/Name@Version"));
-            assertPurl("maven", "Name:Version", new PackageURL("pkg:maven/Name@Version"));
-            assertPurl("UNKNOWN", "Name/Version", new PackageURL("pkg:generic/Name@Version"));
-            assertPurl("npmjs", "Name/Version", new PackageURL("pkg:npm/Name@Version"));
-        }
-
-        private void assertPurl(String externalNamespace, String externalId, PackageURL purl) {
-            final var origin = new BlackDuckApi.OriginJson();
-            origin.externalNamespace = externalNamespace;
-            origin.externalId = externalId;
-            assertThat(origin.getPurl()).isEqualTo(purl);
         }
     }
 }

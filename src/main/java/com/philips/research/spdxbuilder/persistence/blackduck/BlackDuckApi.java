@@ -5,9 +5,7 @@
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
-import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.github.packageurl.PackageURLBuilder;
 import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -16,7 +14,10 @@ import retrofit2.http.*;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -181,7 +182,9 @@ public interface BlackDuckApi {
         @Override
         public List<PackageURL> getPackageUrls() {
             return origins.stream()
-                    .map(OriginJson::getPurl)
+                    .map(PackageIdentifier::getPurl)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .collect(Collectors.toList());
         }
 
@@ -215,77 +218,10 @@ public interface BlackDuckApi {
         }
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
-    class OriginJson {
-        private static final Map<String, String> TYPE_MAPPING = new HashMap<>();
-
-        static {
-            TYPE_MAPPING.put("", "generic");
-            TYPE_MAPPING.put("alpine", "alpine");
-            TYPE_MAPPING.put("bitbucket", "bitbucket");
-            TYPE_MAPPING.put("cargo", "cargo");
-            TYPE_MAPPING.put("centos", "rpm");
-            TYPE_MAPPING.put("composer", "composer");
-            TYPE_MAPPING.put("debian", "deb");
-            TYPE_MAPPING.put("docker", "docker");
-            TYPE_MAPPING.put("gem", "gem");
-            TYPE_MAPPING.put("github", "github");
-            TYPE_MAPPING.put("golang", "golang");
-            TYPE_MAPPING.put("hex", "hex");
-            TYPE_MAPPING.put("long_tail", "generic");
-            TYPE_MAPPING.put("maven", "maven");
-            TYPE_MAPPING.put("npmjs", "npm");
-            TYPE_MAPPING.put("nuget", "nuget");
-            TYPE_MAPPING.put("pypi", "pypi");
-        }
-
-        String externalNamespace;
-        String externalId;
-
-        PackageURL getPurl() {
-            try {
-                return PackageURLBuilder.aPackageURL()
-                        .withType(getType())
-                        .withNamespace(getNamespace())
-                        .withName(getName())
-                        .withVersion(getVersion())
-                        .build();
-            } catch (MalformedPackageURLException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-
-        String getType() {
-            //TODO Would this not fail too often? (Use 1:1 mapping as fallback instead?)
-            final var type = TYPE_MAPPING.get(externalNamespace);
-            return (type != null) ? type : "generic";
-        }
-
-        String getNamespace() {
-            return endPart(2);
-        }
-
-        String getName() {
-            return endPart(1);
-        }
-
-        String getVersion() {
-            return endPart(0);
-        }
-
-        private String endPart(int offset) {
-            final var parts = externalId.split(String.valueOf(separator()));
-            return (offset < parts.length) ? parts[parts.length - offset - 1] : "";
-        }
-
-        private char separator() {
-            switch (externalNamespace) {
-                case "maven":
-                case "github":
-                    return ':';
-                default:
-                    return '/';
-            }
+    class OriginJson extends PackageIdentifier {
+        OriginJson() {
+            //noinspection ConstantConditions
+            super(null, null);
         }
     }
 
