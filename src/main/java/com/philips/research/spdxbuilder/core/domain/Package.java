@@ -220,6 +220,6 @@ public final class Package {
         return getPurl()
                 .filter(p -> !isInternal())
                 .map(PackageURL::canonicalize)
-                .orElse(getFullName() + (version.isBlank() ? "" : " version " + version));
+                .orElse(getFullName() + (version.isBlank() ? "" : ", version " + version));
     }
 }

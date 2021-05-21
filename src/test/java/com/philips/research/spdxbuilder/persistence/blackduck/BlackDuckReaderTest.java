@@ -57,7 +57,9 @@ class BlackDuckReaderTest {
     @BeforeEach
     void beforeEach() {
         when(project.getId()).thenReturn(PROJECT_ID);
+        when(project.getName()).thenReturn("Project title");
         when(projectVersion.getId()).thenReturn(VERSION_ID);
+        when(projectVersion.getName()).thenReturn("Project version");
     }
 
     @Nested
@@ -107,10 +109,12 @@ class BlackDuckReaderTest {
             when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
             when(client.findProject(PROJECT_SHORT)).thenReturn(Optional.of(project));
             when(client.findProjectVersion(PROJECT_ID, VERSION_SHORT)).thenReturn(Optional.of(projectVersion));
-            when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
+            when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
             when(client.getComponentDetails(component)).thenReturn(details);
             when(component.getId()).thenReturn(COMPONENT_ID);
             when(component.getVersionId()).thenReturn(COMPONENT_VERSION_ID);
+            when(component.getName()).thenReturn(NAME);
+            when(component.getVersion()).thenReturn(VERSION);
             when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
             when(component.getLicense()).thenReturn(LICENSE);
             when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
@@ -135,7 +139,7 @@ class BlackDuckReaderTest {
             when(project.getDescription()).thenReturn(Optional.of(DESCRIPTION));
             when(projectVersion.getDescription()).thenReturn(Optional.of(SUMMARY));
             when(projectVersion.getLicense()).thenReturn(Optional.of(LICENSE));
-            when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of());
+            when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of());
 
             reader.read(bom);
 
@@ -186,6 +190,31 @@ class BlackDuckReaderTest {
             assertThat(bom.getPackages()).hasSize(1); // Only root
         }
 
+        @Test
+        void exportsSubprojects() {
+            final var projectId = UUID.randomUUID();
+            final var versionId = UUID.randomUUID();
+            when(component.isSubproject()).thenReturn(true);
+            when(component.getId()).thenReturn(projectId);
+            when(component.getVersionId()).thenReturn(versionId);
+            final var sub = mock(BlackDuckComponent.class);
+            when(sub.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
+            when(client.getRootComponents(projectId, versionId)).thenReturn(List.of(sub));
+            when(client.getComponentDetails(sub)).thenReturn(details);
+
+            reader.read(bom);
+
+            assertThat(bom.getPackages()).hasSize(3); // Root + subproject + component in subproject
+            final var root = bom.getPackages().get(0);
+            final var subproject = bom.getPackages().get(1);
+            assertThat(subproject.getName()).contains(NAME);
+            assertThat(subproject.getVersion()).contains(VERSION);
+            assertThat(subproject.getConcludedLicense()).contains(LICENSE);
+            assertThat(bom.getRelations()).contains(
+                    new Relation(root, subproject, Relation.Type.DEPENDS_ON)
+            );
+        }
+
         @Nested
         class PackageRelations {
             private final UUID PARENT_ID = UUID.randomUUID();
@@ -205,7 +234,7 @@ class BlackDuckReaderTest {
 
             @Test
             void exportsDependencyRelationships() {
-                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent));
+                when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent));
                 when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(component));
 
                 reader.read(bom);
@@ -240,7 +269,7 @@ class BlackDuckReaderTest {
 
             void assertRelationship(List<String> usages, Relation.Type relationship) {
                 when(component.getUsages()).thenReturn(usages);
-                when(client.getComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
+                when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
                 final var bom = new BillOfMaterials();
 
                 new BlackDuckReader(client, TOKEN, PROJECT_SHORT, VERSION_SHORT).read(bom);

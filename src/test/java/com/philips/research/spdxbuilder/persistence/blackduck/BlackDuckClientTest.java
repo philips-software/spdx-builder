@@ -186,9 +186,11 @@ class BlackDuckClientTest {
         private static final String COMPONENT_VERSION_NAME = "Component Version Name";
         private static final long HIERARCHY_ID = 1234567890;
         private static final String USAGE = "Usage";
+        private final MockResponse EMPTY_LIST_RESPONSE = new MockResponse()
+                .setBody(new JSONObject().put("Items", new JSONArray()).toString());
 
         @Test
-        void readsProjectComponents() throws Exception {
+        void readsProjectRootComponents() throws Exception {
             server.enqueue(new MockResponse().setBody(new JSONObject()
                     .put("items", new JSONArray()
                             .put(new JSONObject()
@@ -207,11 +209,13 @@ class BlackDuckClientTest {
                                                             .put("rel", "children")
                                                             .put("href", "api/projects/etc/" + HIERARCHY_ID + "/children"))))))
                     .toString()));
+            server.enqueue(EMPTY_LIST_RESPONSE); // No subprojects
 
-            final var components = client.getComponents(PROJECT_ID, VERSION_ID);
+            final var components = client.getRootComponents(PROJECT_ID, VERSION_ID);
 
             assertThat(components).hasSize(1);
             final var comp = components.get(0);
+            assertThat(comp.isSubproject()).isFalse();
             assertThat(comp.getName()).isEqualTo(COMPONENT_NAME);
             assertThat(comp.getId()).isEqualTo(COMPONENT_ID);
             assertThat(comp.getVersion()).isEqualTo(COMPONENT_VERSION_NAME);
@@ -246,6 +250,30 @@ class BlackDuckClientTest {
             assertThat(request.getPath()).isEqualTo("/api/projects/" + PROJECT_ID + "/versions/" + VERSION_ID
                     + "/components/" + COMPONENT_ID + "/versions/" + COMPONENT_VERSION_ID
                     + "/hierarchical-components/" + HIERARCHY_ID + "/children?limit=999");
+        }
+
+        @Test
+        void readsSubprojectsAsComponents() {
+            final var projectId = UUID.randomUUID();
+            final var versionId = UUID.randomUUID();
+            server.enqueue(EMPTY_LIST_RESPONSE);
+            server.enqueue(new MockResponse().setBody(new JSONObject()
+                    .put("items", new JSONArray()
+                            .put(new JSONObject()
+                                    .put("componentName", "Ignore me!")
+                                    .put("componentType", "KB_COMPONENT"))
+                            .put(new JSONObject()
+                                    .put("componentType", "SUB_PROJECT")
+                                    .put("componentVersion", "api/etc/components/" + projectId + "/versions/" + versionId)))
+                    .toString()));
+
+            final var components = client.getRootComponents(PROJECT_ID, VERSION_ID);
+
+            assertThat(components).hasSize(1);
+            final var subproject = components.get(0);
+            assertThat(subproject.isSubproject()).isTrue();
+            assertThat(subproject.getId()).isEqualTo(projectId);
+            assertThat(subproject.getVersionId()).isEqualTo(versionId);
         }
     }
 
