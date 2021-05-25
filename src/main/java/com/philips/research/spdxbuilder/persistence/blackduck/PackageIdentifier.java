@@ -63,10 +63,11 @@ public class PackageIdentifier {
     private @NullOr String namespace() {
         switch (externalNamespace) {
             case "maven":
+                return fromEnd(':', 2);
             case "github":
             case "gitlab":
             case "bitbucket":
-                return fromEnd(':', 2);
+                return fromEnd('/', 1);
             case "centos":
             case "fedora":
             case "opensuse":
@@ -84,10 +85,15 @@ public class PackageIdentifier {
     private @NullOr String name() {
         switch (externalNamespace) {
             case "maven":
+                return fromEnd(':', 1);
             case "github":
             case "gitlab":
             case "bitbucket":
-                return fromEnd(':', 1);
+                @SuppressWarnings("ConstantConditions")
+                final var name = fromStart(':', 0);
+                @SuppressWarnings("ConstantConditions")
+                final var pos = name.indexOf('/');
+                return  (pos < 0) ? name : name.substring(pos+1);
             case "alpine":
             case "arch_linux":
             case "centos":
@@ -104,10 +110,11 @@ public class PackageIdentifier {
     private @NullOr String version() {
         switch (externalNamespace) {
             case "maven":
+                return fromStart(':', 2);
             case "github":
             case "gitlab":
             case "bitbucket":
-                return fromStart(':', 2);
+                return fromStart(':', 1);
             case "alpine":
             case "arch_linux":
             case "centos":

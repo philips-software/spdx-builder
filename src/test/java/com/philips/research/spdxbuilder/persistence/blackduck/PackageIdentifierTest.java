@@ -23,7 +23,8 @@ class PackageIdentifierTest {
         // apache_software
         assertIdentifier("arch_linux", "name/version/architecture", "arch/name@version");
         // automotive_linux
-        assertIdentifier("bitbucket", "org:name:version", "bitbucket/org/name@version");
+        assertIdentifier("bitbucket", "org/name:version", "bitbucket/org/name@version");
+        assertIdentifier("bitbucket", "org/name", "bitbucket/org/name");
         assertIdentifier("bower", "name/version", "bower/name@version");
         assertIdentifier("bower", "@scope/name/version", "bower/%40scope/name@version");
         assertIdentifier("centos", "name/version/architecture", "rpm/centos/name@version");
@@ -43,9 +44,11 @@ class PackageIdentifierTest {
         assertIdentifier("fedora", "name/version/architecture", "rpm/fedora/name@version");
         // freedesktop_org
         // gitcafe
-        assertIdentifier("github", "org:name:version", "github/org/name@version");
+        assertIdentifier("github", "org/name:version", "github/org/name@version");
+        assertIdentifier("github", "org/name", "github/org/name");
         // github_gist
-        assertIdentifier("gitlab", "org:name:version", "gitlab/org/name@version");
+        assertIdentifier("gitlab", "org/name:version", "gitlab/org/name@version");
+        assertIdentifier("gitlab", "org/name", "gitlab/org/name");
         // gitorious
         // gnu
         assertIdentifier("golang", "name/version", "golang/name@version");

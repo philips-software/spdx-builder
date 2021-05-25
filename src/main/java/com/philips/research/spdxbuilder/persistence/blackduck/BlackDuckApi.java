@@ -87,10 +87,10 @@ public interface BlackDuckApi {
         URI href;
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
     class ProjectJson implements BlackDuckProduct {
-        String name;
+        String name = "";
         @NullOr String description;
+        @SuppressWarnings("NotNullFieldNotInitialized")
         LinkJson _meta;
 
         @Override
@@ -114,11 +114,11 @@ public interface BlackDuckApi {
         }
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
     class ProjectVersionJson implements BlackDuckProduct {
-        String versionName;
+        String versionName = "";
         @NullOr String releaseComments;
         @NullOr LicenseJson license;
+        @SuppressWarnings("NotNullFieldNotInitialized")
         LinkJson _meta;
 
         @Override
@@ -143,6 +143,7 @@ public interface BlackDuckApi {
     }
 
     class LinksJson {
+        @SuppressWarnings("NotNullFieldNotInitialized")
         URI href;
         List<LinkJson> links = new ArrayList<>();
     }
