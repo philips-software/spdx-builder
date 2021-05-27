@@ -112,10 +112,10 @@ public class SpdxWriter implements BomWriter {
         }
         doc.addValue("PackageHomePage", pkg.getHomePage());
         doc.addValue("PackageLicenseConcluded", pkg.getConcludedLicense());
-        if (pkg.getConcludedLicense().isEmpty()) {
-            System.err.println("WARNING: No concluded license for package " + pkg);
-        }
         doc.addValue("PackageLicenseDeclared", pkg.getDeclaredLicense());
+        if (pkg.getDeclaredLicense().isEmpty() && pkg.getConcludedLicense().isEmpty()) {
+            System.err.println("WARNING: No license declared for package " + pkg);
+        }
         for (var license : pkg.getDetectedLicenses()) {
             doc.addValue("PackageLicenseInfoFromFiles", license);
         }

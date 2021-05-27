@@ -15,6 +15,7 @@ class LicenseParserTest {
     private static final String IDENTIFIER2 = "Apache-2.0";
     private static final String IDENTIFIER3 = "GPL-2.0-only";
     private static final String EXCEPTION = "SHL-2.0";
+    private static final String UNDEFINED = "NOASSERTION";
 
     private final LicenseDictionary dictionary = LicenseDictionary.getInstance();
 

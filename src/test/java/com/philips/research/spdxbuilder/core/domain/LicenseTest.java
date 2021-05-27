@@ -133,6 +133,19 @@ class LicenseTest {
     }
 
     @Nested
+    class DefinedLicenses {
+        @Test
+        void detectsUndefinedLicenses() {
+            assertThat(License.of("NOASSERTION").isDefined()).isFalse();
+        }
+
+        @Test
+        void skipsUndefinedLicenses() {
+            assertThat(License.of(IDENTIFIER).and(License.of("NOASSERTION")).toString()).isEqualTo(IDENTIFIER);
+        }
+    }
+
+    @Nested
     class Equality {
         @Test
         void implementsHash() {
