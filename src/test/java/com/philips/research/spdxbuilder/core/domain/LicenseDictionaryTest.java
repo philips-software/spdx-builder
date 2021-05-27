@@ -31,6 +31,14 @@ class LicenseDictionaryTest {
     }
 
     @Test
+    void acceptsVoidLicenses() {
+        final var license = dictionary.licenseFor("noassertion");
+
+        assertThat(license.isDefined()).isFalse();
+        assertThat(dictionary.getCustomLicenses()).isEmpty();
+    }
+
+    @Test
     void normalizesSpdxLicenses() {
         final var license = dictionary.licenseFor(" mit ");
 

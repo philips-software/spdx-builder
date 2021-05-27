@@ -105,6 +105,11 @@ public abstract class License {
         }
 
         @Override
+        public boolean isDefined() {
+            return !identifier.equals("NOASSERTION");
+        }
+
+        @Override
         public String toString() {
             return (exception != null)
                     ? String.format("%s WITH %s", identifier, exception)
@@ -133,6 +138,7 @@ public abstract class License {
         @Override
         public String toString() {
             return licenses.stream()
+                    .filter(License::isDefined)
                     .map(license -> (license instanceof ComboLicense)
                             ? String.format("(%s)", license)
                             : license.toString())

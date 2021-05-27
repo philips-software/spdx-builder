@@ -13,7 +13,10 @@ import retrofit2.http.Path;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public interface BomBaseApi {
@@ -88,8 +91,8 @@ public interface BomBaseApi {
         }
 
         private List<String> getStringListAttribute(String tag) {
-            return getAttribute(tag, str -> (String) str)
-                    .map(str -> Arrays.asList(str.split("\n")))
+            //noinspection unchecked
+            return getAttribute(tag, list -> (List<String>) list)
                     .orElse(List.of());
         }
 

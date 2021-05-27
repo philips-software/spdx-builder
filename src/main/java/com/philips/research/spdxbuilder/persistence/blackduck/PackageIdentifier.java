@@ -89,11 +89,9 @@ public class PackageIdentifier {
             case "github":
             case "gitlab":
             case "bitbucket":
-                @SuppressWarnings("ConstantConditions")
-                final var name = fromStart(':', 0);
-                @SuppressWarnings("ConstantConditions")
-                final var pos = name.indexOf('/');
-                return  (pos < 0) ? name : name.substring(pos+1);
+                @SuppressWarnings("ConstantConditions") final var name = fromStart(':', 0);
+                @SuppressWarnings("ConstantConditions") final var pos = name.indexOf('/');
+                return (pos < 0) ? name : name.substring(pos + 1);
             case "alpine":
             case "arch_linux":
             case "centos":

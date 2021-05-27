@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,7 +51,7 @@ class BomBaseApiTest {
             meta.attributes.put(SHA256, SHA256);
             meta.attributes.put(SOURCE_LOCATION, SOURCE_URI);
             meta.attributes.put(DECLARED_LICENSE, DECLARED_LICENSE);
-            meta.attributes.put(DETECTED_LICENSES, DETECTED_LICENSE1 + '\n' + DETECTED_LICENSE2);
+            meta.attributes.put(DETECTED_LICENSES, List.of(DETECTED_LICENSE1, DETECTED_LICENSE2));
 
             assertThat(meta.getTitle()).contains(TITLE);
             assertThat(meta.getDescription()).contains(DESCRIPTION);
