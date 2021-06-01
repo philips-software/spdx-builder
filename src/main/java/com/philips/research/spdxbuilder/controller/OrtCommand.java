@@ -5,7 +5,7 @@
 
 package com.philips.research.spdxbuilder.controller;
 
-import com.philips.research.spdxbuilder.core.BomWriter;
+import com.philips.research.spdxbuilder.core.BomProcessor;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
@@ -41,7 +41,7 @@ public class OrtCommand extends AbstractCommand {
     @Override
     protected ConversionService createService() {
         final OrtReader reader = new OrtReader(ortFile);
-        final BomWriter writer = new SpdxWriter(spdxFile);
+        final BomProcessor writer = new SpdxWriter(spdxFile);
         ConversionService service = licenseScanner != null
                 ? new ConversionInteractor(reader, writer).setKnowledgeBase(new LicenseKnowledgeBase(licenseScanner))
                 : new ConversionInteractor(reader, writer);

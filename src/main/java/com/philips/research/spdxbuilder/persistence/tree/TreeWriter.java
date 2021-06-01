@@ -7,7 +7,7 @@ package com.philips.research.spdxbuilder.persistence.tree;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.philips.research.spdxbuilder.core.BomWriter;
+import com.philips.research.spdxbuilder.core.BomProcessor;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
@@ -17,7 +17,7 @@ import java.util.*;
 /**
  * Writes the packages of a bill-of-materials as a tree to the console.
  */
-public class TreeWriter implements BomWriter {
+public class TreeWriter implements BomProcessor {
     private static final String SNIP = "-".repeat(10) + "8<" + "-".repeat(10);
 
     private final Map<Package, List<Relation>> nodes = new HashMap<>();
@@ -34,7 +34,7 @@ public class TreeWriter implements BomWriter {
     }
 
     @Override
-    public void write(BillOfMaterials bom) {
+    public void process(BillOfMaterials bom) {
         buildNodes(bom);
 
         System.out.println("TREE start " + SNIP);

@@ -39,7 +39,7 @@ class TreeWriterTest {
         void writesPackageWithPackageURL() throws Exception {
             bom.addPackage(new Package(PURL));
 
-            writer.write(bom);
+            writer.process(bom);
 
             verify(formatter).node(PURL.canonicalize());
         }
@@ -48,7 +48,7 @@ class TreeWriterTest {
         void writesAnonymousPackage() {
             bom.addPackage(new Package("namespace", "name", "version"));
 
-            writer.write(bom);
+            writer.process(bom);
 
             verify(formatter).node("pkg:generic/namespace/name@version");
         }
@@ -57,7 +57,7 @@ class TreeWriterTest {
         void throws_noValidPurlPossible() {
             bom.addPackage(new Package(null, "", ""));
 
-            assertThatThrownBy(() -> writer.write(bom))
+            assertThatThrownBy(() -> writer.process(bom))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("generic package");
         }
@@ -66,8 +66,8 @@ class TreeWriterTest {
     @Nested
     class Relationships {
         private final Package parent = new Package(toPurl("pkg:generic/parent@1.0"));
-        private final Package child1= new Package(toPurl("pkg:generic/child@1.0"));
-        private final Package child2= new Package(toPurl("pkg:generic/child@2.0"));
+        private final Package child1 = new Package(toPurl("pkg:generic/child@1.0"));
+        private final Package child2 = new Package(toPurl("pkg:generic/child@2.0"));
         private final InOrder ordered = Mockito.inOrder(formatter);
 
         @Test
@@ -75,7 +75,7 @@ class TreeWriterTest {
             bom.addPackage(child1);
             bom.addPackage(child2);
 
-            writer.write(bom);
+            writer.process(bom);
 
             verify(formatter).node(child1.toString());
             verify(formatter).node(child2.toString());
@@ -90,7 +90,7 @@ class TreeWriterTest {
             bom.addRelation(parent, child1, Relation.Type.DEPENDS_ON);
             bom.addRelation(parent, child2, Relation.Type.DEPENDS_ON);
 
-            writer.write(bom);
+            writer.process(bom);
 
             ordered.verify(formatter).node(parent.toString());
             ordered.verify(formatter).indent();
@@ -109,7 +109,7 @@ class TreeWriterTest {
             bom.addRelation(child1, child2, Relation.Type.DEPENDS_ON);
             bom.addRelation(child2, child1, Relation.Type.DEPENDS_ON);
 
-            writer.write(bom);
+            writer.process(bom);
 
             ordered.verify(formatter).node(parent.toString());
             ordered.verify(formatter).indent();
@@ -136,7 +136,7 @@ class TreeWriterTest {
             bom.addPackage(child1);
             bom.addRelation(parent, child1, type);
 
-            writer.write(bom);
+            writer.process(bom);
 
             verify(formatter).node(contains(child1 + " " + indication));
         }

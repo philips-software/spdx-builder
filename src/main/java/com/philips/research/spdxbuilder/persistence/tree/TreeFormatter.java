@@ -19,6 +19,6 @@ public class TreeFormatter {
     }
 
     public void unindent() {
-        indent --;
+        indent--;
     }
 }

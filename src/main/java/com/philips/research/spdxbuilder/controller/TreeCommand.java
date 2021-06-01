@@ -5,8 +5,8 @@
 
 package com.philips.research.spdxbuilder.controller;
 
+import com.philips.research.spdxbuilder.core.BomProcessor;
 import com.philips.research.spdxbuilder.core.BomReader;
-import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
@@ -59,7 +59,7 @@ public class TreeCommand extends AbstractCommand {
         final var config = readConfiguration();
         final BomReader reader = new TreeReader(System.in, format, formatExtension, config.getInternalGlobs())
                 .setRelease(isRelease);
-        final BomWriter writer = new SpdxWriter(spdxFile);
+        final BomProcessor writer = new SpdxWriter(spdxFile);
 
         final var service = bomBase != null
                 ? new ConversionInteractor(reader, writer).setKnowledgeBase(new BomBaseKnowledgeBase(bomBase))

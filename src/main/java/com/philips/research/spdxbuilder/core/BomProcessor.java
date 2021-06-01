@@ -10,6 +10,6 @@ import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 /**
  * Interface for persisting a bill-of-materials.
  */
-public interface BomWriter {
-    void write(BillOfMaterials bom);
+public interface BomProcessor {
+    void process(BillOfMaterials bom);
 }

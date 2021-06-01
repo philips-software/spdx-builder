@@ -5,7 +5,7 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-import com.philips.research.spdxbuilder.core.BomWriter;
+import com.philips.research.spdxbuilder.core.BomProcessor;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.Package;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Converts a bill-of-materials to an SPDX file.
  */
-public class SpdxWriter implements BomWriter {
+public class SpdxWriter implements BomProcessor {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .withZone(ZoneId.of("UTC"));
     private static final List<String> SUPPORTED_HASH_KEYS =
@@ -43,7 +43,7 @@ public class SpdxWriter implements BomWriter {
     }
 
     @Override
-    public void write(BillOfMaterials bom) {
+    public void process(BillOfMaterials bom) {
         System.out.println("Writing SBOM to '" + file + "'");
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             writeDocumentInformation(doc, bom);

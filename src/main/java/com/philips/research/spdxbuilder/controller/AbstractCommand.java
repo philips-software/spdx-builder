@@ -6,6 +6,7 @@
 package com.philips.research.spdxbuilder.controller;
 
 import com.philips.research.spdxbuilder.core.ConversionService;
+import com.philips.research.spdxbuilder.persistence.tree.TreeWriter;
 import picocli.CommandLine.Option;
 import pl.tlinkowski.annotation.basic.NullOr;
 
@@ -26,6 +27,9 @@ public abstract class AbstractCommand implements Runnable {
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
+
+    @Option(names = {"--tree"}, description = "Print dependency tree")
+    boolean printTree;
 
     @Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
     @NullOr URI uploadUrl;
@@ -54,6 +58,10 @@ public abstract class AbstractCommand implements Runnable {
         }
 
         final var service = createService();
+        service.read();
+        if (printTree) {
+            service.apply(new TreeWriter());
+        }
         service.convert(forceContinue);
 
         if (uploadUrl != null) {
