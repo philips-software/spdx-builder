@@ -43,12 +43,15 @@ class TreeParser {
     @SuppressWarnings("NotNullFieldNotInitialized")
     private Pattern namespacePattern;
     private int namespaceGroup;
+    private Map<String, String> namespaceReplace = Map.of();
     @SuppressWarnings("NotNullFieldNotInitialized")
     private Pattern namePattern;
     private int nameGroup;
+    private Map<String, String> nameReplace = Map.of();
     @SuppressWarnings("NotNullFieldNotInitialized")
     private Pattern versionPattern;
     private int versionGroup;
+    private Map<String, String> versionReplace = Map.of();
     private @NullOr Pattern relationshipPattern;
     private int relationshipGroup;
     @SuppressWarnings("NotNullFieldNotInitialized")
@@ -95,8 +98,8 @@ class TreeParser {
         versionGroup = 3;
         relationshipPattern = null;
         relationshipGroup = 0;
-        typeMapping = Map.of("", "");
-        relationshipMapping = Map.of("", Relation.Type.DYNAMIC_LINK);
+        typeMapping = Map.of();
+        relationshipMapping = Map.of();
         started = true;
         ended = false;
 
@@ -206,6 +209,16 @@ class TreeParser {
     }
 
     /**
+     * Specifies string substitutions for the extracted namespace name.
+     *
+     * @param mapping replacement
+     */
+    TreeParser withNamespaceReplace(Map<String, String> mapping) {
+        namespaceReplace = mapping;
+        return this;
+    }
+
+    /**
      * Specifies the mask to find the package name.
      *
      * @param regEx regular expression for the mask
@@ -218,6 +231,16 @@ class TreeParser {
     }
 
     /**
+     * Specifies string substitutions for the extracted name.
+     *
+     * @param mapping replacement
+     */
+    TreeParser withNameReplace(Map<String, String> mapping) {
+        nameReplace = mapping;
+        return this;
+    }
+
+    /**
      * Specifies the mask to find the package version.
      *
      * @param regEx regular expression for the mask
@@ -226,6 +249,16 @@ class TreeParser {
     TreeParser withVersion(String regEx, int group) {
         versionPattern = compile(regEx);
         versionGroup = group;
+        return this;
+    }
+
+    /**
+     * Specifies string substitutions for the extracted version.
+     *
+     * @param mapping replacement
+     */
+    TreeParser withVersionReplace(Map<String, String> mapping) {
+        versionReplace = mapping;
         return this;
     }
 
@@ -332,7 +365,9 @@ class TreeParser {
             final var namespace = match(namespacePattern, line, namespaceGroup);
             final var name = match(namePattern, line, nameGroup);
             final var version = match(versionPattern, line, versionGroup);
-            return toPurl(type, namespace, name, version);
+            return toPurl(type, replace(namespace, namespaceReplace), replace(name, nameReplace), replace(version, versionReplace));
+        } catch (TreeException e) {
+            throw e;
         } catch (Exception e) {
             throw new TreeException("Unsupported package format: '" + line + "'", e);
         }
@@ -340,7 +375,7 @@ class TreeParser {
 
     private String extractType(String line) {
         final var id = match(typePattern, line, typeGroup);
-        final @NullOr String type = typeMapping.get(id);
+        final @NullOr String type = typeMapping.isEmpty() ? id : typeMapping.get(id);
         if (type == null) {
             throw new TreeException("Not a supported type identifier: '" + id
                     + "'. Expected one of " + typeMapping.keySet());
@@ -350,7 +385,8 @@ class TreeParser {
 
     private Relation.Type extractRelationship(String line) {
         final var id = match(relationshipPattern, line, relationshipGroup);
-        final Relation.@NullOr Type relationship = relationshipMapping.get(id);
+        final Relation.@NullOr Type relationship = relationshipMapping.isEmpty()
+                ? Relation.Type.DYNAMIC_LINK : relationshipMapping.get(id);
         if (relationship == null) {
             throw new TreeException("Not a supported relationship identifier: '" + id
                     + "'. Expected one of " + relationshipMapping.keySet());
@@ -367,6 +403,14 @@ class TreeParser {
             return "";
         }
         return matcher.group(group);
+    }
+
+    private String replace(String source, Map<String, String> mapping) {
+        var result = source;
+        for (var entry : mapping.entrySet()) {
+            result = result.replaceAll(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
     private PackageURL toPurl(String type, String namespace, String name, String version) {
