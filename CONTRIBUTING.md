@@ -22,8 +22,8 @@ git flow init
 
 ### Make sure your local environment is correct
 ```
-git checkout master
-git pull origin master
+git checkout main
+git pull origin main
 git checkout develop
 git pull origin develop
 ```
@@ -33,15 +33,10 @@ git pull origin develop
 git flow release start vx.x.x
 ```
 
-### Change versions on various places
-This needs to be improved in the future, but for now:
+### Change documentation if wanted
 
-Change version into new version in file / linenumber:
-- `build.gradle` : line 67.
-- `build.gradle` : line 79.
-- `.spdx-builder.yml` : line 8.
-- `.spdx-builder.yml` : line 9.
-- `.spdx-builder.yml` : line 16.
+Change documentation if wanted. Versions will be changed right after the release on `develop`
+
 
 Commit changes:
 ```
@@ -54,6 +49,21 @@ git flow release finish vx.x.x
 git push origin develop
 git checkout main
 git push origin main --tags
+```
+
+### Change versions on various places after a release
+This needs to be improved in the future, but for now:
+
+Change version into new version in file / linenumber:
+- `build.gradle` : line 67.
+- `build.gradle` : line 79.
+- `.spdx-builder.yml` : line 8.
+- `.spdx-builder.yml` : line 9.
+- `.spdx-builder.yml` : line 16.
+
+Commit these changes to `develop`:
+```
+git commit -m "Prepare for next release"
 ```
 
 [github]: https://github.com/philips-software/license-scanner/issues
