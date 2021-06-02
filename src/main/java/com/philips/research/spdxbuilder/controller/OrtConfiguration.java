@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.IOException;
@@ -20,7 +22,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-class Configuration {
+class OrtConfiguration {
     private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
 
@@ -28,11 +30,11 @@ class Configuration {
     List<Project> projects = new ArrayList<>();
     List<Curation> curations = new ArrayList<>();
 
-    static Configuration parse(InputStream stream) {
+    static OrtConfiguration parse(InputStream stream) {
         try (final var reader = new InputStreamReader(stream)) {
-            final Configuration configuration = MAPPER.readValue(reader, Configuration.class);
-            validate(configuration);
-            return configuration;
+            final OrtConfiguration ortConfiguration = MAPPER.readValue(reader, OrtConfiguration.class);
+            validate(ortConfiguration);
+            return ortConfiguration;
         } catch (MismatchedInputException e) {
             final var location = e.getLocation();
             throw new IllegalArgumentException("Configuration format error at line " + location.getLineNr()
@@ -43,23 +45,23 @@ class Configuration {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private static void validate(Configuration configuration) {
-        if (configuration == null) {
+    private static void validate(OrtConfiguration ortConfiguration) {
+        if (ortConfiguration == null) {
             throw new IllegalArgumentException("Configuration is empty");
         }
-        if (configuration.document == null) {
+        if (ortConfiguration.document == null) {
             throw new IllegalArgumentException("Configuration contains empty 'document' section");
         }
-        if (configuration.projects == null) {
+        if (ortConfiguration.projects == null) {
             throw new IllegalArgumentException("Configuration contains empty 'projects' section");
         }
-        if (configuration.curations == null) {
+        if (ortConfiguration.curations == null) {
             throw new IllegalArgumentException("Configuration contains empty 'curations' section");
         }
     }
 
     static String example() {
-        final var config = new Configuration();
+        final var config = new OrtConfiguration();
         config.document.title = "<(Optional) Document title>";
         config.document.comment = "<(Optional) Document comment>";
         config.document.namespace = URI.create("http://optional/document/namespace/uri");
@@ -93,15 +95,26 @@ class Configuration {
         @NullOr URI namespace;
     }
 
+    //TODO This seems only relevant for ORT import
     static class Project {
         String id;
         @NullOr URI purl;
         @NullOr List<String> excluded;
     }
 
+    //TODO Add way to mark internal packages using wildcard
     static class Curation {
         URI purl;
+        //FIXME Is the source code location even appropriate here? (drop)
         @NullOr URI source;
         @NullOr String license;
+
+        PackageURL getPurl() {
+            try {
+                return new PackageURL(purl.toASCIIString());
+            } catch (MalformedPackageURLException e) {
+                throw new IllegalArgumentException("Not a valid package URL: " + purl);
+            }
+        }
     }
 }

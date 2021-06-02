@@ -1,14 +1,12 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.core.domain;
 
-import com.philips.research.spdxbuilder.core.BomReader;
-import com.philips.research.spdxbuilder.core.BomWriter;
-import com.philips.research.spdxbuilder.core.ConversionService;
-import com.philips.research.spdxbuilder.core.KnowledgeBase;
+import com.github.packageurl.PackageURL;
+import com.philips.research.spdxbuilder.core.*;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
@@ -43,7 +41,7 @@ public class ConversionInteractor implements ConversionService {
     @Override
     public void setDocument(String title, String organization) {
         bom.setTitle(title);
-        bom.setOrganization(organization);
+        bom.setOrganization(new Party(Party.Type.ORGANIZATION, organization));
     }
 
     @Override
@@ -62,28 +60,31 @@ public class ConversionInteractor implements ConversionService {
     }
 
     @Override
-    public void curatePackageLicense(URI purl, String license) {
+    public void curatePackageLicense(PackageURL purl, String license) {
         //FIXME Should be stored first
         curate(purl, pkg -> pkg.setConcludedLicense(LicenseParser.parse(license)));
     }
 
     @Override
-    public void curatePackageSource(URI purl, URI source) {
+    public void curatePackageSource(PackageURL purl, URI source) {
         //FIXME Should be stored first
         curate(purl, pkg -> pkg.setSourceLocation(source));
     }
 
     @Override
-    public void convert() {
+    public void convert(boolean continueIfIncomplete) {
         reader.read(bom);
         if (knowledgeBase != null) {
-            knowledgeBase.enhance(bom);
+            final var success = knowledgeBase.enhance(bom);
+            if (!success && !continueIfIncomplete) {
+                throw new BusinessException("Enhancement of metadata failed");
+            }
         }
         //TODO Curate before writing
         writer.write(bom);
     }
 
-    private void curate(URI purl, Consumer<Package> curate) {
+    private void curate(PackageURL purl, Consumer<Package> curate) {
         bom.getPackages().stream()
                 .filter(pkg -> Objects.equals(purl, pkg.getPurl()))
                 .forEach(curate);

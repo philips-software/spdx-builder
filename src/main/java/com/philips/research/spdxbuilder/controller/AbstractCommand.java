@@ -1,11 +1,6 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.controller;
@@ -35,6 +30,9 @@ public abstract class AbstractCommand implements Runnable {
     @Option(names = {"--upload"}, description = "Upload SPDX file", paramLabel = "SERVER_URL")
     @NullOr URI uploadUrl;
 
+    @Option(names = {"--force"}, description = "Create output if metadata is incomplete")
+    boolean forceContinue;
+
     /**
      * @return instantiated service for the provided parameters and options
      */
@@ -55,7 +53,8 @@ public abstract class AbstractCommand implements Runnable {
             spdxFile = new File(spdxFile.getPath() + ".spdx");
         }
 
-        createService().convert();
+        final var service = createService();
+        service.convert(forceContinue);
 
         if (uploadUrl != null) {
             System.out.println("Uploading '" + spdxFile.getName() + "' to " + uploadUrl);

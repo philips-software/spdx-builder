@@ -11,63 +11,48 @@ CI/CD tool to generate Bill-of-Materials reports in SPDX format.
 
 ## Contents
 
-- [SPDX-Builder](#spdx-builder)
-- [Contents](#contents)
-- [Dependencies](#dependencies)
+- [Description](#Description)
 - [Installation](#installation)
-- [Configuration](#configuration)
 - [Usage](#usage)
-    - [Basic usage](#basic-usage)
-    - [Uploading the resulting SPDX file](#uploading-the-resulting-spdx-file)
-    - [SPDX document information](#spdx-document-information)
-    - [Manual curation](#manual-curation)
-    - [Integration with license scanner service](#integration-with-license-scanner-service)
-    - [GitHub actions](#github-actions)
 - [How to test the software](#how-to-test-the-software)
 - [Known issues](#known-issues)
 - [Contact / Getting help](#contact--getting-help)
 - [License](#license)
 - [Credits and references](#credits-and-references)
 
-## SPDX-Builder
-
-CI/CD tool to generate Bill-of-Materials reports in SPDX format.
-
-**Status**: Experimental research prototype
-
-(See the [architecture document](docs/architecture.md) for a detailed technical
-description.)
+## Description
 
 Converts project dependencies into a standard
 [SPDX](https://spdx.github.io/spdx-spec) tag-value Software Bill-of-Materials
-file, optionally integrating externally detected and curated license details.
+file, optionally integrating externally collected and curated license details.
 
-Inputs for the SBOM are:
+A Bill-of-Materials can be generated from various types of inputs:
 
-* Package information by YAML files from
-  [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT)
-  Analyzer.
-* Projects analyzed using
-  the [Synoptic Black Duck](https://www.synopsys.com/software-integrity/security-testing/software-composition-analysis.html)
-  SCA service.
-* Curated license scan results from the REST API of a
-  [License Scanning Service](https://github.com/philips-software/license-scanner)
-  backend service.
+1. From the output of
+   the [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) (ORT)
+   Analyzer tool, optionally in combination with scanned licences provided by
+   [License Scanning Service](https://github.com/philips-software/license-scanner)
+   or the [BOM-Base](https://github.com/philips-software/bom-base) metadata
+   harvesting service. (See [ORT mode usage](docs/usage_with_ort.md))
 
-## Dependencies
+2. From the REST API of
+   a [Synoptic Black Duck](https://www.synopsys.com/software-integrity/security-testing/software-composition-analysis.html)
+   SCA server. (See [Black Duck mode usage](docs/usage_with_black_duck.md))
 
-This software requires Java 11 (or later) to run.
+3. From the "tree" output of many build environments, in combination with
+   metadata from a [BOM-Base](https://github.com/philips-software/bom-base)
+   metadata harvesting service. (See [Tree mode usage](docs/usage_with_tree.md))
 
 ## Installation
 
 Build the application using the standard gradle command:
 
 ```shell
-./gradlew clean build
+./gradlew clean install
 ```
 
-Then make the resulting files from the `build/install/bin` directory available
-in the path.
+Then make the resulting files from the `build/install/spdx-builder/bin`
+available in the path.
 
 Alternatively the application can be run directly from Gradle:
 
@@ -75,153 +60,19 @@ Alternatively the application can be run directly from Gradle:
 ./gradlew run --args="ort -c .spdx-builder.yml <command> <parameters>"
 ```
 
-## Configuration
-
-SPDX-Builder does not use any generic configuration.
-
-The ORT Analyzer does not require setup configuration. (The ORT configuration
-files address other parts of the ORT suite.)
-
 ## Usage
 
-_This application requires Java 11 or higher._
-
-### Basic usage
-
-#### Building a bill-of-materials from an ORT file
-
-SPDX-Builder can convert the output of
-the [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort)
-Analyzer to a bill-of-materials file in SPDX format while adding license
-information from
-the [License Scanner service](https://github.com/philips-software/license-scanner)
-. (Note that ORT also supports native export to SPDX files.)
-
-The ORT Analyzer interprets the configuration files of a wide range of package
-managers to packages with their metadata in a common ORT file format.
-SPDX-Builder reads this output file as its input.
-
-Typical command line invocation of the ORT Analyzer is:
+The commandline application has usage instructions built-in
 
 ```shell
-ort analyze -i <project_directory> -o <result_directory>
+spdx-builder --help
 ```
 
-_Note: To avoid the "this and base files have different roots" error, it is best
-practice to always provide an absolute path._
+Separate usage details are found per mode for: [ort mode](docs/usage_with_ort.md)
+,[blackduck mode](docs/usage_with_black_duck.md),
+and [tree mode](docs/usage_with_tree.md).
 
-The ORT Analyzer produces an `analyzer-result.yml` file in the indicated result
-directory containing the bill-of-materials of all identified packages in ORT
-format. (Note that the tool fails if the ORT file already exists.)
-
-Since ORT Analyzer lists any projects it encounters in its output, SPDX-Builder
-requires instructions from a separate configuration file to only include the
-relevant projects in the bill-of-materials file. This is achieved by the
-following section in the `.spdx-builder.yml` file:
-
-```yaml
-projects:
-  - id: "<Input project identifier>"
-    purl: "pkg:type/namespace/name@version"
-    excluded:
-      - "<scope>" 
-```
-
-The "<Input project identifier>" is the identifier that is generated by the ORT
-Analyzer during detection. SPDX-Builder lists all projects found in the ORT
-file, and marks them with "-" for projects that are skipped and "+" for projects
-that are included in the SPDX output.
-
-In case the project itself represents a package, its Package URL can be provided
-in the "purl" field of the project definition.
-
-[GLOB patterns](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob)
-can be used to exclude packages in selected "scopes" per project. The remaining
-scopes that are included are logged by SPDX-Builder during processing.
-
-To speed up ORT Analyzer, a repository configuration file can be added to the
-scanned project. By excluding paths
-via [GLOB patterns](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob)
-in a configuration file, analysis of irrelevant sub-projects can be avoided.
-
-The repository configuration for ORT is provided by an `.ort.yml` file in the
-root of the project:
-
-```yaml
-excludes:
-  paths:
-    - pattern: <glob_pattern>
-      reason: <path_reason>
-      comment: "Free text"
-```
-
-The <path_reason> must be any of:
-
-- BUILD_TOOL_OF
-- DATA_FILE_OF
-- DOCUMENTATION_OF
-- EXAMPLE_OF
-- OPTIONAL_COMPONENT_OF
-- OTHER
-- PROVIDED_BY
-- TEST_OF
-
-Other configuration possibilities of the ORT Analyzer can be found in the
-[ORT repository configuration file documentation](https://github.com/oss-review-toolkit/ort/blob/master/docs/config-file-ort-yml.md)
-.
-
-_Note: Suppressing "scopes" in the ORT repository configuration has no influence
-on the Analyzer, as it collects all metadata. SPDX-Builder will, however, skip
-the scopes marked for exclusion in the ORT repository configuration file._
-
-The output of the Analyzer can be converted to an SPDX tag-value file using
-SPDX-Builder by:
-
-```shell
-spdx-builder ort -c <config_yaml_file> -o <spdx_file> <ort_yaml_file>
-```
-
-_Note: If no "config_yaml_file" is specified, a file name `.spdx-builder.yml` is
-expected to exist in the current directory._
-
-_Note: If no output file is specified, the output is written to a file named
-`bom.spdx` in the current directory. (If the file has no extension, `.spdx`
-is automatically appended.)_
-
-#### Building a Bill-of-Materials from a Black Duck project version
-
-_NOTE: This function requires access to the "Hierarchical BOM" REST API of
-a [Synoptic Black Duck SCA server](https://www.synopsys.com/software-integrity/security-testing/software-composition-analysis.html)
-. (See below for instructions on enabling this option on a self-managed
-server.)_
-
-SPDX-Builder can extract a bill-of-materials from a Black Duck server for a
-specified project version.
-
-A project version in Black Duck is exported to an SPDX file by:
-
-```shell
-spdx-builder blackduck -o <spdx_file> <project> <version>
-```
-
-(The "project" and "version" should be unique prefixes for a project version.)
-
-To enable the Hierarchical BOM in the Black Duck server in case of a Docker
-Swarm installation:
-
-- Add the `HUB_HIERARCHICAL_BOM` environment variable to an `.env` file. Set the
-  value to `true`.
-
-or alternatively:
-
-- Edit the webapp service in the `docker-compose.local-overrides.yml`
-  file located in the docker-swarm directory: `webapp:environment:
-  {HUB_HIERARCHICAL_BOM: "true"}`.
-
-In case of a Kubernetes or OpenShift installation:
-
-- Add the following to your environs
-  flag: `--environs HUB_HIERARCHICAL_BOM:true`
+_NOTE: This application requires Java 11 or higher._
 
 ### Uploading the resulting SPDX file
 
@@ -236,62 +87,12 @@ becomes:
 spdx-builder ort -c <config_yaml_file> -upload=https://<server>:8080/projects/<uuid>/upload <ort_yaml_file>
 ```
 
-### SPDX document information
-
-SPDX documents include common information to indicate the purpose and origin of
-the software bill-of-materials. This information is provided in the
-"document" section of the YAML configuration file:
-
-```yaml
-document:
-  title: "<(Optional) Document title>"
-  organization: "<(Optional) Organization name>"
-  comment: "<(Optional) Document comment>"
-  key: "<(Optional) Document key>"
-  namespace: "http://optional/document/namespace/uri"
-```
-
-### Manual curation
-
-It might not always be possible to retrieve the (correct) metadata per package,
-and some packages may require an explicit choice which license is used. This
-information can be provided as "curations" in the YAML configuration file:
-
-```yaml
-curations:
-  - purl: "pkg:type/namespace/name@version"
-    source: "<vcs_tool>+<transport>://<host_name>[/<path_to_repository>][@<revision_tag_or_branch>][#<sub_path>]"
-    license: "<(Optional) License>"
-```
-
-The applicable package is identified by the "purl", which references the package
-by its Package URL.
-
-Some package managers do not provide the complete or correct location of the
-package source code. For such cases, the "source" location can be provided in
-SPDX format as override. Some examples of valid source URI's are:
-
-- `https://git.myproject.org/MyProject.jar` (Download as source archive)
-- `git+https://git.myproject.org/MyProject@r1.0` (Git over HTTP by release tag)
-- `git+ssh://git%40github.com/MyProject.git@hashvalue` (Git over SSH by commit
-  hash)
-- `git+https://git.myproject.org/MyProject#submodule` (As submodule in a mono
-  repo)
-
-### Integration with license scanner service
-
-To query license information from
-the [License Scanner Service](https://github.com/philips-software/license-scanner)
-, add the network location of the License Scanner service by adding the command
-line parameter `--scanner <scanner_url>`.
-
 ### GitHub actions
 
-You can use the SPDX-builder in a GitHub Action. This can be found on 
-<https://github.com/philips-software/spdx-action>.
-The Action performs an ORT scan, pushes the data to SPDX-builder and can use
-a self hosted license scanner service and upload service like BOM-Bar. (plain upload
-function for a spdx-file, so you can also use this for other systems.)
+You can use the SPDX-builder in a GitHub Action. This can be found on
+<https://github.com/philips-software/spdx-action>. The Action performs an ORT
+scan, pushes the data to SPDX-builder and can use a self-hosted license scanner
+service and upload service like BOM-Bar. 
 
 ## How to test the software
 
@@ -301,7 +102,7 @@ The unit test suite is run via the standard Gradle command:
 ./gradlew clean test
 ```
 
-A local ORT-based test can be run by:
+A local ORT-based self-test (if ORT is installed locally) can be run by:
 
 ```shell
 ./gradlew run --args="ort -c src/test/resources/.spdx-builder.yml src/test/resources/ort_sample.yml"
@@ -314,23 +115,28 @@ A local ORT-based test can be run by:
 Must-have:
 
 - [x] Properly expand Black Duck origin identifiers to package URLs.
-- [x] Skip ignored packages from Black Duck output.
-- [x] Recursively import sub-projects from Black Duck.
+- [ ] Recursively import sub-projects from Black Duck.
 - [ ] Abort if ORT Analyzer raised errors.
+- [ ] Support the new (more compact) ORT tree structure. (Currently breaks Gradle projects.)
+- [ ] Add hashes of build results (where possible).
+- [ ] (Optionally) Add source artefacts as "GENERATED_FROM" relationship.
 
 Should-have:
 
+- [ ] Treat internal (=non-OSS) packages differently for output SBOM.
 - [ ] Support output "flavors" for the purpose of the generated SBOM.
 
 Other ideas:
 
-- [ ] Support RDF/XML SPDX output format
 - [ ] Integration with [Quartermaster (QMSTR)](https://qmstr.org/).
 
 ## Contact / Getting help
 
 Submit tickets to
 the [issue tracker](https://github.com/philips-software/spdx-builder/issues).
+
+See the [architecture document](docs/architecture.md) for a detailed technical
+description.
 
 ## License
 

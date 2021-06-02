@@ -1,15 +1,12 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.persistence.license_scanner;
 
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.core.domain.Package;
@@ -22,23 +19,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class LicenseKnowledgeBaseTest {
-    private static final URI LOCATION = URI.create("http://example.com");
+    private static final URI LOCATION = URI.create("https://example.com");
     private static final License LICENSE = License.of("MIT");
+    private static final PackageURL PURL = purlFrom("pkg:maven/namespace/name@version");
 
-    private final Package pkg = new Package("Type", "Namespace", "Name", "Version");
+    private final Package pkg = new Package("Namespace", "Name", "Version").setPurl(PURL);
     private final BillOfMaterials bom = new BillOfMaterials().addPackage(pkg);
     private final LicenseScannerClient client = mock(LicenseScannerClient.class);
     private final LicenseKnowledgeBase knowledgeBase = new LicenseKnowledgeBase(client);
+
+    static PackageURL purlFrom(String purl) {
+        try {
+            return new PackageURL(purl);
+        } catch (MalformedPackageURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 
     @Test
     void checksLicenses() {
         pkg.setSourceLocation(LOCATION);
         final var info = new LicenseScannerClient.LicenseInfo(LICENSE.toString(), false);
-        when(client.scanLicense(pkg.getPurl(), LOCATION)).thenReturn(Optional.of(info));
+        when(client.scanLicense(PURL, LOCATION)).thenReturn(Optional.of(info));
 
         knowledgeBase.enhance(bom);
 
-        assertThat(pkg.getDetectedLicense()).contains(LICENSE);
+        assertThat(pkg.getDetectedLicenses()).contains(LICENSE);
         verify(client, never()).contest(any(), any());
     }
 
@@ -46,19 +52,19 @@ class LicenseKnowledgeBaseTest {
     void contestsUnconfirmedLicense() {
         pkg.setDeclaredLicense(LICENSE);
         final var info = new LicenseScannerClient.LicenseInfo("Other", false);
-        when(client.scanLicense(eq(pkg.getPurl()), any())).thenReturn(Optional.of(info));
+        when(client.scanLicense(eq(PURL), any())).thenReturn(Optional.of(info));
 
         knowledgeBase.enhance(bom);
 
-        assertThat(pkg.getConcludedLicense()).contains(LICENSE);
-        verify(client).contest(pkg.getPurl(), LICENSE.toString());
+        assertThat(pkg.getConcludedLicense()).isEmpty();
+        verify(client).contest(PURL, LICENSE.toString());
     }
 
     @Test
     void acceptsConfirmedLicense() {
         pkg.setDeclaredLicense(License.of("Other"));
         final var info = new LicenseScannerClient.LicenseInfo(LICENSE.toString(), true);
-        when(client.scanLicense(eq(pkg.getPurl()), any())).thenReturn(Optional.of(info));
+        when(client.scanLicense(eq(PURL), any())).thenReturn(Optional.of(info));
 
         knowledgeBase.enhance(bom);
 

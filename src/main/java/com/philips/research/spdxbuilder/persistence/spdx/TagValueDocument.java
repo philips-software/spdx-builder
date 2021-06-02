@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
@@ -16,6 +16,7 @@ import java.util.Optional;
 public class TagValueDocument implements Closeable {
     @SuppressWarnings("SpellCheckingInspection")
     private static final String NO_ASSERTION = "NOASSERTION";
+    private static final String NONE = "NONE";
 
     private final Writer writer;
 
@@ -27,7 +28,23 @@ public class TagValueDocument implements Closeable {
     }
 
     /**
-     * Writes a tag with a (single line) plain value.
+     * Writes a tag only if a value is present.
+     *
+     * @param tag   type of the value
+     * @param value optional value
+     */
+    public void optionallyAddValue(String tag, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<?> value) throws IOException {
+        if (value.isPresent()) {
+            addValue(tag, value);
+        }
+    }
+
+    /**
+     * Writes a tag with a value, converting a <code>null</code> or empty <code>Optional</code> to "NOASSERTION"
+     * and an empty string to "NONE".
+     *
+     * @param tag   type of the value
+     * @param value <code>Optional</code> or <code>Object</code> value
      */
     public void addValue(String tag, @NullOr Object value) throws IOException {
         if (value instanceof Optional) {
@@ -39,7 +56,12 @@ public class TagValueDocument implements Closeable {
         }
 
         final var string = value.toString();
-        writeLine(tag + ": " + (string.contains("\n") ? "<text>" + value + "</text>" : value));
+        if (string.isBlank()) {
+            value = NONE;
+        }
+        final var isMultiline = string.contains("\n") || string.contains("text>");
+        final var escaped = value.toString().replaceAll("</text>", "</text> ");
+        writeLine(tag + ": " + (isMultiline ? "<text>" + escaped + "</text>" : value));
     }
 
     /**
@@ -65,5 +87,6 @@ public class TagValueDocument implements Closeable {
     public void close() throws IOException {
         writer.close();
     }
+
 }
 

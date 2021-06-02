@@ -15,34 +15,42 @@ package controller {
 }
 
 package core {
-    class DtoClass
-
-    interface FooService
-    FooCommand -l-> FooService
-    FooService .l.> DtoClass
+    interface ConversionService
+    FooCommand -l-> ConversionService
 
     package domain {
-        class FooInteractor
+        class ConversionInteractor
         note bottom
             Use Case implementations
         end note
-        FooService <|.. FooInteractor
+        ConversionService <|.. ConversionInteractor
 
         class DomainClass
-        FooInteractor ..> DomainClass
+        ConversionInteractor ..> DomainClass
     }
 
-    interface ConversionStore
-    FooInteractor -> ConversionStore
+    interface BomReader
+    ConversionInteractor -> BomReader
+
+    interface BomWriter
+    ConversionInteractor -> BomWriter
+
+    interface KnowledgeBase
+    ConversionInteractor -> KnowledgeBase
+
+    BomReader -[hidden]- BomWriter
+    BomWriter -[hidden]- KnowledgeBase
 }
 
 package persistence {
-    class ConversionPersistence
-    note top
-        Input / output file handling
-    end note
-    ConversionStore <|.u. ConversionPersistence
-    ConversionPersistence ..> DomainClass
+    class XyzReader
+    BomReader <|-- XyzReader
+
+    class XyzWriter
+    BomWriter <|-- XyzWriter
+
+    class XyzKnowledgeBase
+    KnowledgeBase <|-- XyzKnowledgeBase
 }
 
 @enduml

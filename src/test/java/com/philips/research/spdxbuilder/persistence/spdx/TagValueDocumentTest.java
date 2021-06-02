@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,17 +19,14 @@ interface DocumentModification {
 }
 
 class TagValueDocumentTest {
+    public static final String COMMENT = "My comment";
     private static final String TAG = "Tag";
     private static final String VALUE = "Value";
-    private static final String NO_ASSERTION = "NOASSERTION";
+    private static final String MULTI_VALUE = "Line1\nLine2";
     private static final String TEMPLATE = "%s: %s\n";
-    private static final String TEXT_TEMPLATE = "%s: <text>%s</text>\n";
-    private static final String TAG_VALUE = String.format(TEMPLATE, TAG, VALUE);
-    private static final String TAG_TEXT = String.format(TEXT_TEMPLATE, TAG, VALUE);
-    private static final String NO_ASSERTION_VALUE = String.format(TEMPLATE, TAG, NO_ASSERTION);
-    private static final String NO_ASSERTION_TEXT = String.format(TEXT_TEMPLATE, TAG, NO_ASSERTION);
+    private static final String MULTI_LINE_TEMPLATE = "%s: <text>%s</text>\n";
 
-    private void assertOutput(String expected, DocumentModification test) throws IOException {
+    private static void assertOutput(String expected, DocumentModification test) throws IOException {
         final var stream = new ByteArrayOutputStream();
         try (final var doc = new TagValueDocument(stream)) {
             test.invoke(doc);
@@ -45,33 +42,56 @@ class TagValueDocumentTest {
 
     @Test
     void writesCommentLine() throws Exception {
-        final var comment = "My comment";
-
-        assertOutput("## " + comment + "\n", tagValueDocument -> tagValueDocument.addComment(comment));
+        assertOutput("## " + COMMENT + "\n", tagValueDocument -> tagValueDocument.addComment(COMMENT));
     }
 
     @Test
     void writesTagValue() throws Exception {
-        assertOutput(TAG_VALUE, (doc) -> doc.addValue(TAG, VALUE));
+        assertOutput(String.format(TEMPLATE, TAG, VALUE), (doc) -> doc.addValue(TAG, VALUE));
     }
 
     @Test
     void writesOptionalTagValue() throws Exception {
-        assertOutput(TAG_VALUE, (doc) -> doc.addValue(TAG, Optional.of(VALUE)));
+        assertOutput(String.format(TEMPLATE, TAG, VALUE), (doc) -> doc.addValue(TAG, Optional.of(VALUE)));
     }
 
     @Test
-    void noAssertionEmptyOptionalTagValue() throws Exception {
-        assertOutput(NO_ASSERTION_VALUE, (doc) -> doc.addValue(TAG, Optional.empty()));
+    void writesNoAssertion_EmptyOptionalTagValue() throws Exception {
+        assertOutput(String.format(TEMPLATE, TAG, "NOASSERTION"), (doc) -> doc.addValue(TAG, Optional.empty()));
     }
 
     @Test
-    void noAssertionNullTagValue() throws Exception {
-        assertOutput(NO_ASSERTION_VALUE, (doc) -> doc.addValue(TAG, null));
+    void writeNoAssertion_NullTagValue() throws Exception {
+        assertOutput(String.format(TEMPLATE, TAG, "NOASSERTION"), (doc) -> doc.addValue(TAG, null));
+    }
+
+    @Test
+    void writesNone_emptyStringValue() throws Exception {
+        assertOutput(String.format(TEMPLATE, TAG, "NONE"), (doc) -> doc.addValue(TAG, ""));
+    }
+
+    @Test
+    void writesOptionalTag() throws Exception {
+        assertOutput(String.format(TEMPLATE, TAG, VALUE), (doc) -> doc.optionallyAddValue(TAG, Optional.of(VALUE)));
+    }
+
+    @Test
+    void skipsOptionalTag() throws Exception {
+        assertOutput("", (doc) -> doc.optionallyAddValue(TAG, Optional.empty()));
     }
 
     @Test
     void writesTextValue() throws Exception {
-        assertOutput("Tag: <text>a\nb</text>\n", (doc) -> doc.addValue("Tag", "a\nb"));
+        assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, MULTI_VALUE), (doc) -> doc.addValue(TAG, MULTI_VALUE));
+    }
+
+    @Test
+    void escapesMultiLineStartTag() throws Exception {
+        assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, "<text>"), (doc) -> doc.addValue(TAG, "<text>"));
+    }
+
+    @Test
+    void escapesMultiLineEndTag() throws Exception {
+        assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, "</text> \nX"), (doc) -> doc.addValue(TAG, "</text>\nX"));
     }
 }

@@ -1,11 +1,6 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.core.domain;
@@ -30,7 +25,9 @@ public class LicenseDictionary {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
+    @SuppressWarnings("ConstantConditions")
     private static final URL LICENSES = LicenseDictionary.class.getResource("/licenses.json");
+    @SuppressWarnings("ConstantConditions")
     private static final URL EXCEPTIONS = LicenseDictionary.class.getResource("/exceptions.json");
     private static final String PREFIX = "LicenseRef-";
     private static final Map<String, Function<LicenseDictionary, License>> UPGRADE_MAP = new HashMap<>();
@@ -82,6 +79,7 @@ public class LicenseDictionary {
 
     LicenseDictionary() {
         version = loadLicenses();
+        spdxIdentifiers.put("noassertion", "NOASSERTION");
         loadExceptions();
     }
 

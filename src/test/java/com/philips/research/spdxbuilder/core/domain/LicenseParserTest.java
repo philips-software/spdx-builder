@@ -15,6 +15,7 @@ class LicenseParserTest {
     private static final String IDENTIFIER2 = "Apache-2.0";
     private static final String IDENTIFIER3 = "GPL-2.0-only";
     private static final String EXCEPTION = "SHL-2.0";
+    private static final String UNDEFINED = "NOASSERTION";
 
     private final LicenseDictionary dictionary = LicenseDictionary.getInstance();
 
@@ -40,7 +41,7 @@ class LicenseParserTest {
 
     @Test
     void withExceptionClause() {
-        var license = LicenseParser.parse(IDENTIFIER + " with " + EXCEPTION);
+        var license = LicenseParser.parse(IDENTIFIER + " WITH " + EXCEPTION);
 
         assertThat(license).isEqualTo(License.of(IDENTIFIER).with(EXCEPTION));
     }
@@ -68,15 +69,15 @@ class LicenseParserTest {
 
     @Test
     void ignoresRogueWithClause() {
-        final var license = LicenseParser.parse("with " + EXCEPTION);
+        final var license = LicenseParser.parse("WITH " + EXCEPTION);
 
         assertThat(license.toString()).contains("Ref");
-        assertThat(dictionary.getCustomLicenses()).containsValue("with " + EXCEPTION);
+        assertThat(dictionary.getCustomLicenses()).containsValue("WITH " + EXCEPTION);
     }
 
     @Test
     void throws_doubleWithClause() {
-        final var text = IDENTIFIER + " WITH " + EXCEPTION + " with " + EXCEPTION;
+        final var text = IDENTIFIER + " WITH " + EXCEPTION + " WITH " + EXCEPTION;
         final var license = LicenseParser.parse(text);
 
         assertThat(license.toString()).contains("Ref");
@@ -85,21 +86,21 @@ class LicenseParserTest {
 
     @Test
     void parsesOrCombination() {
-        var license = LicenseParser.parse(IDENTIFIER + " or " + IDENTIFIER2 + " or " + IDENTIFIER3);
+        var license = LicenseParser.parse(IDENTIFIER + " OR " + IDENTIFIER2);
 
-        assertThat(license).isEqualTo(License.of(IDENTIFIER).or(License.of(IDENTIFIER2)).or(License.of(IDENTIFIER3)));
+        assertThat(license).isEqualTo(License.of(IDENTIFIER).or(License.of(IDENTIFIER2)));
     }
 
     @Test
     void parsesAndCombination() {
-        var license = LicenseParser.parse(IDENTIFIER + " and " + IDENTIFIER2 + " and " + IDENTIFIER3);
+        var license = LicenseParser.parse(IDENTIFIER + " AND " + IDENTIFIER2);
 
-        assertThat(license).isEqualTo(License.of(IDENTIFIER).and(License.of(IDENTIFIER2)).and(License.of(IDENTIFIER3)));
+        assertThat(license).isEqualTo(License.of(IDENTIFIER).and(License.of(IDENTIFIER2)));
     }
 
     @Test
     void parsesMixedLogicCombination() {
-        var license = LicenseParser.parse(IDENTIFIER + " or " + IDENTIFIER2 + " and " + IDENTIFIER3);
+        var license = LicenseParser.parse(IDENTIFIER + " OR " + IDENTIFIER2 + " AND " + IDENTIFIER3);
 
         assertThat(license).isEqualTo(License.of(IDENTIFIER).or(License.of(IDENTIFIER2)).and(License.of(IDENTIFIER3)));
     }
@@ -114,28 +115,28 @@ class LicenseParserTest {
 
     @Test
     void addsWithClauseToLatestParsedLicense() {
-        var license = LicenseParser.parse(IDENTIFIER + " or " + IDENTIFIER2 + " with " + EXCEPTION + " and " + IDENTIFIER3);
+        var license = LicenseParser.parse(IDENTIFIER + " OR " + IDENTIFIER2 + " WITH " + EXCEPTION + " AND " + IDENTIFIER3);
 
         assertThat(license).isEqualTo(License.of(IDENTIFIER).or(License.of(IDENTIFIER2).with(EXCEPTION)).and(License.of(IDENTIFIER3)));
     }
 
     @Test
     void parsesBracketedCombination() {
-        var license = LicenseParser.parse(IDENTIFIER + " or (" + IDENTIFIER2 + " and " + IDENTIFIER3 + ")");
+        var license = LicenseParser.parse(IDENTIFIER + " OR (" + IDENTIFIER2 + " AND " + IDENTIFIER3 + ")");
 
         assertThat(license).isEqualTo(License.of(IDENTIFIER).or(License.of(IDENTIFIER2).and(License.of(IDENTIFIER3))));
     }
 
     @Test
     void parsesNestedBrackets() {
-        var license = LicenseParser.parse("((" + IDENTIFIER + ") or (" + IDENTIFIER2 + "))");
+        var license = LicenseParser.parse("((" + IDENTIFIER + ") OR (" + IDENTIFIER2 + "))");
 
         assertThat(license).isEqualTo(License.of(IDENTIFIER).or(License.of(IDENTIFIER2)));
     }
 
     @Test
     void withClauseFollowedByOpeningBracketIsAndRelationWithoutException() {
-        final var license = LicenseParser.parse(IDENTIFIER + " with (" + EXCEPTION + ")");
+        final var license = LicenseParser.parse(IDENTIFIER + " WITH (" + EXCEPTION + ")");
 
         assertThat(license.toString()).contains(IDENTIFIER).contains("Ref");
         assertThat(dictionary.getCustomLicenses()).hasSize(1).containsValue(EXCEPTION);

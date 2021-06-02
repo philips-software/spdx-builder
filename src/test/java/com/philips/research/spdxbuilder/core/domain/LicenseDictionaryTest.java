@@ -1,11 +1,6 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.core.domain;
@@ -33,6 +28,14 @@ class LicenseDictionaryTest {
         final var license = dictionary.licenseFor(" \t");
 
         assertThat(license).isEqualTo(License.NONE);
+    }
+
+    @Test
+    void acceptsVoidLicenses() {
+        final var license = dictionary.licenseFor("noassertion");
+
+        assertThat(license.isDefined()).isFalse();
+        assertThat(dictionary.getCustomLicenses()).isEmpty();
     }
 
     @Test

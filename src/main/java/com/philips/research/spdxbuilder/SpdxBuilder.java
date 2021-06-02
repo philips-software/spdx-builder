@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
@@ -7,24 +7,20 @@ package com.philips.research.spdxbuilder;
 
 import com.philips.research.spdxbuilder.controller.BlackDuckCommand;
 import com.philips.research.spdxbuilder.controller.OrtCommand;
+import com.philips.research.spdxbuilder.controller.TreeCommand;
 import com.philips.research.spdxbuilder.core.BusinessException;
 import picocli.CommandLine;
 
 public class SpdxBuilder {
     public static void main(String... args) {
-        try {
-            new CommandLine(new Runner())
-                    .setExecutionExceptionHandler(SpdxBuilder::exceptionHandler)
-                    .execute(args);
-        } catch (BusinessException e) {
-            System.err.println("Conversion failed: " + e.getMessage());
-            System.exit(1);
-        }
+        new CommandLine(new Runner())
+                .setExecutionExceptionHandler(SpdxBuilder::exceptionHandler)
+                .execute(args);
     }
 
     private static int exceptionHandler(Exception e, CommandLine cmd, CommandLine.ParseResult parseResult) {
         if (e instanceof BusinessException) {
-            printError(cmd, "Conversion failed: " + e.getMessage());
+            printError(cmd, "Conversion aborted: " + e.getMessage());
             return 1;
         }
 
@@ -37,8 +33,7 @@ public class SpdxBuilder {
         cmd.getErr().println(cmd.getColorScheme().errorText(message));
     }
 
-
-    @CommandLine.Command(subcommands = {OrtCommand.class, BlackDuckCommand.class},
+    @CommandLine.Command(subcommands = {OrtCommand.class, TreeCommand.class, BlackDuckCommand.class},
             description = "Builds SPDX bill-of-materials files from various sources")
     static class Runner {
     }

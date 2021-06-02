@@ -1,17 +1,11 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.persistence.license_scanner;
 
 import com.philips.research.spdxbuilder.core.KnowledgeBase;
-import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import com.philips.research.spdxbuilder.core.domain.Package;
@@ -23,7 +17,7 @@ import java.util.Optional;
  * Knowledge base implementation for the License Scanner service.
  * See https://github.com/philips-software/license-scanner
  */
-public class LicenseKnowledgeBase implements KnowledgeBase {
+public class LicenseKnowledgeBase extends KnowledgeBase {
     final LicenseScannerClient licenseClient;
 
     public LicenseKnowledgeBase(URI uri) {
@@ -35,16 +29,17 @@ public class LicenseKnowledgeBase implements KnowledgeBase {
     }
 
     @Override
-    public void enhance(BillOfMaterials bom) {
-        bom.getPackages().forEach(this::updateLicense);
-    }
+    public boolean enhance(Package pkg) {
+        final var purl = pkg.getPurl();
+        if (purl.isEmpty()) {
+            return false;
+        }
 
-    private void updateLicense(Package pkg) {
-        detectLicense(pkg)
-                .ifPresent(l -> {
+        return detectLicense(pkg)
+                .map(l -> {
                     final var scanned = LicenseParser.parse(l.getLicense());
                     final var declared = pkg.getDeclaredLicense().orElse(scanned);
-                    pkg.setDetectedLicense(scanned);
+                    pkg.addDetectedLicense(scanned);
                     if (l.isConfirmed()) {
                         pkg.setConcludedLicense(scanned);
                     } else {
@@ -52,15 +47,18 @@ public class LicenseKnowledgeBase implements KnowledgeBase {
                         final var scannedText = dictionary.expand(scanned);
                         final var declaredText = dictionary.expand(declared);
                         if (!scannedText.equals(declaredText)) {
-                            licenseClient.contest(pkg.getPurl(), declaredText);
+                            //noinspection OptionalGetWithoutIsPresent
+                            licenseClient.contest(pkg.getPurl().get(), declaredText);
                         }
                     }
-                });
+                    return l;
+                }).isPresent();
     }
 
     private Optional<LicenseScannerClient.LicenseInfo> detectLicense(Package pkg) {
         try {
-            return licenseClient.scanLicense(pkg.getPurl(), pkg.getSourceLocation().orElse(null));
+            //noinspection OptionalGetWithoutIsPresent
+            return licenseClient.scanLicense(pkg.getPurl().get(), pkg.getSourceLocation().orElse(null));
         } catch (LicenseScannerException e) {
             System.err.println("ERROR: " + e.getMessage());
             return Optional.empty();

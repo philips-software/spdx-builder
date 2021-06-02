@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
@@ -131,15 +131,18 @@ class PackageJson {
     @NullOr VcsJson vcsProcessed;
 
     Package createPackage() {
-        final var result = new Package(idElement(0).toLowerCase(), idElement(1), idElement(2), idElement(3));
-
+        @NullOr PackageURL packageUrl = null;
         if (purl != null) {
             try {
-                result.setPurl(new PackageURL(purl.toASCIIString()));
+                packageUrl = new PackageURL(purl.toASCIIString());
             } catch (MalformedPackageURLException e) {
-                throw new IllegalArgumentException(e);
+                throw new IllegalArgumentException("'" + purl + "' is not a valid Package URL");
             }
         }
+        final var result = (packageUrl != null)
+                ? new Package(packageUrl)
+                : new Package(idElement(1), idElement(2), idElement(3));
+
         if (binaryArtifact != null) {
             binaryArtifact.getFilename().ifPresent(result::setFilename);
             binaryArtifact.addHash(result);

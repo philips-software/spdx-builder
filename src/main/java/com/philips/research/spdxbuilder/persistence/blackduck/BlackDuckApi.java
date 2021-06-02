@@ -1,18 +1,11 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
 
-import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.github.packageurl.PackageURLBuilder;
 import com.philips.research.spdxbuilder.core.domain.License;
 import com.philips.research.spdxbuilder.core.domain.LicenseParser;
 import pl.tlinkowski.annotation.basic.NullOr;
@@ -21,7 +14,10 @@ import retrofit2.http.*;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -52,20 +48,24 @@ public interface BlackDuckApi {
     Call<ItemsJson<ProjectVersionJson>> findProjectVersions(@Path("projectId") UUID projectId, @Query("q") String filter);
 
     @Headers(BILL_OF_MATERIALS_6_JSON)
+    @GET("/api/projects/{projectId}/versions/{versionId}/components?limit=9999")
+    Call<ItemsJson<ComponentVersionJson>> getBomComponents(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
+
+    @Headers(BILL_OF_MATERIALS_6_JSON)
     @GET("/api/projects/{projectId}/versions/{versionId}/hierarchical-components?limit=9999")
-    Call<ItemsJson<ComponentJson>> hierarchicalRoot(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
+    Call<ItemsJson<ComponentVersionJson>> getRootComponentVersions(@Path("projectId") UUID projectId, @Path("versionId") UUID versionId);
 
     @Headers(BILL_OF_MATERIALS_6_JSON)
     @GET("/api/projects/{projectId}/versions/{versionId}/components/{componentId}/versions/{componentVersionId}/hierarchical-components/{hierarchicalId}/children?limit=999")
-    Call<ItemsJson<ComponentJson>> hierarchicalChildComponents(@Path("projectId") UUID projectId,
-                                                               @Path("versionId") UUID versionId,
-                                                               @Path("componentId") UUID componentId,
-                                                               @Path("componentVersionId") UUID componentVersionId,
-                                                               @Path("hierarchicalId") long hierarchicalId);
+    Call<ItemsJson<ComponentVersionJson>> getChildComponentVersions(@Path("projectId") UUID projectId,
+                                                                    @Path("versionId") UUID versionId,
+                                                                    @Path("componentId") UUID componentId,
+                                                                    @Path("componentVersionId") UUID componentVersionId,
+                                                                    @Path("hierarchicalId") long hierarchicalId);
 
     @Headers(COMPONENT_DETAIL_4_JSON)
     @GET("/api/components/{componentId}")
-    Call<ComponentDetailsJson> componentDetails(@Path("componentId") UUID componentId);
+    Call<ComponentJson> getComponent(@Path("componentId") UUID componentId);
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     class AuthJson {
@@ -87,10 +87,10 @@ public interface BlackDuckApi {
         URI href;
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
     class ProjectJson implements BlackDuckProduct {
-        String name;
+        String name = "";
         @NullOr String description;
+        @SuppressWarnings("NotNullFieldNotInitialized")
         LinkJson _meta;
 
         @Override
@@ -107,12 +107,18 @@ public interface BlackDuckApi {
         public Optional<String> getDescription() {
             return Optional.ofNullable(description);
         }
+
+        @Override
+        public Optional<License> getLicense() {
+            return Optional.empty();
+        }
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
     class ProjectVersionJson implements BlackDuckProduct {
-        String versionName;
+        String versionName = "";
         @NullOr String releaseComments;
+        @NullOr LicenseJson license;
+        @SuppressWarnings("NotNullFieldNotInitialized")
         LinkJson _meta;
 
         @Override
@@ -129,19 +135,26 @@ public interface BlackDuckApi {
         public Optional<String> getDescription() {
             return Optional.ofNullable(releaseComments);
         }
+
+        @Override
+        public Optional<License> getLicense() {
+            return (license != null) ? Optional.of(license.getLicense()) : Optional.empty();
+        }
     }
 
     class LinksJson {
+        @SuppressWarnings("NotNullFieldNotInitialized")
+        URI href;
         List<LinkJson> links = new ArrayList<>();
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
-    class ComponentJson implements BlackDuckComponent {
+    class ComponentVersionJson implements BlackDuckComponent {
         String componentName;
         String componentVersionName;
         URI componentVersion;
+        String componentType;
 
-        boolean ignored;
         List<String> usages = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
         List<LicenseJson> licenses = new ArrayList<>();
@@ -170,7 +183,9 @@ public interface BlackDuckApi {
         @Override
         public List<PackageURL> getPackageUrls() {
             return origins.stream()
-                    .map(OriginJson::getPurl)
+                    .map(PackageIdentifier::getPurl)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .collect(Collectors.toList());
         }
 
@@ -194,81 +209,20 @@ public interface BlackDuckApi {
         }
 
         @Override
+        public boolean isSubproject() {
+            return "SUB_PROJECT".equals(componentType);
+        }
+
+        @Override
         public String toString() {
             return componentName + ' ' + componentVersionName;
         }
     }
 
-    @SuppressWarnings("NotNullFieldNotInitialized")
-    class OriginJson {
-        private static final Map<String, String> TYPE_MAPPING = new HashMap<>();
-
-        static {
-            TYPE_MAPPING.put("", "generic");
-            TYPE_MAPPING.put("alpine", "alpine");
-            TYPE_MAPPING.put("bitbucket", "bitbucket");
-            TYPE_MAPPING.put("cargo", "cargo");
-            TYPE_MAPPING.put("centos", "rpm");
-            TYPE_MAPPING.put("composer", "composer");
-            TYPE_MAPPING.put("debian", "deb");
-            TYPE_MAPPING.put("docker", "docker");
-            TYPE_MAPPING.put("gem", "gem");
-            TYPE_MAPPING.put("github", "github");
-            TYPE_MAPPING.put("golang", "golang");
-            TYPE_MAPPING.put("hex", "hex");
-            TYPE_MAPPING.put("long_tail", "generic");
-            TYPE_MAPPING.put("maven", "maven");
-            TYPE_MAPPING.put("npmjs", "npm");
-            TYPE_MAPPING.put("nuget", "nuget");
-            TYPE_MAPPING.put("pypi", "pypi");
-        }
-
-        String externalNamespace;
-        String externalId;
-
-        public PackageURL getPurl() {
-            try {
-                return PackageURLBuilder.aPackageURL()
-                        .withType(getType())
-                        .withNamespace(getNamespace())
-                        .withName(getName())
-                        .withVersion(getVersion())
-                        .build();
-            } catch (MalformedPackageURLException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-
-        String getType() {
-            final var type = TYPE_MAPPING.get(externalNamespace);
-            return (type != null) ? type : "generic";
-        }
-
-        String getNamespace() {
-            return endPart(2);
-        }
-
-        String getName() {
-            return endPart(1);
-        }
-
-        String getVersion() {
-            return endPart(0);
-        }
-
-        private String endPart(int offset) {
-            final var parts = externalId.split(String.valueOf(separator()));
-            return (offset < parts.length) ? parts[parts.length - offset - 1] : "";
-        }
-
-        private char separator() {
-            switch (externalNamespace) {
-                case "maven":
-                case "github":
-                    return ':';
-                default:
-                    return '/';
-            }
+    class OriginJson extends PackageIdentifier {
+        OriginJson() {
+            //noinspection ConstantConditions
+            super(null, null);
         }
     }
 
@@ -291,7 +245,7 @@ public interface BlackDuckApi {
     }
 
     @SuppressWarnings("NotNullFieldNotInitialized")
-    class ComponentDetailsJson implements BlackDuckComponentDetails {
+    class ComponentJson implements BlackDuckComponentDetails {
         String description;
         @NullOr URL url;
 

@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.core;
+
+import com.github.packageurl.PackageURL;
 
 import java.net.URI;
 
@@ -46,7 +48,7 @@ public interface ConversionService {
      * @param purl    identification of the package
      * @param license curated license
      */
-    void curatePackageLicense(URI purl, String license);
+    void curatePackageLicense(PackageURL purl, String license);
 
     /**
      * Set alternative source for a package.
@@ -54,11 +56,13 @@ public interface ConversionService {
      * @param purl   identification of the package
      * @param source source location
      */
-    void curatePackageSource(URI purl, URI source);
+    void curatePackageSource(PackageURL purl, URI source);
 
     /**
      * Reads a bill-of-materials, extends it with metadata from the knowledge base (if configured),
      * and writes it as a document.
+     *
+     * @param continueWhenIncomplete writes the SBOM even if the conversion is incomplete
      */
-    void convert();
+    void convert(boolean continueWhenIncomplete);
 }

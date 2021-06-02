@@ -1,0 +1,93 @@
+formats:
+  - format: java
+    description: "Base definitions for Java group and artifact identifiers."
+    identifier: "[\\w]"
+    types:
+      "" : "maven"
+  - format: maven
+    parent: java
+    description: "Default Maven Java tree output"
+    tool: "mvn dependency:tree"
+    cleanup: "^\\[INFO]\\s"
+    skip: ":test$"
+    namespace:
+      regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
+      group: 1
+    name:
+      regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
+      group: 2
+    version:
+      regex: "^([^:]*):([^:]*):([^:]*):([^:]*)"
+      group: 4
+    start: "^\\[INFO]\\s-+\\smaven-dependency-plugin"
+    end: "^\\[INFO]\\s-+$"
+  - format: gradle
+    parent: java
+    description: "Default Gradle Java tree output"
+    tool: "gradlew -q dependencies --configuration runtimeClasspath"
+    namespace:
+      regex: "^([^:]*):([^:]*):"
+      group: 1
+    name:
+      regex: "^([^:]*):([^:]*):"
+      group: 2
+    version:
+      regex: "[:\\s]([^:\\s]+)\\s*(\\(.+\\))?$"
+      group: 1
+    start: "^runtimeClasspath" # Only runtime dependencies
+    end: "^\\s*$" # Empty line
+  - format: npm
+    description: "Default NPM tree output"
+    tool: "npm list --all --production"
+    identifier: "[@\\w]"
+    types:
+      "": "npm"
+    namespace:
+      regex: "^(\\S+)/"
+      group: 1
+    name:
+      regex: "^(\\S+/)?(.+)@[^@]+$"
+      group: 2
+    version:
+      regex: "@([^@\\s]+)(\\s\\S+)?$"
+      group: 1
+  - format: rust
+    description: "Default Rust (=Cargo) tree output"
+    tool: "cargo tree -e no-dev,no-build --locked"
+    types:
+      "" : "cargo"
+    identifier: "[-\\[\\w]"
+    skip: "^\\[.+]$"
+    internal: "\\([^*]+\\)"
+    name:
+      regex: "^([-\\w]+)\\s"
+      group: 1
+    version:
+      regex: "^\\S+\\sv(\\S+)(\\s.+)?$"
+      group: 1
+  - format: python
+    description: "Base definitions for Python group and artifact identifiers."
+    identifier: "[\\w]"
+    types:
+      "" : "pypi"
+  - format: pip
+    parent: python
+    description: "Non-hierarchical Python pip freeze format."
+    tool: "pip freeze"
+    name:
+      regex: "^([^=]+)="
+      group: 1
+    version:
+      regex: "=([^=]+)$"
+      group: 1
+  - format: pipenv
+    parent: python
+    description: "Default Python pipenv tree output"
+    tool: "pipenv graph --bare"
+    skip: ":test$"
+    name:
+      regex: "^(.+?)[=\\s]"
+      group: 1
+    version:
+      regex: "(\\S==|installed:\\s)([^\\]]+)\\]?$"
+      group: 2

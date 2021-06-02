@@ -1,11 +1,6 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
@@ -18,10 +13,7 @@ import com.philips.research.spdxbuilder.core.domain.Relation;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URL;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BlackDuckReader implements BomReader {
     private static final Map<String, Relation.Type> USAGE_MAPPING = Map.of(
@@ -54,65 +46,97 @@ public class BlackDuckReader implements BomReader {
     public void read(BillOfMaterials bom) {
         client.authenticate(token);
 
-        exportProjectVersion(bom);
-
-        System.out.println("Black Duck export finished");
-    }
-
-    private void exportProjectVersion(BillOfMaterials bom) {
-        exportProjectMetadata(bom);
-        System.out.println("Exporting Black Duck project '" + project.getName() + "', version '" + projectVersion.getName() + "'");
-        exportPackages(bom);
-        System.out.println("done");
-    }
-
-    private void exportProjectMetadata(BillOfMaterials bom) {
         final var serverVersion = client.getServerVersion();
         bom.setComment(String.format("Extracted from Black Duck server version %s", serverVersion));
 
+        findProjectVersion(projectName, versionName);
+
+        exportProjectVersion(bom);
+    }
+
+    private void findProjectVersion(String projectName, String versionName) {
         project = client.findProject(projectName)
                 .orElseThrow(() -> new BlackDuckException("Found no project named '" + projectName + "'"));
         projectVersion = client.findProjectVersion(project.getId(), versionName)
                 .orElseThrow(() -> new BlackDuckException("Found no version named '" + versionName + "' in project '" + project.getName()));
+    }
 
+    private void exportProjectVersion(BillOfMaterials bom) {
+        System.out.println("Exporting Black Duck project '" + project.getName() + "', version '" + projectVersion.getName() + "'");
+        System.out.println("Project: " + project.getId());
+        System.out.println("Version: " + projectVersion.getId());
+        System.out.println();
+
+        exportProjectMetadata(bom);
+        exportProjectComponents(bom);
+
+        System.out.println("done");
+    }
+
+    private void exportProjectMetadata(BillOfMaterials bom) {
         bom.setTitle(project.getName() + " " + projectVersion.getName());
     }
 
-    private void exportPackages(BillOfMaterials bom) {
-        System.out.print("Building list of components");
-        final var components = client.getComponents(project.getId(), projectVersion.getId());
-        addChildren(bom, null, components);
+    private void exportProjectComponents(BillOfMaterials bom) {
+        System.out.print("Building tree of components ");
+        final var root = new Package("", project.getName(), projectVersion.getName());
+        project.getDescription().ifPresent(root::setDescription);
+        projectVersion.getDescription().ifPresent(root::setSummary);
+        projectVersion.getLicense().ifPresent(root::setConcludedLicense);
+        bom.addPackage(root);
+
+        final var components = client.getRootComponents(project.getId(), projectVersion.getId());
+        addChildren(bom, root, components, project.getId(), projectVersion.getId());
     }
 
-    void addChildren(BillOfMaterials bom, @NullOr Package parent, List<BlackDuckComponent> components) {
+    void addChildren(BillOfMaterials bom, @NullOr Package parent, List<BlackDuckComponent> components, UUID projectId, UUID versionId) {
         components.forEach(component -> {
-            final var purls = component.getPackageUrls();
-            if (purls.isEmpty()) {
-                System.err.println("\nWARNING: Skipped component '" + component + "' as it does not specify any packages");
+            if (component.isSubproject()) {
+                addSubproject(bom, parent, component.getId(), component.getVersionId(), component);
+            } else {
+                addChild(bom, parent, projectId, versionId, component);
             }
-            purls.stream()
-                    .map(purl -> exportPackageIfNotExists(bom, component, purl))
-                    .forEach(pkg -> exportRelation(bom, parent, pkg, component));
             System.out.print(".");
         });
     }
 
-    private Package exportPackageIfNotExists(BillOfMaterials bom, BlackDuckComponent component, PackageURL purl) {
+    private void addSubproject(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
+        final var pkg = new Package(null, component.getName(), component.getVersion())
+                .setConcludedLicense(component.getLicense());
+        bom.addPackage(pkg);
+        exportRelation(bom, parent, pkg, component);
+
+        final var components = client.getRootComponents(projectId, versionId);
+        addChildren(bom, pkg, components, projectId, versionId);
+    }
+
+    private void addChild(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
+        final var purls = component.getPackageUrls();
+        if (purls.isEmpty()) {
+            System.err.println("\nWARNING: Skipped component '" + component + "' as it does not specify any packages");
+        }
+        purls.stream()
+                .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
+                .forEach(pkg -> exportRelation(bom, parent, pkg, component));
+    }
+
+    private Package exportPackageIfNotExists(BillOfMaterials bom, BlackDuckComponent component, PackageURL purl, UUID projectId, UUID versionId) {
         final var existing = packages.get(purl);
         if (existing != null) {
             return existing;
         }
 
         final var details = client.getComponentDetails(component);
-        final var pkg = Package.fromPurl(purl)
-                .setDeclaredLicense(component.getLicense())
+        final var pkg = new Package(purl)
+                .setConcludedLicense(component.getLicense())
                 .setSummary(component.getName());
         details.getDescription().ifPresent(pkg::setDescription);
         details.getHomepage().ifPresent(pkg::setHomePage);
         bom.addPackage(pkg);
         packages.put(purl, pkg);
 
-        addChildren(bom, pkg, client.getDependencies(project.getId(), projectVersion.getId(), component));
+        final var dependencies = client.getDependencies(projectId, versionId, component);
+        addChildren(bom, pkg, dependencies, projectId, versionId);
         return pkg;
     }
 

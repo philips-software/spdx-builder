@@ -82,8 +82,8 @@ public class LicenseParser {
 
     private void addToken() {
         final var token = buffer.toString().trim();
-        switch (token.toLowerCase()) {
-            case "with":
+        switch (token) {
+            case "WITH":
                 if (current.equals(License.NONE) && !identifier.isBlank() && !parsingWith) {
                     current = dictionary.licenseFor(identifier);
                     identifier = "";
@@ -92,11 +92,11 @@ public class LicenseParser {
                     identifier += ' ' + token;
                 }
                 break;
-            case "and":
+            case "AND":
                 appendCurrent();
                 mode = Mode.AND;
                 break;
-            case "or":
+            case "OR":
                 appendCurrent();
                 mode = Mode.OR;
                 break;

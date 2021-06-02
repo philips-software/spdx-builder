@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.core.domain;
 
-import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.github.packageurl.PackageURLBuilder;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
@@ -18,11 +16,12 @@ import java.util.*;
  * Single bill-of-materials package.
  */
 public final class Package {
-    private final String type;
     private final String namespace;
     private final String name;
     private final String version;
     private final Map<String, String> hash = new HashMap<>();
+    private final Set<License> detectedLicenses = new HashSet<>();
+    private boolean internal;
     private @NullOr PackageURL purl;
     private @NullOr Party supplier;
     private @NullOr Party originator;
@@ -31,25 +30,20 @@ public final class Package {
     private @NullOr URL homePage;
     private @NullOr License concludedLicense;
     private @NullOr License declaredLicense;
-    private @NullOr License detectedLicense;
     private @NullOr String copyright;
     private @NullOr String summary;
     private @NullOr String description;
     private @NullOr String attribution;
 
-    public Package(String type, String namespace, String name, String version) {
-        this.type = type;
-        this.namespace = namespace;
+    public Package(PackageURL purl) {
+        this(purl.getNamespace(), purl.getName(), purl.getVersion());
+        setPurl(purl);
+    }
+
+    public Package(@NullOr String namespace, String name, String version) {
+        this.namespace = (namespace != null) ? namespace : "";
         this.name = name;
         this.version = version;
-    }
-
-    public static Package fromPurl(PackageURL purl) {
-        return new Package(purl.getType(), purl.getNamespace(), purl.getName(), purl.getVersion());
-    }
-
-    public String getType() {
-        return type;
     }
 
     public String getNamespace() {
@@ -60,24 +54,26 @@ public final class Package {
         return name;
     }
 
+    public String getFullName() {
+        final var prefix = namespace.isBlank() ? "" : namespace + '/';
+        return prefix + name;
+    }
+
     public String getVersion() {
         return version;
     }
 
-    public PackageURL getPurl() {
-        if (purl == null) {
-            try {
-                return PackageURLBuilder.aPackageURL()
-                        .withType(type)
-                        .withNamespace(namespace)
-                        .withName(name)
-                        .withVersion(version)
-                        .build();
-            } catch (MalformedPackageURLException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-        return purl;
+    public boolean isInternal() {
+        return internal;
+    }
+
+    public Package setInternal(boolean internal) {
+        this.internal = internal;
+        return this;
+    }
+
+    public Optional<PackageURL> getPurl() {
+        return Optional.ofNullable(purl);
     }
 
     public Package setPurl(PackageURL purl) {
@@ -140,12 +136,7 @@ public final class Package {
     }
 
     public Optional<License> getConcludedLicense() {
-        if (concludedLicense != null) {
-            return Optional.of(concludedLicense);
-        } else if (declaredLicense == null) {
-            return Optional.ofNullable(detectedLicense);
-        }
-        return Optional.of(declaredLicense);
+        return Optional.ofNullable(concludedLicense);
     }
 
     public Package setConcludedLicense(@NullOr License concludedLicense) {
@@ -162,12 +153,14 @@ public final class Package {
         return this;
     }
 
-    public Optional<License> getDetectedLicense() {
-        return Optional.ofNullable(detectedLicense);
+    public Collection<License> getDetectedLicenses() {
+        return detectedLicenses;
     }
 
-    public Package setDetectedLicense(@NullOr License license) {
-        this.detectedLicense = license;
+    public Package addDetectedLicense(License license) {
+        if (license.isDefined()) {
+            this.detectedLicenses.add(license);
+        }
         return this;
     }
 
@@ -211,21 +204,22 @@ public final class Package {
     public boolean equals(@NullOr Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Package aPackage = (Package) o;
-        return Objects.equals(type, aPackage.type) &&
-                Objects.equals(namespace, aPackage.namespace) &&
-                Objects.equals(name, aPackage.name) &&
-                Objects.equals(version, aPackage.version);
+        Package other = (Package) o;
+        return Objects.equals(namespace, other.namespace)
+                && Objects.equals(name, other.name)
+                && Objects.equals(version, other.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, namespace, name, version);
+        return Objects.hash(namespace, name, version);
     }
 
     @Override
     public String toString() {
-        return String.format("%s:%s/%s@%s", type, namespace, name, version);
+        return getPurl()
+                .filter(p -> !isInternal())
+                .map(PackageURL::canonicalize)
+                .orElse(getFullName() + (version == null || version.isBlank() ? "" : ", version " + version));
     }
-
 }

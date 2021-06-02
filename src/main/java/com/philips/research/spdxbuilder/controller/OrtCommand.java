@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Koninklijke Philips N.V., https://www.philips.com
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
  * SPDX-License-Identifier: MIT
  */
 
@@ -25,7 +25,7 @@ import java.net.URI;
 /**
  * CLI command to generate an SPDX file from an ORT Analyzer YAML.
  */
-@Command(name = "ort")
+@Command(name = "ort", description = "Converts the output of the OSS Review Toolkit Analyzer into a bill-of-materials.")
 public class OrtCommand extends AbstractCommand {
     @Parameters(index = "0", description = "ORT Analyzer YAML file to read", paramLabel = "FILE", defaultValue = "analyzer-result.yml")
     @SuppressWarnings("NotNullFieldNotInitialized")
@@ -53,19 +53,19 @@ public class OrtCommand extends AbstractCommand {
         return service;
     }
 
-    private Configuration readConfiguration() {
+    private OrtConfiguration readConfiguration() {
         try (final var stream = new FileInputStream(configFile)) {
-            return Configuration.parse(stream);
+            return OrtConfiguration.parse(stream);
         } catch (IOException e) {
-            System.out.println("Configuration error: " + e.getMessage());
-            System.out.println("Supported YAML configuration file format is:");
-            System.out.println(Configuration.example());
+            System.err.println("Configuration error: " + e.getMessage());
+            System.err.println("Supported YAML configuration file format is:");
+            System.err.println(OrtConfiguration.example());
 
             throw new BusinessException("Failed to read configuration");
         }
     }
 
-    private void prepareReader(OrtReader reader, Configuration config) {
+    private void prepareReader(OrtReader reader, OrtConfiguration config) {
         config.projects.forEach(project -> {
             reader.defineProjectPackage(project.id, project.purl);
             if (project.excluded != null) {
@@ -74,7 +74,7 @@ public class OrtCommand extends AbstractCommand {
         });
     }
 
-    private void prepareConversion(ConversionService service, Configuration config) {
+    private void prepareConversion(ConversionService service, OrtConfiguration config) {
         service.setDocument(config.document.title, config.document.organization);
         service.setComment(config.document.comment);
         if (config.document.key != null) {
@@ -86,10 +86,10 @@ public class OrtCommand extends AbstractCommand {
 
         config.curations.forEach(curation -> {
             if (curation.license != null) {
-                service.curatePackageLicense(curation.purl, curation.license);
+                service.curatePackageLicense(curation.getPurl(), curation.license);
             }
             if (curation.source != null) {
-                service.curatePackageSource(curation.purl, curation.source);
+                service.curatePackageSource(curation.getPurl(), curation.source);
             }
         });
     }

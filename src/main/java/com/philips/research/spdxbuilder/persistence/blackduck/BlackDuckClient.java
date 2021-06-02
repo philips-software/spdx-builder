@@ -1,11 +1,6 @@
 /*
- * This software and associated documentation files are
- *
- * Copyright © 2020-2021 Koninklijke Philips N.V.
- *
- * and is made available for use within Philips and/or within Philips products.
- *
- * All Rights Reserved
+ * Copyright (c) 2020-2021, Koninklijke Philips N.V., https://www.philips.com
+ * SPDX-License-Identifier: MIT
  */
 
 package com.philips.research.spdxbuilder.persistence.blackduck;
@@ -29,6 +24,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class BlackDuckClient {
     private static final ObjectMapper MAPPER = new ObjectMapper()
@@ -110,24 +106,31 @@ public class BlackDuckClient {
                 .map(result -> result.items.get(0));
     }
 
-    List<BlackDuckComponent> getComponents(UUID projectId, UUID versionId) {
+    List<BlackDuckComponent> getRootComponents(UUID projectId, UUID versionId) {
         //noinspection unchecked
-        return query(api.hierarchicalRoot(projectId, versionId))
-                //TODO Remove any ignored components. (Are these even indicated?)
+        final var components = query(api.getRootComponentVersions(projectId, versionId))
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
+        //noinspection unchecked
+        final var subprojects = query(api.getBomComponents(projectId, versionId))
+                .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
+                .orElse(List.of()).stream()
+                .filter(BlackDuckComponent::isSubproject)
+                .collect(Collectors.toList());
+        components.addAll(subprojects);
+        return components;
     }
 
     List<BlackDuckComponent> getDependencies(UUID projectId, UUID versionId, BlackDuckComponent component) {
         //noinspection unchecked
-        return query(api.hierarchicalChildComponents(projectId, versionId,
+        return query(api.getChildComponentVersions(projectId, versionId,
                 component.getId(), component.getVersionId(), component.getHierarchicalId()))
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of());
     }
 
     BlackDuckComponentDetails getComponentDetails(BlackDuckComponent component) {
-        return query(api.componentDetails(component.getId())).orElseThrow();
+        return query(api.getComponent(component.getId())).orElseThrow();
     }
 
     <T> Optional<T> query(Call<T> request) {

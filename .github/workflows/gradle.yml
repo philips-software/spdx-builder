@@ -12,9 +12,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - uses: actions/setup-java@v1
+    - uses: actions/setup-java@v2
       with:
         java-version: '11.0.1'
+        distribution: 'zulu'
     - name: Build project
       run: ./gradlew build -x test
     - name: Grant execute permission for gradlew
@@ -25,15 +26,3 @@ jobs:
       run: ./gradlew test
     - name: Show version
       run: ./gradlew -q run --args='--help'
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v1.9
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        check_name: Unit Test Results
-        comment_title: Unit Test Statistics
-        hide_comments: all but latest
-        comment_on_pr: true
-        files: build/test-results/**/*.xml
-        report_individual_runs: true
-        deduplicate_classes_by_file_name: false
