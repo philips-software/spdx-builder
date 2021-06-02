@@ -172,9 +172,15 @@ a specific relationship:
 # (Applied to the indented fragment.)
 relationships:
   "": <type> # Default relationship if none is specified
-  "<marker>": <type> # (Optional) marker-to-relationship conversion
+  "<marker>": <relationship> # (Optional) marker-to-relationship (see below) conversion
 relationship: # (Optional) relationship marker pattern 
   regex: <regex> # Regular expression extracting the (optional) relationship marker 
   group: <index> # Matching group holding the relationship marker (defaults to 1)
 ```
+
+The supported relationships are:
+- `DEPENDS_ON`: (Default) generic dependency relationship
+- `DYNAMIC_LINK`: Dynamically linked runtime relation
+- `STATIC_LINK`: Statically linked compile-time relation
+- `DESCENDANT_OF`: Temporal dependency relation 
 

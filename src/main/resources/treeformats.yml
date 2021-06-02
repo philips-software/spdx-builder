@@ -166,5 +166,13 @@ formats:
         "%40": "@"
         "%5[Bb]": "["
         "%5[Dd]": "]"
+    relationship:
+      regex: "\\s\\[(.+)]"
+      group: 1
+    relationships:
+      "": DEPENDS_ON
+      "dynamic": DYNAMIC_LINK
+      "static": STATIC_LINK
+      "derived": DESCENDANT_OF
     start: "^TREE start"
     end: "^TREE end"

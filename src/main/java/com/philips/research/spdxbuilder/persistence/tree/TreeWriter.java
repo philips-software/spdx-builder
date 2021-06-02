@@ -77,20 +77,23 @@ public class TreeWriter implements BomProcessor {
         Package pkg = relation.getTo();
         final var name = name(pkg);
         final var type = type(relation);
-        System.out.println(formatter.node(name + type));
         if (!done.contains(pkg)) {
+            System.out.println(formatter.node(name + type));
             writeRelationsOf(pkg);
+        } else {
+            final var omitted = nodes.get(pkg).isEmpty() ? "" : " (*)";
+            System.out.println(formatter.node(name + type + omitted));
         }
     }
 
     private String type(Relation relation) {
         switch (relation.getType()) {
             case DESCENDANT_OF:
-                return " (modified)";
+                return " [derived]";
             case DYNAMIC_LINK:
-                return " (dynamic)";
+                return " [dynamic]";
             case STATIC_LINK:
-                return " (static)";
+                return " [static]";
             case DEPENDS_ON:
             default:
                 return "";

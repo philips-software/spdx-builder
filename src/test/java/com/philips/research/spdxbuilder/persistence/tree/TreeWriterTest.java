@@ -117,18 +117,18 @@ class TreeWriterTest {
             ordered.verify(formatter).indent();
             ordered.verify(formatter).node(child2.toString());
             ordered.verify(formatter).indent();
-            ordered.verify(formatter).node(child1.toString());
+            ordered.verify(formatter).node(child1 + " (*)");
             ordered.verify(formatter, times(2)).unindent();
-            ordered.verify(formatter).node(child2.toString());
+            ordered.verify(formatter).node(child2 + " (*)");
             ordered.verify(formatter).unindent();
             ordered.verifyNoMoreInteractions();
         }
 
         @Test
         void indicatesRelationshipType() {
-            assertRelationship(Relation.Type.DESCENDANT_OF, "(modified)");
-            assertRelationship(Relation.Type.DYNAMIC_LINK, "(dynamic)");
-            assertRelationship(Relation.Type.STATIC_LINK, "(static)");
+            assertRelationship(Relation.Type.DESCENDANT_OF, "[derived]");
+            assertRelationship(Relation.Type.DYNAMIC_LINK, "[dynamic]");
+            assertRelationship(Relation.Type.STATIC_LINK, "[static]");
         }
 
         private void assertRelationship(Relation.Type type, String indication) {

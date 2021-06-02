@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.persistence.tree;
 
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
+import com.philips.research.spdxbuilder.core.domain.Relation;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -179,10 +180,10 @@ class TreeFormatsTest {
 
             parse("TREE start =====",
                     "pkg:type/top@1.0",
-                    "  pkg:custom/ns/name@1.1",
-                    "  pkg:type/code@1.2",
-                    "  pkg:type/static@1.3",
-                    "  pkg:type/dynamic@1.4",
+                    "  pkg:custom/ns/name@1.1 (*)",
+                    "  pkg:type/code@1.2 [derived]",
+                    "  pkg:type/static@1.3 [static] (*)",
+                    "  pkg:type/dynamic@1.4 [dynamic]",
                     "pkg:type/%40name@%40version",
                     "TREE end =====");
 
@@ -195,11 +196,11 @@ class TreeFormatsTest {
             assertThat(bom.getPackages().get(1).getPurl().orElseThrow().getType()).isEqualTo("custom");
             assertThat(bom.getPackages()).containsExactly(
                     parent, dependency, descendant, staticLink, dynamicLink, escaped);
-//            assertThat(bom.getRelations()).containsExactly(
-//                    new Relation(parent, dependency, Relation.Type.DEPENDS_ON),
-//                    new Relation(parent, descendant, Relation.Type.DESCENDANT_OF),
-//                    new Relation(parent, staticLink, Relation.Type.STATIC_LINK),
-//                    new Relation(parent, dynamicLink, Relation.Type.DYNAMIC_LINK));
+            assertThat(bom.getRelations()).containsExactlyInAnyOrder(
+                    new Relation(parent, dependency, Relation.Type.DEPENDS_ON),
+                    new Relation(parent, descendant, Relation.Type.DESCENDANT_OF),
+                    new Relation(parent, staticLink, Relation.Type.STATIC_LINK),
+                    new Relation(parent, dynamicLink, Relation.Type.DYNAMIC_LINK));
         }
 
         private void parse(String... lines) {
