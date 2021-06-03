@@ -46,6 +46,13 @@ class LicenseDictionaryTest {
     }
 
     @Test
+    void detectsSpdxLicensesByName() {
+        final var license = dictionary.licenseFor("MIT License");
+
+        assertThat(license).isEqualTo(License.of("MIT"));
+    }
+
+    @Test
     void createsCustomLicenseIdentifier() {
         final var custom1 = dictionary.licenseFor("First");
         final var custom2 = dictionary.licenseFor("Second");
@@ -101,7 +108,16 @@ class LicenseDictionaryTest {
 
         final var license = dictionary.withException(base, " Classpath-exception-2.0 ");
 
-        assertThat(license).isEqualTo(License.of("GPL-3.0-only").with("Classpath-exception-2.0"));
+        assertThat(license).isEqualTo(base.with("Classpath-exception-2.0"));
+    }
+
+    @Test
+    void detectsSpdxExceptionsByName() {
+        final var base = License.of("GPL-3.0-only");
+
+        final var license = dictionary.withException(base, "Classpath exception 2.0");
+
+        assertThat(license).isEqualTo(base.with("Classpath-exception-2.0"));
     }
 
     @Test
