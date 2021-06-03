@@ -28,6 +28,8 @@ class PackageTest {
         assertThat(pkg.getVersion()).isEqualTo(VERSION);
         assertThat(pkg.isInternal()).isFalse();
         assertThat(pkg.getPurl()).isEmpty();
+        assertThat(pkg.getSourceLocation()).isEmpty();
+        assertThat(pkg.getDownloadLocation()).isEmpty();
         assertThat(pkg.getConcludedLicense()).isEmpty();
         assertThat(pkg.getDeclaredLicense()).isEmpty();
         assertThat(pkg.getDetectedLicenses()).isEmpty();

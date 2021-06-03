@@ -27,6 +27,7 @@ public final class Package {
     private @NullOr Party originator;
     private @NullOr String filename;
     private @NullOr URI sourceLocation;
+    private @NullOr URI downloadLocation;
     private @NullOr URL homePage;
     private @NullOr License concludedLicense;
     private @NullOr License declaredLicense;
@@ -114,6 +115,15 @@ public final class Package {
 
     public Package setSourceLocation(@NullOr URI location) {
         this.sourceLocation = location;
+        return this;
+    }
+
+    public Optional<URI> getDownloadLocation() {
+        return Optional.ofNullable(downloadLocation);
+    }
+
+    public Package setDownloadLocation(@NullOr URI location) {
+        this.downloadLocation = location;
         return this;
     }
 

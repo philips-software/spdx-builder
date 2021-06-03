@@ -30,6 +30,7 @@ public class BomBaseKnowledgeBase extends KnowledgeBase {
                     meta.getDescription().ifPresent(pkg::setDescription);
                     meta.getHomePage().ifPresent(pkg::setHomePage);
                     meta.getSourceLocation().ifPresent(pkg::setSourceLocation);
+                    meta.getDownloadLocation().ifPresent(pkg::setDownloadLocation);
                     meta.getSha1().ifPresent(hash -> pkg.addHash("SHA1", hash));
                     meta.getSha256().ifPresent(hash -> pkg.addHash("SHA256", hash));
                     meta.getDeclaredLicense().map(LicenseParser::parse).ifPresent(pkg::setDeclaredLicense);
