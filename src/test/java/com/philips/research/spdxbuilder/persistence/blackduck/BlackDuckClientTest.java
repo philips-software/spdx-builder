@@ -126,6 +126,22 @@ class BlackDuckClientTest {
         }
 
         @Test
+        void prefersExactMatch() {
+            server.enqueue(new MockResponse().setBody(new JSONObject()
+                    .put("items", new JSONArray()
+                            .put(new JSONObject()
+                                    .put("name", PROJECT)
+                                    .put("_meta", new JSONObject()
+                                            .put("href", URI.create("https://server/something/" + PROJECT_ID))))
+                            .put(new JSONObject()
+                                    .put("name", PROJECT + "extra"))).toString()));
+
+            final var project = client.findProject(PROJECT).orElseThrow();
+
+            assertThat(project.getId()).isEqualTo(PROJECT_ID);
+        }
+
+        @Test
         void findsNothing_multipleMatches() {
             server.enqueue(new MockResponse().setBody(new JSONObject()
                     .put("items", new JSONArray()
@@ -166,7 +182,22 @@ class BlackDuckClientTest {
             server.enqueue(new MockResponse().setBody(new JSONObject()
                     .put("items", new JSONArray()).toString()));
 
-            assertThat(client.findProject(PROJECT)).isEmpty();
+            assertThat(client.findProjectVersion(PROJECT_ID, VERSION)).isEmpty();
+        }
+
+        @Test
+        void prefersExactMatch() {
+            server.enqueue(new MockResponse().setBody(new JSONObject()
+                    .put("items", new JSONArray()
+                            .put(new JSONObject()
+                                    .put("versionName", VERSION).put("_meta", new JSONObject()
+                                            .put("href", URI.create("https://server/something/" + VERSION_ID))))
+                            .put(new JSONObject()
+                                    .put("versionName", VERSION + "extra"))).toString()));
+
+            final var version = client.findProjectVersion(PROJECT_ID, VERSION).orElseThrow();
+
+            assertThat(version.getId()).isEqualTo(VERSION_ID);
         }
 
         @Test
@@ -176,7 +207,7 @@ class BlackDuckClientTest {
                             .put(new JSONObject())
                             .put(new JSONObject())).toString()));
 
-            assertThat(client.findProject(PROJECT)).isEmpty();
+            assertThat(client.findProjectVersion(PROJECT_ID, VERSION)).isEmpty();
         }
     }
 

@@ -92,7 +92,6 @@ class BlackDuckReaderTest {
                     .isInstanceOf(BlackDuckException.class)
                     .hasMessageContaining(VERSION_SHORT);
         }
-
     }
 
     @Nested
