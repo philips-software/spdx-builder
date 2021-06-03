@@ -96,7 +96,10 @@ public class LicenseDictionary {
             final var json = MAPPER.readValue(LICENSES, LicensesJson.class);
             json.licenses.stream()
                     .filter(lic -> !lic.isDeprecatedLicenseId)
-                    .forEach(lic -> spdxIdentifiers.put(lic.licenseId.toLowerCase(), lic.licenseId));
+                    .forEach(lic -> {
+                        spdxIdentifiers.put(lic.licenseId.toLowerCase(), lic.licenseId);
+                        spdxIdentifiers.put(lic.name.toLowerCase(), lic.licenseId);
+                    });
             return json.licenseListVersion;
         } catch (Exception e) {
             throw new RuntimeException("Failed to read SPDX licenses from " + LICENSES, e);
@@ -108,7 +111,10 @@ public class LicenseDictionary {
             final var json = MAPPER.readValue(EXCEPTIONS, LicensesJson.class);
             json.exceptions.stream()
                     .filter(lic -> !lic.isDeprecatedLicenseId)
-                    .forEach(lic -> spdxExceptions.put(lic.licenseExceptionId.toLowerCase(), lic.licenseExceptionId));
+                    .forEach(lic -> {
+                        spdxExceptions.put(lic.licenseExceptionId.toLowerCase(), lic.licenseExceptionId);
+                        spdxExceptions.put(lic.name.toLowerCase(), lic.licenseExceptionId);
+                    });
         } catch (Exception e) {
             throw new RuntimeException("Failed to read SPDX exceptions from " + EXCEPTIONS, e);
         }
@@ -188,5 +194,6 @@ public class LicenseDictionary {
         boolean isDeprecatedLicenseId;
         String licenseId;
         String licenseExceptionId;
+        String name;
     }
 }
