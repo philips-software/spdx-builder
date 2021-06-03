@@ -5,7 +5,7 @@
 
 package com.philips.research.spdxbuilder.persistence.spdx;
 
-import com.philips.research.spdxbuilder.core.BomWriter;
+import com.philips.research.spdxbuilder.core.BomProcessor;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.Package;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Converts a bill-of-materials to an SPDX file.
  */
-public class SpdxWriter implements BomWriter {
+public class SpdxWriter implements BomProcessor {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .withZone(ZoneId.of("UTC"));
     private static final List<String> SUPPORTED_HASH_KEYS =
@@ -43,7 +43,7 @@ public class SpdxWriter implements BomWriter {
     }
 
     @Override
-    public void write(BillOfMaterials bom) {
+    public void process(BillOfMaterials bom) {
         System.out.println("Writing SBOM to '" + file + "'");
         try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
             writeDocumentInformation(doc, bom);
@@ -94,6 +94,10 @@ public class SpdxWriter implements BomWriter {
         doc.addValue("SPDXID", identifierFor(pkg));
         doc.addValue("PackageVersion", pkg.getVersion());
         doc.optionallyAddValue("PackageFileName", pkg.getFilename());
+        doc.optionallyAddValue("PackageSummary", pkg.getSummary());
+        doc.optionallyAddValue("PackageDescription", pkg.getDescription());
+        doc.addValue("PackageHomePage", pkg.getHomePage());
+        doc.optionallyAddValue("packageAttributionText", pkg.getAttribution());
         if (pkg.isInternal()) {
             doc.optionallyAddValue("PackageSupplier", bom.getOrganization().map(SpdxParty::from));
         } else {
@@ -101,8 +105,7 @@ public class SpdxWriter implements BomWriter {
             doc.optionallyAddValue("PackageSupplier", pkg.getSupplier().map(SpdxParty::from));
         }
         doc.optionallyAddValue("PackageOriginator", pkg.getOriginator().map(SpdxParty::from));
-        doc.addValue("PackageDownloadLocation", pkg.getSourceLocation());
-        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicenses().isEmpty());
+        doc.addValue("PackageDownloadLocation", pkg.getDownloadLocation());
         for (Map.Entry<String, String> entry : pkg.getHashes().entrySet()) {
             final var key = entry.getKey().replaceAll("-", "").toUpperCase();
             if (SUPPORTED_HASH_KEYS.contains(key)) {
@@ -110,7 +113,6 @@ public class SpdxWriter implements BomWriter {
                 doc.addValue("PackageChecksum", key + ": " + hex);
             }
         }
-        doc.addValue("PackageHomePage", pkg.getHomePage());
         doc.addValue("PackageLicenseConcluded", pkg.getConcludedLicense());
         doc.addValue("PackageLicenseDeclared", pkg.getDeclaredLicense());
         if (pkg.getDeclaredLicense().isEmpty() && pkg.getConcludedLicense().isEmpty()) {
@@ -119,10 +121,8 @@ public class SpdxWriter implements BomWriter {
         for (var license : pkg.getDetectedLicenses()) {
             doc.addValue("PackageLicenseInfoFromFiles", license);
         }
+        doc.addValue("FilesAnalyzed", !pkg.getDetectedLicenses().isEmpty());
         doc.addValue("PackageCopyrightText", pkg.getCopyright());
-        doc.optionallyAddValue("PackageSummary", pkg.getSummary());
-        doc.optionallyAddValue("PackageDescription", pkg.getDescription());
-        doc.optionallyAddValue("packageAttributionText", pkg.getAttribution());
         addPackageRelationships(doc, pkg, bom);
         doc.addEmptyLine();
     }

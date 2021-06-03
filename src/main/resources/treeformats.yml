@@ -91,3 +91,88 @@ formats:
     version:
       regex: "(\\S==|installed:\\s)([^\\]]+)\\]?$"
       group: 2
+  - format: spdx
+    description: "Tree output of SPDX-Builder itself."
+    tool: "SPDX-Builder <mode> --tree"
+    type:
+      regex: "^pkg:([^/]+)/"
+      group: 1
+    namespace:
+      regex: "^pkg:([^/]+)/([^/@]+)/.+@"
+      group: 2
+      replace:
+        "%21": "!"
+        "%23": "#"
+        "%24": "$"
+        "%25": "%"
+        "%26": "&"
+        "%27": "'"
+        "%28": "{"
+        "%29": "}"
+        "%2[Aa]": "*"
+        "%2[Bb]": "+"
+        "%2[Cc]": ","
+        "%2[Ff]": "/"
+        "%3[Aa]": ":"
+        "%3[Bb]": ";"
+        "%3[Dd]": "="
+        "%3[Ff]": "?"
+        "%40": "@"
+        "%5[Bb]": "["
+        "%5[Dd]": "]"
+    name:
+      regex: "/([^/]+)@"
+      group: 1
+      replace:
+        "%21": "!"
+        "%23": "#"
+        "%24": "$"
+        "%25": "%"
+        "%26": "&"
+        "%27": "'"
+        "%28": "{"
+        "%29": "}"
+        "%2[Aa]": "*"
+        "%2[Bb]": "+"
+        "%2[Cc]": ","
+        "%2[Ff]": "/"
+        "%3[Aa]": ":"
+        "%3[Bb]": ";"
+        "%3[Dd]": "="
+        "%3[Ff]": "?"
+        "%40": "@"
+        "%5[Bb]": "["
+        "%5[Dd]": "]"
+    version:
+      regex: "@(\\S+)($|\\s)"
+      group: 1
+      replace:
+        "%21": "!"
+        "%23": "#"
+        "%24": "$"
+        "%25": "%"
+        "%26": "&"
+        "%27": "'"
+        "%28": "{"
+        "%29": "}"
+        "%2[Aa]": "*"
+        "%2[Bb]": "+"
+        "%2[Cc]": ","
+        "%2[Ff]": "/"
+        "%3[Aa]": ":"
+        "%3[Bb]": ";"
+        "%3[Dd]": "="
+        "%3[Ff]": "?"
+        "%40": "@"
+        "%5[Bb]": "["
+        "%5[Dd]": "]"
+    relationship:
+      regex: "\\s\\[(.+)]"
+      group: 1
+    relationships:
+      "": DEPENDS_ON
+      "dynamic": DYNAMIC_LINK
+      "static": STATIC_LINK
+      "derived": DESCENDANT_OF
+    start: "^TREE start"
+    end: "^TREE end"

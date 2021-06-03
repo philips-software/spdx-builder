@@ -5,6 +5,7 @@ a [Synoptic Black Duck SCA server](https://www.synopsys.com/software-integrity/s
 . (See below for instructions on enabling this option on a self-managed
 server.)_
 
+## Usage 
 SPDX-Builder can extract a bill-of-materials from a Black Duck server for a
 specified project version.
 
@@ -23,6 +24,8 @@ project version._
 
 _Note: The server URL and access token default to values found in
 the `BLACKDUCK_URL` and `BLACKDUCK_API_TOKEN` environment variables._
+
+## Enabling the "Hierarchical BOM API" on the server
 
 To enable the Hierarchical BOM in the Black Duck server in case of a Docker
 Swarm installation:

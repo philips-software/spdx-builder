@@ -5,8 +5,8 @@
 
 package com.philips.research.spdxbuilder.controller;
 
+import com.philips.research.spdxbuilder.core.BomProcessor;
 import com.philips.research.spdxbuilder.core.BomReader;
-import com.philips.research.spdxbuilder.core.BomWriter;
 import com.philips.research.spdxbuilder.core.ConversionService;
 import com.philips.research.spdxbuilder.core.domain.ConversionInteractor;
 import com.philips.research.spdxbuilder.persistence.blackduck.BlackDuckReader;
@@ -42,7 +42,7 @@ public class BlackDuckCommand extends AbstractCommand {
     @Override
     protected ConversionService createService() {
         final BomReader reader = new BlackDuckReader(url, token, project, version, insecure);
-        final BomWriter writer = new SpdxWriter(spdxFile);
+        final BomProcessor writer = new SpdxWriter(spdxFile);
 
         return new ConversionInteractor(reader, writer);
     }

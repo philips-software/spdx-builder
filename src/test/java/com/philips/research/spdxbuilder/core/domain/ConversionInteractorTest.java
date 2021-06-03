@@ -32,7 +32,7 @@ class ConversionInteractorTest {
     private static final URI PURL = URI.create("pkg:/group/name");
 
     private final BomReader reader = mock(BomReader.class);
-    private final BomWriter writer = mock(BomWriter.class);
+    private final BomProcessor writer = mock(BomProcessor.class);
     private final KnowledgeBase knowledgeBase = mock(KnowledgeBase.class);
     private final BillOfMaterials bom = new BillOfMaterials();
     private final ConversionService interactor = new ConversionInteractor(reader, writer, bom)
@@ -46,12 +46,25 @@ class ConversionInteractorTest {
     }
 
     @Test
+    void readsBillOfMaterials() {
+        interactor.read();
+
+        verify(reader).read(bom);
+    }
+
+    @Test
+    void appliesBomProcessor() {
+        interactor.apply(writer);
+
+        verify(writer).process(bom);
+    }
+
+    @Test
     void convertsBillOfMaterials() {
         interactor.convert(false);
 
-        verify(reader).read(bom);
         verify(knowledgeBase).enhance(bom);
-        verify(writer).write(bom);
+        verify(writer).process(bom);
     }
 
     @Test

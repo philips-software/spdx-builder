@@ -115,6 +115,9 @@ public class TreeFormats {
             applyMask(namespace, parser::withNamespace);
             applyMask(name, parser::withName);
             applyMask(version, parser::withVersion);
+            applyReplace(namespace, parser::withNamespaceReplace);
+            applyReplace(name, parser::withNameReplace);
+            applyReplace(version, parser::withVersionReplace);
 
             applyRegex(start, parser::withStartSection);
             applyRegex(end, parser::withEndSection);
@@ -140,10 +143,17 @@ public class TreeFormats {
                 property.accept(mapping);
             }
         }
+
+        private void applyReplace(@NullOr MatchMask mask, Consumer<Map<String, String>> replace) {
+            if (mask != null && mask.replace != null) {
+                replace.accept(mask.replace);
+            }
+        }
     }
 
     static class MatchMask {
         @NullOr String regex;
         int group = 1;
+        @NullOr Map<String, String> replace;
     }
 }
