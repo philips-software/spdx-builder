@@ -21,6 +21,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -95,15 +96,22 @@ public class BlackDuckClient {
     }
 
     Optional<BlackDuckProduct> findProject(String name) {
-        final var items = query(api.findProjects("name:" + name));
-        return items.filter(result -> result.items.size() == 1)
-                .map(result -> result.items.get(0));
+        //noinspection unchecked
+        return query(api.findProjects("name:" + name))
+                .flatMap(result -> matches((Collection<BlackDuckProduct>) (Object) result.items, name));
     }
 
     Optional<BlackDuckProduct> findProjectVersion(UUID projectId, String name) {
-        final var items = query(api.findProjectVersions(projectId, "versionName:" + name));
-        return items.filter(result -> result.items.size() == 1)
-                .map(result -> result.items.get(0));
+        //noinspection unchecked
+        return  query(api.findProjectVersions(projectId, "versionName:" + name))
+                .flatMap(result -> matches((Collection<BlackDuckProduct>) (Object) result.items, name));
+    }
+
+    private Optional<BlackDuckProduct> matches(Collection<BlackDuckProduct> items, String name) {
+        if (items.size() <= 1) {
+            return items.stream().findFirst();
+        }
+        return items.stream().filter(item -> name.equals(item.getName())).findAny();
     }
 
     List<BlackDuckComponent> getRootComponents(UUID projectId, UUID versionId) {
