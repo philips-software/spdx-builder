@@ -16,11 +16,11 @@ class RelationTest {
 
     @Test
     void createsInstance() {
-        final var relation = new Relation(FROM, TO, Relation.Type.DYNAMIC_LINK);
+        final var relation = new Relation(FROM, TO, Relation.Type.DYNAMICALLY_LINKS);
 
         assertThat(relation.getFrom()).isEqualTo(FROM);
         assertThat(relation.getTo()).isEqualTo(TO);
-        assertThat(relation.getType()).isEqualTo(Relation.Type.DYNAMIC_LINK);
+        assertThat(relation.getType()).isEqualTo(Relation.Type.DYNAMICALLY_LINKS);
     }
 
     @Test

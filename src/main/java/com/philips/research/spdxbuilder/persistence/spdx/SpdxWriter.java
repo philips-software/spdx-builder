@@ -130,25 +130,31 @@ public class SpdxWriter implements BomProcessor {
     private void addPackageRelationships(TagValueDocument doc, Package pkg, BillOfMaterials bom) throws IOException {
         for (Relation rel : bom.getRelations()) {
             if (rel.getFrom() == pkg) {
-                String value = String.format("%s %s %s", identifierFor(rel.getFrom()),
-                        mappedRelationType(rel.getType()),
+                String value = String.format(relationFormat(rel.getType()),
+                        identifierFor(rel.getFrom()),
                         identifierFor(rel.getTo()));
                 doc.addValue("Relationship", value);
             }
         }
     }
 
-    private String mappedRelationType(Relation.Type type) {
+    private String relationFormat(Relation.Type type) {
         switch (type) {
             case DESCENDANT_OF:
-                return "DESCENDANT_OF";
-            case DYNAMIC_LINK:
-                return "DYNAMIC_LINK";
-            case STATIC_LINK:
-                return "STATIC_LINK";
+                return "%s DESCENDANT_OF %s";
+            case DYNAMICALLY_LINKS:
+                return "%s DYNAMIC_LINK %s";
+            case STATICALLY_LINKS:
+                return "%s STATIC_LINK %s";
+            case CONTAINS:
+                return "%s CONTAINS %s";
             case DEPENDS_ON:
+                return "%s DEPENDS_ON %s";
+            case DEVELOPED_USING:
+                return "%2$s DEV_DEPENDENCY_OF %1$s";
             default:
-                return "DEPENDS_ON";
+                System.out.println("WARNING: Unmapped relationship type: " + type);
+                return "%s DEPENDS_ON %s";
         }
     }
 

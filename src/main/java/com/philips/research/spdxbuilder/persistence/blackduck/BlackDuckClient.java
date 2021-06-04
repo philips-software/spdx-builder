@@ -103,7 +103,7 @@ public class BlackDuckClient {
 
     Optional<BlackDuckProduct> findProjectVersion(UUID projectId, String name) {
         //noinspection unchecked
-        return  query(api.findProjectVersions(projectId, "versionName:" + name))
+        return query(api.findProjectVersions(projectId, "versionName:" + name))
                 .flatMap(result -> matches((Collection<BlackDuckProduct>) (Object) result.items, name));
     }
 

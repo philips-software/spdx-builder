@@ -55,7 +55,7 @@ class TreeReaderTest {
         final var pkg1 = bom.getPackages().get(0);
         final var pkg2 = bom.getPackages().get(1);
         assertThat(bom.getRelations()).containsExactly(
-                new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK));
+                new Relation(pkg1, pkg2, Relation.Type.DYNAMICALLY_LINKS));
     }
 
     @Test

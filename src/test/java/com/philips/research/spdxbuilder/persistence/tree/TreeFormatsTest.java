@@ -184,6 +184,8 @@ class TreeFormatsTest {
                     "  pkg:type/code@1.2 [derived]",
                     "  pkg:type/static@1.3 [static] (*)",
                     "  pkg:type/dynamic@1.4 [dynamic]",
+                    "  pkg:type/contained@1.5 [contained]",
+                    "  pkg:type/dev@1.6 [dev]",
                     "pkg:type/%40name@%40version",
                     "TREE end =====");
 
@@ -192,15 +194,19 @@ class TreeFormatsTest {
             final var descendant = new Package("", "code", "1.2");
             final var staticLink = new Package("", "static", "1.3");
             final var dynamicLink = new Package("", "dynamic", "1.4");
+            final var contained = new Package("", "contained", "1.5");
+            final var dev = new Package("", "dev", "1.6");
             final var escaped = new Package("", "@name", "@version");
             assertThat(bom.getPackages().get(1).getPurl().orElseThrow().getType()).isEqualTo("custom");
             assertThat(bom.getPackages()).containsExactly(
-                    parent, dependency, descendant, staticLink, dynamicLink, escaped);
+                    parent, dependency, descendant, staticLink, dynamicLink, contained, dev, escaped);
             assertThat(bom.getRelations()).containsExactlyInAnyOrder(
                     new Relation(parent, dependency, Relation.Type.DEPENDS_ON),
                     new Relation(parent, descendant, Relation.Type.DESCENDANT_OF),
-                    new Relation(parent, staticLink, Relation.Type.STATIC_LINK),
-                    new Relation(parent, dynamicLink, Relation.Type.DYNAMIC_LINK));
+                    new Relation(parent, staticLink, Relation.Type.STATICALLY_LINKS),
+                    new Relation(parent, dynamicLink, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(parent, contained, Relation.Type.CONTAINS),
+                    new Relation(parent, dev, Relation.Type.DEVELOPED_USING));
         }
 
         private void parse(String... lines) {

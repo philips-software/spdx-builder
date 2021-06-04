@@ -237,8 +237,8 @@ class TreeParserTest {
             final var pkg2 = bom.getPackages().get(1);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).containsExactlyInAnyOrder(
-                    new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK),
-                    new Relation(pkg1, pkg3, Relation.Type.DYNAMIC_LINK));
+                    new Relation(pkg1, pkg2, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(pkg1, pkg3, Relation.Type.DYNAMICALLY_LINKS));
         }
 
         @Test
@@ -251,8 +251,8 @@ class TreeParserTest {
             final var pkg2 = bom.getPackages().get(1);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).containsExactlyInAnyOrder(
-                    new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK),
-                    new Relation(pkg2, pkg3, Relation.Type.DYNAMIC_LINK));
+                    new Relation(pkg1, pkg2, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(pkg2, pkg3, Relation.Type.DYNAMICALLY_LINKS));
         }
 
         @Test
@@ -266,12 +266,12 @@ class TreeParserTest {
             final var pkg1 = bom.getPackages().get(0);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).hasSize(3)
-                    .contains(new Relation(pkg1, pkg3, Relation.Type.DYNAMIC_LINK));
+                    .contains(new Relation(pkg1, pkg3, Relation.Type.DYNAMICALLY_LINKS));
         }
 
         @Test
         void derivesRelationship() {
-            parser.withRelationships(Map.of("", Relation.Type.STATIC_LINK.name(), "Dep", Relation.Type.DEPENDS_ON.name()))
+            parser.withRelationships(Map.of("", Relation.Type.STATICALLY_LINKS.name(), "Dep", Relation.Type.DEPENDS_ON.name()))
                     .withRelationship("\\[(.+)]", 1);
 
             parser.parse(PACKAGE1);
@@ -282,14 +282,14 @@ class TreeParserTest {
             final var pkg2 = bom.getPackages().get(1);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).contains(
-                    new Relation(pkg1, pkg2, Relation.Type.STATIC_LINK),
+                    new Relation(pkg1, pkg2, Relation.Type.STATICALLY_LINKS),
                     new Relation(pkg1, pkg3, Relation.Type.DEPENDS_ON));
         }
 
         @Test
         void throws_unknownRelationshipIdentifier() {
             parser.withRelationship("\\[(.+)]", 1)
-                    .withRelationships(Map.of("something", Relation.Type.STATIC_LINK.toString()));
+                    .withRelationships(Map.of("something", Relation.Type.STATICALLY_LINKS.toString()));
             parser.parse(PACKAGE1);
 
             assertThatThrownBy(() -> parser.parse("-->" + PACKAGE2 + " [Unknown]"))

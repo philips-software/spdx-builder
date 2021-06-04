@@ -90,12 +90,18 @@ public class TreeWriter implements BomProcessor {
         switch (relation.getType()) {
             case DESCENDANT_OF:
                 return " [derived]";
-            case DYNAMIC_LINK:
+            case DYNAMICALLY_LINKS:
                 return " [dynamic]";
-            case STATIC_LINK:
+            case STATICALLY_LINKS:
                 return " [static]";
+            case CONTAINS:
+                return " [contained]";
+            case DEVELOPED_USING:
+                return " [dev]";
             case DEPENDS_ON:
+                return "";
             default:
+                System.err.println("WARNING: Unmapped tree relation type:" + relation.getType());
                 return "";
         }
     }

@@ -127,8 +127,8 @@ class TreeWriterTest {
         @Test
         void indicatesRelationshipType() {
             assertRelationship(Relation.Type.DESCENDANT_OF, "[derived]");
-            assertRelationship(Relation.Type.DYNAMIC_LINK, "[dynamic]");
-            assertRelationship(Relation.Type.STATIC_LINK, "[static]");
+            assertRelationship(Relation.Type.DYNAMICALLY_LINKS, "[dynamic]");
+            assertRelationship(Relation.Type.STATICALLY_LINKS, "[static]");
         }
 
         private void assertRelationship(Relation.Type type, String indication) {

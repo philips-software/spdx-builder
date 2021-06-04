@@ -271,8 +271,17 @@ class TreeParser {
      */
     TreeParser withRelationships(Map<String, String> mapping) {
         relationshipMapping = mapping.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Relation.Type.valueOf(e.getValue().toUpperCase())));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> relationType(e.getValue())));
         return this;
+    }
+
+    private Relation.Type relationType(String string) {
+        try {
+            return Relation.Type.valueOf(string.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            final var types = Arrays.stream(Relation.Type.values()).map(Enum::name).collect(Collectors.toList());
+            throw new TreeException("Relationship type '" + string + "' is not one of " + types);
+        }
     }
 
     /**
@@ -386,7 +395,7 @@ class TreeParser {
     private Relation.Type extractRelationship(String line) {
         final var id = match(relationshipPattern, line, relationshipGroup);
         final Relation.@NullOr Type relationship = relationshipMapping.isEmpty()
-                ? Relation.Type.DYNAMIC_LINK : relationshipMapping.get(id);
+                ? Relation.Type.DYNAMICALLY_LINKS : relationshipMapping.get(id);
         if (relationship == null) {
             throw new TreeException("Not a supported relationship identifier: '" + id
                     + "'. Expected one of " + relationshipMapping.keySet());

@@ -171,8 +171,10 @@ formats:
       group: 1
     relationships:
       "": DEPENDS_ON
-      "dynamic": DYNAMIC_LINK
-      "static": STATIC_LINK
+      "dynamic": DYNAMICALLY_LINKS
+      "static": STATICALLY_LINKS
       "derived": DESCENDANT_OF
+      "contained": CONTAINS
+      "dev": DEVELOPED_USING
     start: "^TREE start"
     end: "^TREE end"
