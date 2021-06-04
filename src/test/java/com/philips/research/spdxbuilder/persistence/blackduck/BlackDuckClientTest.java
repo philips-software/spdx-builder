@@ -284,7 +284,7 @@ class BlackDuckClientTest {
         }
 
         @Test
-        void readsSubprojectsAsComponents() {
+        void readsSubprojectsAndExtraComponents() {
             final var projectId = UUID.randomUUID();
             final var versionId = UUID.randomUUID();
             server.enqueue(EMPTY_LIST_RESPONSE);
@@ -294,14 +294,20 @@ class BlackDuckClientTest {
                                     .put("componentName", "Ignore me!")
                                     .put("componentType", "KB_COMPONENT"))
                             .put(new JSONObject()
+                                    .put("matchTypes", new JSONArray().put("MANUAL_BOM_COMPONENT"))
+                                    .put("componentVersion", "api/components/" + COMPONENT_ID + "/versions/" + COMPONENT_VERSION_ID + "/"))
+                            .put(new JSONObject()
                                     .put("componentType", "SUB_PROJECT")
                                     .put("componentVersion", "api/etc/components/" + projectId + "/versions/" + versionId)))
                     .toString()));
 
             final var components = client.getRootComponents(PROJECT_ID, VERSION_ID);
 
-            assertThat(components).hasSize(1);
-            final var subproject = components.get(0);
+            assertThat(components).hasSize(2);
+            final var extraComponent = components.get(0);
+            assertThat(extraComponent.getId()).isEqualTo(COMPONENT_ID);
+            assertThat(extraComponent.isAdditionalComponent()).isTrue();
+            final var subproject = components.get(1);
             assertThat(subproject.isSubproject()).isTrue();
             assertThat(subproject.getId()).isEqualTo(projectId);
             assertThat(subproject.getVersionId()).isEqualTo(versionId);

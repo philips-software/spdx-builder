@@ -156,6 +156,7 @@ public interface BlackDuckApi {
         String componentType;
 
         List<String> usages = new ArrayList<>();
+        List<String> matchTypes = new ArrayList<>();
         List<OriginJson> origins = new ArrayList<>();
         List<LicenseJson> licenses = new ArrayList<>();
         LinksJson _meta;
@@ -214,6 +215,11 @@ public interface BlackDuckApi {
         }
 
         @Override
+        public boolean isAdditionalComponent() {
+            return isSubproject() || matchTypes.contains("MANUAL_BOM_COMPONENT");
+        }
+
+        @Override
         public String toString() {
             return componentName + ' ' + componentVersionName;
         }
@@ -223,6 +229,14 @@ public interface BlackDuckApi {
         OriginJson() {
             //noinspection ConstantConditions
             super(null, null);
+        }
+
+        @Override
+        Optional<PackageURL> getPurl() {
+            if ("unknown".equals(externalNamespace)) {
+                return Optional.empty();
+            }
+            return super.getPurl();
         }
     }
 
