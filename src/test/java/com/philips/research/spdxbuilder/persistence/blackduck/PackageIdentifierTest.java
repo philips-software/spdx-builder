@@ -89,6 +89,12 @@ class PackageIdentifierTest {
         // yokto
     }
 
+    @Test
+    void decodesUnknowns() {
+        assertThat(new PackageIdentifier("unknown", null).getPurl()).isEmpty();
+        assertThat(new PackageIdentifier("unknown", "null").getPurl()).isEmpty();
+    }
+
     private void assertIdentifier(String namespace, String identifier, String expected) {
         try {
             final var id = new PackageIdentifier(namespace, identifier);

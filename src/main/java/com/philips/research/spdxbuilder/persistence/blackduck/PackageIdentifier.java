@@ -127,11 +127,13 @@ public class PackageIdentifier {
     }
 
     private @NullOr String fromStart(char sep, int offset) {
+        if ( externalId == null ) { return null; }
         final var parts = externalId.split(String.valueOf(sep));
         return (offset < parts.length) ? parts[offset] : null;
     }
 
     private @NullOr String fromEnd(char sep, int offset) {
+        if ( externalId == null ) { return null; }
         final var parts = externalId.split(String.valueOf(sep));
         return (offset < parts.length) ? parts[parts.length - offset - 1] : null;
     }
