@@ -74,4 +74,24 @@ class BlackDuckApiTest {
             assertThat(license).isEqualTo(License.of(LICENSE).or(License.of(LICENSE2)));
         }
     }
+
+    @Nested
+    class Origin {
+        @Test
+        void defaultsToDecodingExternalId() {
+            final var json = new BlackDuckApi.OriginJson();
+            json.externalNamespace = "maven";
+            json.externalId = "group:name:version";
+
+            assertThat(json.getPurl()).isNotEmpty();
+        }
+
+        @Test
+        void noPackageUrl_unknownExternalId() {
+            final var json = new BlackDuckApi.OriginJson();
+            json.externalNamespace = "unknown";
+
+            assertThat(json.getPurl()).isEmpty();
+        }
+    }
 }

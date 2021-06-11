@@ -123,7 +123,7 @@ public class BlackDuckClient {
         final var subprojects = query(api.getBomComponents(projectId, versionId))
                 .map(object -> (List<BlackDuckComponent>) (List<? extends BlackDuckComponent>) object.items)
                 .orElse(List.of()).stream()
-                .filter(BlackDuckComponent::isSubproject)
+                .filter(BlackDuckComponent::isAdditionalComponent)
                 .collect(Collectors.toList());
         components.addAll(subprojects);
         return components;

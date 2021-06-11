@@ -28,5 +28,7 @@ interface BlackDuckComponent {
 
     long getHierarchicalId();
 
+    boolean isAdditionalComponent();
+
     boolean isSubproject();
 }
