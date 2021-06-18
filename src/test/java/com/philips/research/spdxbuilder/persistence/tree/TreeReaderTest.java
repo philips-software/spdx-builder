@@ -9,6 +9,7 @@ import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -54,7 +55,7 @@ class TreeReaderTest {
         final var pkg1 = bom.getPackages().get(0);
         final var pkg2 = bom.getPackages().get(1);
         assertThat(bom.getRelations()).containsExactly(
-                new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK));
+                new Relation(pkg1, pkg2, Relation.Type.DYNAMICALLY_LINKS));
     }
 
     @Test
@@ -75,7 +76,7 @@ class TreeReaderTest {
 
         assertThatThrownBy(() -> reader.read(bom))
                 .isInstanceOf(TreeException.class)
-                .hasMessageContaining("package format");
+                .hasMessageContaining("package identifier");
     }
 
     @NotNull
@@ -83,14 +84,15 @@ class TreeReaderTest {
         return new ByteArrayInputStream(String.join("\n", lines).getBytes());
     }
 
+    @Nested
     class InternalPackages {
         @Test
-        void defaultsToReleaseOutput() {
+        void defaultsToInternalPackagesAtRoot() {
             final var stream = stream("ns/main@1");
 
             new TreeReader(stream, "npm", null, List.of()).read(bom);
 
-            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
+            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
         }
 
         @Test
@@ -101,18 +103,19 @@ class TreeReaderTest {
                     .setRelease(true)
                     .read(bom);
 
-            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
         }
 
         @Test
         void passesInternalGlobPatterns() {
-            final var stream = stream("ns/internal@1");
+            final var stream = stream("ns/release@1", "  ns/internal@2");
 
             new TreeReader(stream, "npm", null, List.of("*/int*"))
                     .setRelease(true)
                     .read(bom);
 
-            assertThat(bom.getPackages().get(0).isInternal()).isTrue();
+            assertThat(bom.getPackages().get(0).isInternal()).isFalse();
+            assertThat(bom.getPackages().get(1).isInternal()).isTrue();
         }
     }
 }

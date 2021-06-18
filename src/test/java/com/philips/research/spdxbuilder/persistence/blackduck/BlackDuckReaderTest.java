@@ -92,7 +92,6 @@ class BlackDuckReaderTest {
                     .isInstanceOf(BlackDuckException.class)
                     .hasMessageContaining(VERSION_SHORT);
         }
-
     }
 
     @Nested
@@ -251,13 +250,13 @@ class BlackDuckReaderTest {
             @Test
             void mapsRelationshipTypeFromComponentUsage() {
                 assertRelationship(List.of("SOURCE_CODE"), Relation.Type.DESCENDANT_OF);
-                assertRelationship(List.of("DYNAMICALLY_LINKED"), Relation.Type.DYNAMIC_LINK);
-                assertRelationship(List.of("STATICALLY_LINKED"), Relation.Type.STATIC_LINK);
-                assertRelationship(List.of("SEPARATE_WORK"), Relation.Type.DEPENDS_ON);
-                assertRelationship(List.of("MERELY_AGGREGATED"), Relation.Type.DEPENDS_ON);
+                assertRelationship(List.of("DYNAMICALLY_LINKED"), Relation.Type.DYNAMICALLY_LINKS);
+                assertRelationship(List.of("STATICALLY_LINKED"), Relation.Type.STATICALLY_LINKS);
+                assertRelationship(List.of("SEPARATE_WORK"), Relation.Type.CONTAINS);
+                assertRelationship(List.of("MERELY_AGGREGATED"), Relation.Type.CONTAINS);
                 assertRelationship(List.of("IMPLEMENTATION_OF_STANDARD"), Relation.Type.DEPENDS_ON);
                 assertRelationship(List.of("PREREQUISITE"), Relation.Type.DEPENDS_ON);
-                assertRelationship(List.of("DEV_TOOL_EXCLUDED"), Relation.Type.DEPENDS_ON);
+                assertRelationship(List.of("DEV_TOOL_EXCLUDED"), Relation.Type.DEVELOPED_USING);
                 assertRelationship(List.of("Unknown value"), Relation.Type.DEPENDS_ON);
             }
 

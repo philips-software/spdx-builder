@@ -17,9 +17,13 @@ import java.util.*;
 
 public class BlackDuckReader implements BomReader {
     private static final Map<String, Relation.Type> USAGE_MAPPING = Map.of(
+            "SEPARATE_WORK", Relation.Type.CONTAINS,
+            "MERELY_AGGREGATED", Relation.Type.CONTAINS,
+            "DEV_TOOL_EXCLUDED", Relation.Type.DEVELOPED_USING,
+            "IMPLEMENTATION_OF_STANDARD", Relation.Type.DEPENDS_ON,
             "SOURCE_CODE", Relation.Type.DESCENDANT_OF,
-            "STATICALLY_LINKED", Relation.Type.STATIC_LINK,
-            "DYNAMICALLY_LINKED", Relation.Type.DYNAMIC_LINK);
+            "STATICALLY_LINKED", Relation.Type.STATICALLY_LINKS,
+            "DYNAMICALLY_LINKED", Relation.Type.DYNAMICALLY_LINKS);
 
     private final BlackDuckClient client;
     private final String token;
@@ -142,7 +146,8 @@ public class BlackDuckReader implements BomReader {
 
     private void exportRelation(BillOfMaterials bom, @NullOr Package parent, Package child, BlackDuckComponent component) {
         if (parent != null) {
-            bom.addRelation(parent, child, relationshipFor(component));
+            final var relationship = relationshipFor(component);
+            bom.addRelation(parent, child, relationship);
         }
     }
 

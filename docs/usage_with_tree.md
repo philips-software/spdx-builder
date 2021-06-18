@@ -52,13 +52,17 @@ internal: # Package URL globs to match any product-internal packages
   - <string> # (Simplified) package URL glob with optional "*" wildcards
 ```
 
-Simplified package URL globs can take various forms:
+"Simplified package URL" globs can take various forms:
 
 - `type/namespace/name@version`: Exact match ("pkg:" prefix is optional)
 - `type/namespace/name`: Matches any version
 - `type/name`: Matches any namespace
 - `name`: Matches any type and any namespace
 - 'so*ng': Matches names like "something" or "song" (but not "songs")
+
+Note that when SPDX-Builder is invoked with the `--release` flag, the package
+URL of root packages are always made public despite matching a matching glob
+pattern.
 
 ## Supported trees
 
@@ -122,11 +126,11 @@ but can optionally be customized:
 
 ```yaml
 # Hierarchical tree analysis
-identifier: <regex> # (Optional) Regular expression matching on the tree indent position.
+identifier: <regex> # (Optional) Regular expression matching the identifier start to determine the tree indent position.
 ```
 
-Packages are identified by a Package URL that is extracted from the fragment
-that remains after removing the indentation:
+Packages are identified by the line fragment remaining after removing the
+leading indentation:
 
 ```yaml
 # Identification of the package type.
@@ -145,12 +149,18 @@ internal: <regex> # (Optional) identification of application packages.
 namespace: # (Optional) namespace matcher
   regex: <regex> # Pattern to capture the Package URL namespace
   group: <index> # Matching group holding the namespace (defaults to 1)
+  replace: # (Optional) mappings to replace e.g. character escape sequences
+    "pattern": "replacement" # Regular expression and replacement text
 name:
   regex: <regex> # Pattern to capture the Package URL name
   group: <index> # Matching group holding the name (defaults to 1)
+  replace: # (Optional) mappings to replace e.g. character escape sequences
+    "pattern": "replacement" # Regular expression and replacement text
 version:
   regex: <regex> # Pattern to capture the Package URL version 
   group: <index> # Matching group holding the version (defaults to 1)
+  replace: # (Optional) mappings to replace e.g. character escape sequences
+    "pattern": "replacement" # Regular expression and replacement text
 ```
 
 The relationship between packages defaults to "dynamically linked". This default
@@ -162,9 +172,15 @@ a specific relationship:
 # (Applied to the indented fragment.)
 relationships:
   "": <type> # Default relationship if none is specified
-  "<marker>": <type> # (Optional) marker-to-relationship conversion
+  "<marker>": <relationship> # (Optional) marker-to-relationship (see below) conversion
 relationship: # (Optional) relationship marker pattern 
   regex: <regex> # Regular expression extracting the (optional) relationship marker 
   group: <index> # Matching group holding the relationship marker (defaults to 1)
 ```
+
+The supported relationships are:
+- `DEPENDS_ON`: (Default) generic dependency relationship
+- `DYNAMIC_LINK`: Dynamically linked runtime relation
+- `STATIC_LINK`: Statically linked compile-time relation
+- `DESCENDANT_OF`: Temporal dependency relation 
 

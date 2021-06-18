@@ -59,7 +59,19 @@ public interface ConversionService {
     void curatePackageSource(PackageURL purl, URI source);
 
     /**
-     * Reads a bill-of-materials, extends it with metadata from the knowledge base (if configured),
+     * Reads the bill-of-materials from the configured source.
+     */
+    void read();
+
+    /**
+     * Applies the processor to the bill-of-materials.
+     *
+     * @param processor
+     */
+    void apply(BomProcessor processor);
+
+    /**
+     * Extends the bill-of-matrials with metadata from the knowledge base (if configured),
      * and writes it as a document.
      *
      * @param continueWhenIncomplete writes the SBOM even if the conversion is incomplete

@@ -5,6 +5,7 @@
 
 package com.philips.research.spdxbuilder.persistence.tree;
 
+import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.PurlGlob;
@@ -33,7 +34,7 @@ class TreeParserTest {
     @Test
     void throws_missingPackageTypeConfiguration() {
         assertThatThrownBy(() -> parser.parse(PACKAGE1))
-                .hasMessageContaining("package format");
+                .hasMessageContaining("package identifier");
     }
 
     @Nested
@@ -54,17 +55,23 @@ class TreeParserTest {
         void throws_incompleteIdentifier() {
             assertThatThrownBy(() -> parser.parse("incomplete"))
                     .isInstanceOf(TreeException.class)
-                    .hasMessageContaining("package format");
+                    .hasMessageContaining("package identifier");
         }
 
         @Test
-        void parsesCustomPackageDefinition() {
+        void parsesCustomPackageDefinition() throws Exception {
             parser.withName("^([^/]*)/", 1)
                     .withVersion("^[^/]*/([^/]*)@", 1)
                     .withNamespace("([^@]*)$", 1);
+
+            // Caution: The format above deliberately mixed the ordering!
             parser.parse(String.format("%s/%s@%s", NAME, VERSION, NAMESPACE));
 
-            assertThat(bom.getPackages()).contains(new Package(NAMESPACE, NAME, VERSION));
+            final var pkg = bom.getPackages().get(0);
+            assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
+            assertThat(pkg.getName()).isEqualTo(NAME);
+            assertThat(pkg.getVersion()).isEqualTo(VERSION);
+            assertThat(pkg.getPurl()).contains(new PackageURL(String.format("pkg:%s/%s/%s@%s", TYPE, NAMESPACE, NAME, VERSION)));
         }
 
         @Test
@@ -74,6 +81,23 @@ class TreeParserTest {
             parser.parse(PACKAGE2);
 
             assertThat(bom.getPackages()).hasSize(2);
+        }
+
+        @Test
+        void replacesFragments() {
+            parser.withNamespaceReplace(Map.of("X", "a"));
+            parser.withNameReplace(Map.of("Y", "m"));
+            parser.withVersionReplace(Map.of("Z", "s"));
+
+            parser.parse("nXmespXce:naYe:verZion");
+        }
+
+        @Test
+        void replacesFragmentsInName() {
+        }
+
+        @Test
+        void replacesFragmentsInVersion() {
         }
 
         @Test
@@ -103,16 +127,27 @@ class TreeParserTest {
         }
 
         @Test
+        void forwardsInputTypeIfNoMappingDefined() {
+            parser.withType("\\[(.+)]", 1).withTypes(Map.of());
+
+            parser.parse(PACKAGE1 + " [forwarded]");
+
+            final var purl = bom.getPackages().get(0).getPurl().orElseThrow();
+            assertThat(purl.getType()).isEqualTo("forwarded");
+        }
+
+        @Test
         void derivesPackageType() {
-            parser.withTypes(Map.of("", "default", "Other", "other"))
+            parser.withTypes(Map.of("", "default", "OTHER", "other"))
                     .withType("\\[(.+)]", 1);
 
             parser.parse(PACKAGE1);
-            parser.parse(PACKAGE2 + "  [Other]");
+            parser.parse(PACKAGE2 + "  [OTHER]");
 
-            assertThat(bom.getPackages()).contains(
-                    new Package(NAMESPACE, NAME, "1"),
-                    new Package(NAMESPACE, NAME, "2"));
+            final var purl1 = bom.getPackages().get(0).getPurl().orElseThrow();
+            assertThat(purl1.getType()).isEqualTo("default");
+            final var purl2 = bom.getPackages().get(1).getPurl().orElseThrow();
+            assertThat(purl2.getType()).isEqualTo("other");
         }
 
         @Test
@@ -125,7 +160,7 @@ class TreeParserTest {
         }
 
         @Test
-        void skipsPackageAndSubtree() {
+        void skipsPackageAndItsSubtree() {
             parser.withSkip("skip$");
 
             parser.parse(PACKAGE1);
@@ -202,8 +237,8 @@ class TreeParserTest {
             final var pkg2 = bom.getPackages().get(1);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).containsExactlyInAnyOrder(
-                    new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK),
-                    new Relation(pkg1, pkg3, Relation.Type.DYNAMIC_LINK));
+                    new Relation(pkg1, pkg2, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(pkg1, pkg3, Relation.Type.DYNAMICALLY_LINKS));
         }
 
         @Test
@@ -216,8 +251,8 @@ class TreeParserTest {
             final var pkg2 = bom.getPackages().get(1);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).containsExactlyInAnyOrder(
-                    new Relation(pkg1, pkg2, Relation.Type.DYNAMIC_LINK),
-                    new Relation(pkg2, pkg3, Relation.Type.DYNAMIC_LINK));
+                    new Relation(pkg1, pkg2, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(pkg2, pkg3, Relation.Type.DYNAMICALLY_LINKS));
         }
 
         @Test
@@ -231,12 +266,12 @@ class TreeParserTest {
             final var pkg1 = bom.getPackages().get(0);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).hasSize(3)
-                    .contains(new Relation(pkg1, pkg3, Relation.Type.DYNAMIC_LINK));
+                    .contains(new Relation(pkg1, pkg3, Relation.Type.DYNAMICALLY_LINKS));
         }
 
         @Test
         void derivesRelationship() {
-            parser.withRelationships(Map.of("", Relation.Type.STATIC_LINK.name(), "Dep", Relation.Type.DEPENDS_ON.name()))
+            parser.withRelationships(Map.of("", Relation.Type.STATICALLY_LINKS.name(), "Dep", Relation.Type.DEPENDS_ON.name()))
                     .withRelationship("\\[(.+)]", 1);
 
             parser.parse(PACKAGE1);
@@ -247,13 +282,14 @@ class TreeParserTest {
             final var pkg2 = bom.getPackages().get(1);
             final var pkg3 = bom.getPackages().get(2);
             assertThat(bom.getRelations()).contains(
-                    new Relation(pkg1, pkg2, Relation.Type.STATIC_LINK),
+                    new Relation(pkg1, pkg2, Relation.Type.STATICALLY_LINKS),
                     new Relation(pkg1, pkg3, Relation.Type.DEPENDS_ON));
         }
 
         @Test
         void throws_unknownRelationshipIdentifier() {
-            parser.withRelationship("\\[(.+)]", 1);
+            parser.withRelationship("\\[(.+)]", 1)
+                    .withRelationships(Map.of("something", Relation.Type.STATICALLY_LINKS.toString()));
             parser.parse(PACKAGE1);
 
             assertThatThrownBy(() -> parser.parse("-->" + PACKAGE2 + " [Unknown]"))

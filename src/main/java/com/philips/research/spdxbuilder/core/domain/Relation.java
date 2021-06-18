@@ -52,6 +52,6 @@ public final class Relation {
         return String.format("%s -> %s: %s", from, to, type);
     }
 
-    // Sorted from strongest weakest binding
-    public enum Type {DESCENDANT_OF, STATIC_LINK, DYNAMIC_LINK, DEPENDS_ON}
+    // Sorted from strongest to weakest binding
+    public enum Type {DESCENDANT_OF, STATICALLY_LINKS, DYNAMICALLY_LINKS, DEPENDS_ON, CONTAINS, DEVELOPED_USING}
 }

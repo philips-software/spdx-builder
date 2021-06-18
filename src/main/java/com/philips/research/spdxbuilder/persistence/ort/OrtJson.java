@@ -198,10 +198,10 @@ class DependencyJson {
     static final Map<String, Relation.Type> LINKAGE = new HashMap<>();
 
     static {
-        LINKAGE.put("DYNAMIC", Relation.Type.DYNAMIC_LINK);
-        LINKAGE.put("STATIC", Relation.Type.STATIC_LINK);
-        LINKAGE.put("PROJECT_DYNAMIC", Relation.Type.DYNAMIC_LINK);
-        LINKAGE.put("PROJECT_STATIC", Relation.Type.STATIC_LINK);
+        LINKAGE.put("DYNAMIC", Relation.Type.DYNAMICALLY_LINKS);
+        LINKAGE.put("STATIC", Relation.Type.STATICALLY_LINKS);
+        LINKAGE.put("PROJECT_DYNAMIC", Relation.Type.DYNAMICALLY_LINKS);
+        LINKAGE.put("PROJECT_STATIC", Relation.Type.STATICALLY_LINKS);
     }
 
     @NullOr String id;

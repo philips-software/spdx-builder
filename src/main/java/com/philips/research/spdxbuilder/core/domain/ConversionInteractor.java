@@ -18,16 +18,16 @@ import java.util.function.Consumer;
  */
 public class ConversionInteractor implements ConversionService {
     private final BomReader reader;
-    private final BomWriter writer;
+    private final BomProcessor writer;
     private final BillOfMaterials bom;
 
     private @NullOr KnowledgeBase knowledgeBase;
 
-    public ConversionInteractor(BomReader reader, BomWriter writer) {
+    public ConversionInteractor(BomReader reader, BomProcessor writer) {
         this(reader, writer, new BillOfMaterials());
     }
 
-    ConversionInteractor(BomReader reader, BomWriter writer, BillOfMaterials bom) {
+    ConversionInteractor(BomReader reader, BomProcessor writer, BillOfMaterials bom) {
         this.reader = reader;
         this.writer = writer;
         this.bom = bom;
@@ -72,8 +72,17 @@ public class ConversionInteractor implements ConversionService {
     }
 
     @Override
-    public void convert(boolean continueIfIncomplete) {
+    public void read() {
         reader.read(bom);
+    }
+
+    @Override
+    public void apply(BomProcessor processor) {
+        processor.process(bom);
+    }
+
+    @Override
+    public void convert(boolean continueIfIncomplete) {
         if (knowledgeBase != null) {
             final var success = knowledgeBase.enhance(bom);
             if (!success && !continueIfIncomplete) {
@@ -81,11 +90,12 @@ public class ConversionInteractor implements ConversionService {
             }
         }
         //TODO Curate before writing
-        writer.write(bom);
+        writer.process(bom);
     }
 
     private void curate(PackageURL purl, Consumer<Package> curate) {
         bom.getPackages().stream()
+                //FIXME Will never be equal!?
                 .filter(pkg -> Objects.equals(purl, pkg.getPurl()))
                 .forEach(curate);
     }
