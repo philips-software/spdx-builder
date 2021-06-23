@@ -136,9 +136,9 @@ public class BlackDuckReader implements BomReader {
             return;
         }
 
-        purls.stream()
-                .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
-                .forEach(pkg -> exportRelation(bom, parent, pkg, relationshipFor(component)));
+        final var purl = purls.get(0);
+        final var pkg = exportPackageIfNotExists(bom, component, purl, projectId, versionId);
+        exportRelation(bom, parent, pkg, relationshipFor(component));
     }
 
     private Package exportPackageIfNotExists(BillOfMaterials bom, BlackDuckComponent component, PackageURL purl, UUID projectId, UUID versionId) {
