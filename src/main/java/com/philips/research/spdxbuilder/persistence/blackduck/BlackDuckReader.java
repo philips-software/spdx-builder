@@ -105,19 +105,25 @@ public class BlackDuckReader implements BomReader {
     }
 
     private void addSubproject(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
-        final var pkg = new Package(null, component.getName(), component.getVersion())
-                .setConcludedLicense(component.getLicense());
-        bom.addPackage(pkg);
-        exportRelation(bom, parent, pkg, component);
+        final Package pkg = exportAnonymousPackage(bom, parent, component);
 
         final var components = client.getRootComponents(projectId, versionId);
         addChildren(bom, pkg, components, projectId, versionId);
     }
 
+    private Package exportAnonymousPackage(BillOfMaterials bom, Package parent, BlackDuckComponent component) {
+        final var pkg = new Package(null, component.getName(), component.getVersion())
+                .setConcludedLicense(component.getLicense());
+        bom.addPackage(pkg);
+        exportRelation(bom, parent, pkg, component);
+        return pkg;
+    }
+
     private void addChild(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
         final var purls = component.getPackageUrls();
         if (purls.isEmpty()) {
-            System.err.println("\nWARNING: Skipped component '" + component + "' as it does not specify any packages");
+            System.err.println("\nWARNING: Component '" + component + "' does not specify any packages");
+            exportAnonymousPackage(bom, parent, component);
         }
         if (purls.size() > 1) {
             System.err.println("\nWARNING: Component '" + component + "' specifies " + purls.size() + " packages");

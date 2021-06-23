@@ -181,12 +181,20 @@ class BlackDuckReaderTest {
         }
 
         @Test
-        void skipsComponentWithoutOrigin() {
+        void exportsComponentWithoutOriginAsAnonymous() {
             when(component.getPackageUrls()).thenReturn(List.of());
 
             reader.read(bom);
 
-            assertThat(bom.getPackages()).hasSize(1); // Only root
+            assertThat(bom.getPackages()).hasSize(2); // Root + anonymous
+            final var pkg = bom.getPackages().get(1);
+            assertThat(pkg.getName()).contains(NAME);
+            assertThat(pkg.getConcludedLicense()).contains(LICENSE);
+            assertThat(pkg.getPurl()).isEmpty();
+            final var relation = bom.getRelations().stream().findFirst().orElseThrow();
+            assertThat(relation.getFrom()).isEqualTo(bom.getPackages().get(0));
+            assertThat(relation.getTo()).isEqualTo(pkg);
+            assertThat(relation.getType()).isEqualTo(Relation.Type.DEPENDS_ON);
         }
 
         @Test
