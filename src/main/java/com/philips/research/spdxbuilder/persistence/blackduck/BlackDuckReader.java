@@ -119,6 +119,9 @@ public class BlackDuckReader implements BomReader {
         if (purls.isEmpty()) {
             System.err.println("\nWARNING: Skipped component '" + component + "' as it does not specify any packages");
         }
+        if (purls.size() > 1) {
+            System.err.println("\nWARNING: Component '" + component + "' specifies " + purls.size() + " packages");
+        }
         purls.stream()
                 .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
                 .forEach(pkg -> exportRelation(bom, parent, pkg, component));
