@@ -105,8 +105,8 @@ public class BlackDuckReader implements BomReader {
     }
 
     private void addSubproject(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
-        final var pkg = new Package(null, component.getName(), component.getVersion())
-                .setConcludedLicense(component.getLicense());
+        final var pkg = new Package(null, component.getName(), component.getVersion());
+        component.getLicense().ifPresent(pkg::setConcludedLicense);
         bom.addPackage(pkg);
         exportRelation(bom, parent, pkg, component);
 
@@ -132,8 +132,8 @@ public class BlackDuckReader implements BomReader {
 
         final var details = client.getComponentDetails(component);
         final var pkg = new Package(purl)
-                .setConcludedLicense(component.getLicense())
                 .setSummary(component.getName());
+        component.getLicense().ifPresent(pkg::setConcludedLicense);
         details.getDescription().ifPresent(pkg::setDescription);
         details.getHomepage().ifPresent(pkg::setHomePage);
         bom.addPackage(pkg);

@@ -115,7 +115,7 @@ class BlackDuckReaderTest {
             when(component.getName()).thenReturn(NAME);
             when(component.getVersion()).thenReturn(VERSION);
             when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
-            when(component.getLicense()).thenReturn(LICENSE);
+            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
             when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
             when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
         }
@@ -171,9 +171,8 @@ class BlackDuckReaderTest {
 
         @Test
         void exportsComponentPerOrigin() {
-            final var purl1 = PACKAGE_URL;
             final var purl2 = purlFrom("pkg:npm/second@2.0");
-            when(component.getPackageUrls()).thenReturn(List.of(purl1, purl2));
+            when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL, purl2));
 
             reader.read(bom);
 
@@ -227,7 +226,7 @@ class BlackDuckReaderTest {
                 when(parent.getId()).thenReturn(PARENT_ID);
                 when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
                 when(parent.getPackageUrls()).thenReturn(List.of(PARENT_PURL));
-                when(parent.getLicense()).thenReturn(License.NONE);
+                when(parent.getLicense()).thenReturn(Optional.of(License.NONE));
                 when(client.getComponentDetails(parent)).thenReturn(details);
             }
 

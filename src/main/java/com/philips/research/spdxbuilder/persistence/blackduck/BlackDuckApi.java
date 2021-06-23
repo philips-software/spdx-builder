@@ -138,7 +138,7 @@ public interface BlackDuckApi {
 
         @Override
         public Optional<License> getLicense() {
-            return (license != null) ? Optional.of(license.getLicense()) : Optional.empty();
+            return (license != null) ? license.getLicense() : Optional.empty();
         }
     }
 
@@ -196,8 +196,8 @@ public interface BlackDuckApi {
         }
 
         @Override
-        public License getLicense() {
-            return (licenses.size() > 0) ? licenses.get(0).getLicense() : License.NONE;
+        public Optional<License> getLicense() {
+            return (licenses.size() > 0) ? licenses.get(0).getLicense() : Optional.of(License.NONE);
         }
 
         @Override
@@ -247,14 +247,19 @@ public interface BlackDuckApi {
         String licenseType;
         List<LicenseJson> licenses = new ArrayList<>();
 
-        public License getLicense() {
+        public Optional<License> getLicense() {
             if (licenses.isEmpty()) {
                 final var identifier = (spdxId != null) ? spdxId : licenseDisplay;
-                return LicenseParser.parse(identifier);
+                if (identifier.equals("Unknown License")) {
+                    return Optional.empty();
+                }
+                return Optional.of(LicenseParser.parse(identifier));
             }
             final var disjunctive = "DISJUNCTIVE".equals(licenseType);
-            return licenses.stream().map(LicenseJson::getLicense)
+            final var license = licenses.stream().map(LicenseJson::getLicense)
+                    .flatMap(Optional::stream)
                     .reduce(License.NONE, (l, r) -> disjunctive ? l.or(r) : l.and(r));
+            return license != License.NONE ? Optional.of(license) : Optional.empty();
         }
     }
 
