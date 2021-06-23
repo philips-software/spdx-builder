@@ -116,6 +116,7 @@ class BlackDuckReaderTest {
             when(component.getVersion()).thenReturn(VERSION);
             when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
             when(component.getLicense()).thenReturn(LICENSE);
+            when(component.getUsages()).thenReturn(List.of("DYNAMICALLY_LINKED"));
             when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
             when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
         }
@@ -170,17 +171,6 @@ class BlackDuckReaderTest {
         }
 
         @Test
-        void exportsComponentPerOrigin() {
-            final var purl1 = PACKAGE_URL;
-            final var purl2 = purlFrom("pkg:npm/second@2.0");
-            when(component.getPackageUrls()).thenReturn(List.of(purl1, purl2));
-
-            reader.read(bom);
-
-            assertThat(bom.getPackages()).hasSize(3); // Root + 2 origins of same component
-        }
-
-        @Test
         void exportsComponentWithoutOriginAsAnonymous() {
             when(component.getPackageUrls()).thenReturn(List.of());
 
@@ -188,13 +178,42 @@ class BlackDuckReaderTest {
 
             assertThat(bom.getPackages()).hasSize(2); // Root + anonymous
             final var pkg = bom.getPackages().get(1);
-            assertThat(pkg.getName()).contains(NAME);
+            assertThat(pkg.getName()).isEqualTo(NAME);
             assertThat(pkg.getConcludedLicense()).contains(LICENSE);
             assertThat(pkg.getPurl()).isEmpty();
-            final var relation = bom.getRelations().stream().findFirst().orElseThrow();
-            assertThat(relation.getFrom()).isEqualTo(bom.getPackages().get(0));
-            assertThat(relation.getTo()).isEqualTo(pkg);
-            assertThat(relation.getType()).isEqualTo(Relation.Type.DEPENDS_ON);
+            assertThat(bom.getRelations()).containsExactly(
+                    new Relation(bom.getPackages().get(0), pkg, Relation.Type.DYNAMICALLY_LINKS)
+            );
+        }
+
+        @Test
+        void exportsComponentWithMultipleOriginsAsTree() {
+            final var purl1 = purlFrom("pkg:maven/ns1/purl1@1");
+            final var purl2 = purlFrom("pkg:npm/ns2/purl2@2");
+            when(component.getPackageUrls()).thenReturn(List.of(purl1, purl2));
+
+            reader.read(bom);
+
+            assertThat(bom.getPackages()).hasSize(4); // Root + component + 2x origin
+            final var comp = bom.getPackages().get(1);
+            assertThat(comp.getName()).isEqualTo(NAME);
+            assertThat(comp.getPurl()).isEmpty();
+            assertThat(comp.getConcludedLicense()).contains(LICENSE);
+            final var origin1 = bom.getPackages().get(2);
+            assertThat(origin1.getNamespace()).isEqualTo("ns1");
+            assertThat(origin1.getName()).isEqualTo("purl1");
+            assertThat(origin1.getPurl()).contains(purl1);
+            assertThat(origin1.getConcludedLicense()).contains(LICENSE);
+            final var origin2 = bom.getPackages().get(3);
+            assertThat(origin2.getNamespace()).isEqualTo("ns2");
+            assertThat(origin2.getName()).isEqualTo("purl2");
+            assertThat(origin2.getPurl()).contains(purl2);
+            assertThat(origin2.getConcludedLicense()).contains(LICENSE);
+            assertThat(bom.getRelations()).containsExactlyInAnyOrder(
+                    new Relation(bom.getPackages().get(0), comp, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(comp, origin1, Relation.Type.DEPENDS_ON),
+                    new Relation(comp, origin2, Relation.Type.DEPENDS_ON)
+            );
         }
 
         @Test
@@ -218,7 +237,7 @@ class BlackDuckReaderTest {
             assertThat(subproject.getVersion()).contains(VERSION);
             assertThat(subproject.getConcludedLicense()).contains(LICENSE);
             assertThat(bom.getRelations()).contains(
-                    new Relation(root, subproject, Relation.Type.DEPENDS_ON)
+                    new Relation(root, subproject, Relation.Type.DYNAMICALLY_LINKS)
             );
         }
 
@@ -250,9 +269,8 @@ class BlackDuckReaderTest {
                 final var from = bom.getPackages().get(1);
                 final var to = bom.getPackages().get(2);
                 assertThat(bom.getRelations()).hasSize(2);
-                assertThat(bom.getRelations()).containsAnyOf(
-                        new Relation(from, to, Relation.Type.DEPENDS_ON),
-                        new Relation(to, from, Relation.Type.DEPENDS_ON));
+                assertThat(bom.getRelations()).contains(
+                        new Relation(from, to, Relation.Type.DYNAMICALLY_LINKS));
             }
 
             @Test

@@ -104,33 +104,41 @@ public class BlackDuckReader implements BomReader {
         });
     }
 
-    private void addSubproject(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
+    private void addSubproject(BillOfMaterials bom, @NullOr Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
         final Package pkg = exportAnonymousPackage(bom, parent, component);
 
         final var components = client.getRootComponents(projectId, versionId);
         addChildren(bom, pkg, components, projectId, versionId);
     }
 
-    private Package exportAnonymousPackage(BillOfMaterials bom, Package parent, BlackDuckComponent component) {
+    private Package exportAnonymousPackage(BillOfMaterials bom, @NullOr Package parent, BlackDuckComponent component) {
         final var pkg = new Package(null, component.getName(), component.getVersion())
                 .setConcludedLicense(component.getLicense());
         bom.addPackage(pkg);
-        exportRelation(bom, parent, pkg, component);
+        exportRelation(bom, parent, pkg, relationshipFor(component));
         return pkg;
     }
 
-    private void addChild(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
+    private void addChild(BillOfMaterials bom, @NullOr Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
         final var purls = component.getPackageUrls();
         if (purls.isEmpty()) {
             System.err.println("\nWARNING: Component '" + component + "' does not specify any packages");
             exportAnonymousPackage(bom, parent, component);
+            return;
         }
+
         if (purls.size() > 1) {
             System.err.println("\nWARNING: Component '" + component + "' specifies " + purls.size() + " packages");
+            final var pkg = exportAnonymousPackage(bom, parent, component);
+            purls.stream()
+                    .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
+                    .forEach(child -> exportRelation(bom, pkg, child, Relation.Type.DEPENDS_ON));
+            return;
         }
+
         purls.stream()
                 .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
-                .forEach(pkg -> exportRelation(bom, parent, pkg, component));
+                .forEach(pkg -> exportRelation(bom, parent, pkg, relationshipFor(component)));
     }
 
     private Package exportPackageIfNotExists(BillOfMaterials bom, BlackDuckComponent component, PackageURL purl, UUID projectId, UUID versionId) {
@@ -153,9 +161,8 @@ public class BlackDuckReader implements BomReader {
         return pkg;
     }
 
-    private void exportRelation(BillOfMaterials bom, @NullOr Package parent, Package child, BlackDuckComponent component) {
+    private void exportRelation(BillOfMaterials bom, @NullOr Package parent, Package child, Relation.Type relationship) {
         if (parent != null) {
-            final var relationship = relationshipFor(component);
             bom.addRelation(parent, child, relationship);
         }
     }
