@@ -19,17 +19,37 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class OrtReaderTest {
-    private static final File ORT_SAMPLE = Path.of("src", "test", "resources", "ort_sample.yml").toFile();
 
-    private final BillOfMaterials bom = new BillOfMaterials();
+  private static final File ORT_SAMPLE1 = getPathOfFile("ort_sample1.yml");
+  private static final File ORT_SAMPLE2 = getPathOfFile("ort_sample2.yml");
+  private final BillOfMaterials bom = new BillOfMaterials();
 
-    @Test
-    void loadsOrtSample() {
-        new OrtReader(ORT_SAMPLE)
-                .defineProjectPackage("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18"))
-                .excludeScopes("NPM::mime-types:2.1.18", List.of("test*"))
-                .read(bom);
+  static File getPathOfFile(String fileName) {
+	return Path.of("src", "test", "resources", fileName).toFile();
+  }
 
-        assertThat(bom.getPackages()).hasSize(1 + 2);
-    }
+  void createBOM(File file) {
+	OrtReader ortSample = new OrtReader(file);
+	ortSample.defineProjectPackage("NPM::mime-types:2.1.18", URI.create("pkg:npm/mime-types@2.1.18"))
+	  .excludeScopes("NPM::mime-types:2.1.18", List.of("test*"))
+	  .read(bom);
+  }
+
+  @Test
+  void loadsOrtSample() {
+	createBOM(ORT_SAMPLE1);
+	assertThat(bom.getPackages()).hasSize(1 + 2);
+  }
+
+  @Test()
+  void abortConversionOnIssues() {
+	Exception exception = assertThrows(OrtReaderException.class, () ->
+	  createBOM(ORT_SAMPLE2)
+	);
+
+	String expectedMessage = "The analyzed ORT file has issues, unable to generate a valid SPDX file";
+	String actualMessage = exception.getMessage();
+
+	assertTrue(actualMessage.contains(expectedMessage));
+  }
 }
