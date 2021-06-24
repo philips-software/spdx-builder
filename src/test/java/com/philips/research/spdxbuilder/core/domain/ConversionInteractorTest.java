@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class ConversionInteractorTest {
-    private static final File ORT_FILE = Path.of("src", "main", "resources", "ort_sample.yml").toFile();
+    private static final File ORT_FILE = Path.of("src", "main", "resources", "ort_sample1.yml").toFile();
     private static final String TYPE = "Type";
     private static final String GROUP = "Namespace";
     private static final String PROJECT = "Project";

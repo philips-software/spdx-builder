@@ -13,7 +13,9 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class OrtReaderTest {
