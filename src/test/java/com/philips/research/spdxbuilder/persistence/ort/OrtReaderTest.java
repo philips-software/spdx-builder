@@ -15,18 +15,17 @@ import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class OrtReaderTest {
 
-  private static final File ORT_SAMPLE1 = getPathOfFile("ort_sample1.yml");
-  private static final File ORT_SAMPLE2 = getPathOfFile("ort_sample2.yml");
-  private final BillOfMaterials bom = new BillOfMaterials();
+  private static final Path SAMPLES_DIR = Path.of("src", "test", "resources");
+  private static final File ORT_SAMPLE = SAMPLES_DIR.resolve("ort_sample.yml").toFile();
+  private static final File ORT_SAMPLE_WITH_ISSUE = SAMPLES_DIR.resolve("ort_with_issue.yml").toFile();
 
-  static File getPathOfFile(String fileName) {
-	return Path.of("src", "test", "resources", fileName).toFile();
-  }
+  private final BillOfMaterials bom = new BillOfMaterials();
 
   void createBOM(File file) {
 	OrtReader ortSample = new OrtReader(file);
@@ -37,19 +36,14 @@ class OrtReaderTest {
 
   @Test
   void loadsOrtSample() {
-	createBOM(ORT_SAMPLE1);
+	createBOM(ORT_SAMPLE);
 	assertThat(bom.getPackages()).hasSize(1 + 2);
   }
 
   @Test()
-  void abortConversionOnIssues() {
-	Exception exception = assertThrows(OrtReaderException.class, () ->
-	  createBOM(ORT_SAMPLE2)
-	);
-
-	String expectedMessage = "The analyzed ORT file has issues, unable to generate a valid SPDX file";
-	String actualMessage = exception.getMessage();
-
-	assertTrue(actualMessage.contains(expectedMessage));
+  void abortsOnAnalyzerIssues() {
+	assertThatThrownBy(() -> createBOM(ORT_SAMPLE_WITH_ISSUE))
+	  .isInstanceOf(OrtReaderException.class)
+	  .hasMessageContaining("The analyzed ORT file has issues");
   }
 }
