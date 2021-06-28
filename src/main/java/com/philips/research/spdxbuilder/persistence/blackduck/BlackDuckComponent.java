@@ -9,6 +9,7 @@ import com.github.packageurl.PackageURL;
 import com.philips.research.spdxbuilder.core.domain.License;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 interface BlackDuckComponent {
@@ -24,7 +25,7 @@ interface BlackDuckComponent {
 
     List<String> getUsages();
 
-    License getLicense();
+    Optional<License> getLicense();
 
     long getHierarchicalId();
 
