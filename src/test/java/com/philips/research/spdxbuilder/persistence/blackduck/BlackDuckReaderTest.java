@@ -218,7 +218,7 @@ class BlackDuckReaderTest {
         class PackageRelations {
             private final UUID PARENT_ID = UUID.randomUUID();
             private final UUID PARENT_VERSION_ID = UUID.randomUUID();
-            private final PackageURL PARENT_PURL = purlFrom("pkg:maven/parent@version");
+            private final PackageURL PARENT_PURL = purlFrom("pkg:maven/group/parent@version");
 
             private final BlackDuckComponent parent = mock(BlackDuckComponent.class);
 
