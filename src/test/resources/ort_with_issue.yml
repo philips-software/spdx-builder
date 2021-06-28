@@ -1,0 +1,9 @@
+# Test resource to see if it has issues.
+# The analyzer result.
+analyzer:
+  result:
+    # Metadata about all found projects, in this case only the mime-types package defined by the package.json file.
+    projects:
+      - id: "NPM::mime-types:2.1.18"
+    # A field to quickly check if the analyzer result contains any issues.
+    has_issues: true
