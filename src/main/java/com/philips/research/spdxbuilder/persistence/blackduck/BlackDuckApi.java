@@ -117,6 +117,7 @@ public interface BlackDuckApi {
     class ProjectVersionJson implements BlackDuckProduct {
         String versionName = "";
         @NullOr String releaseComments;
+        @NullOr String distribution;
         @NullOr LicenseJson license;
         @SuppressWarnings("NotNullFieldNotInitialized")
         LinkJson _meta;
@@ -133,7 +134,11 @@ public interface BlackDuckApi {
 
         @Override
         public Optional<String> getDescription() {
-            return Optional.ofNullable(releaseComments);
+            var description = (releaseComments != null) ? releaseComments : "";
+            if (distribution != null) {
+                description += " (Distribution: " + distribution + ")";
+            }
+            return Optional.ofNullable(description.isEmpty() ? null : description);
         }
 
         @Override
