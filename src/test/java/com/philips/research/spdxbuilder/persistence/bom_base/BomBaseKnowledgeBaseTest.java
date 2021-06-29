@@ -105,7 +105,7 @@ class BomBaseKnowledgeBaseTest {
 
     @Test
     void notifiesEnhancementFailure() {
-        bom.addPackage(new Package(NAMESPACE, NAME, VERSION + "1").setPurl(packageUrl("pkg:maven/second@2")));
+        bom.addPackage(new Package(NAMESPACE, NAME, VERSION + "1").setPurl(packageUrl("pkg:maven/group/second@2")));
         bom.addPackage(new Package(NAMESPACE, NAME, VERSION + "2"));
         //noinspection unchecked
         when(client.readPackage(any(PackageURL.class))).thenReturn(Optional.empty(), Optional.of(meta));

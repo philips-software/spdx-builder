@@ -37,7 +37,7 @@ class BlackDuckApiTest {
 
         @Test
         void prefersSpdxLicense() {
-            assertThat(component.getLicense()).isEqualTo(License.of(LICENSE));
+            assertThat(component.getLicense()).contains(License.of(LICENSE));
         }
 
         @Test
@@ -45,6 +45,14 @@ class BlackDuckApiTest {
             component.licenses.get(0).spdxId = null;
 
             assertThat(component.getLicense().toString()).contains("LicenseRef");
+        }
+
+        @Test
+        void ignoresUnknownLicense() {
+            component.licenses.get(0).spdxId = null;
+            component.licenses.get(0).licenseDisplay = "Unknown License";
+
+            assertThat(component.getLicense()).isEmpty();
         }
 
         @Test
@@ -57,7 +65,7 @@ class BlackDuckApiTest {
 
             final var license = component.getLicense();
 
-            assertThat(license).isEqualTo(License.of(LICENSE).and(License.of(LICENSE2)));
+            assertThat(license).contains(License.of(LICENSE).and(License.of(LICENSE2)));
         }
 
         @Test
@@ -71,7 +79,33 @@ class BlackDuckApiTest {
 
             final var license = component.getLicense();
 
-            assertThat(license).isEqualTo(License.of(LICENSE).or(License.of(LICENSE2)));
+            assertThat(license).contains(License.of(LICENSE).or(License.of(LICENSE2)));
+        }
+
+        @Test
+        void ignoresUnknownElementsInCombinedLicense() {
+            final var json1 = new LicenseJson();
+            json1.spdxId = LICENSE;
+            final var json2 = new LicenseJson();
+            json2.licenseDisplay = "Unknown License";
+            component.licenses.get(0).licenseType = "DISJUNCTIVE";
+            component.licenses.get(0).licenses = List.of(json1, json2);
+
+            final var license = component.getLicense();
+
+            assertThat(license).contains(License.of(LICENSE));
+        }
+
+        @Test
+        void ignoresEffectivelyEmptyCombinedLicense() {
+            final var json = new LicenseJson();
+            json.licenseDisplay = "Unknown License";
+            component.licenses.get(0).licenseType = "DISJUNCTIVE";
+            component.licenses.get(0).licenses = List.of(json);
+
+            final var license = component.getLicense();
+
+            assertThat(license).isEmpty();
         }
     }
 

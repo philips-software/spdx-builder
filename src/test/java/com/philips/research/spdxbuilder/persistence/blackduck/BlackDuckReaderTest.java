@@ -115,7 +115,7 @@ class BlackDuckReaderTest {
             when(component.getName()).thenReturn(NAME);
             when(component.getVersion()).thenReturn(VERSION);
             when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
-            when(component.getLicense()).thenReturn(LICENSE);
+            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
             when(component.getUsages()).thenReturn(List.of("DYNAMICALLY_LINKED"));
             when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
             when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
@@ -245,7 +245,7 @@ class BlackDuckReaderTest {
         class PackageRelations {
             private final UUID PARENT_ID = UUID.randomUUID();
             private final UUID PARENT_VERSION_ID = UUID.randomUUID();
-            private final PackageURL PARENT_PURL = purlFrom("pkg:maven/parent@version");
+            private final PackageURL PARENT_PURL = purlFrom("pkg:maven/group/parent@version");
 
             private final BlackDuckComponent parent = mock(BlackDuckComponent.class);
 
@@ -254,7 +254,7 @@ class BlackDuckReaderTest {
                 when(parent.getId()).thenReturn(PARENT_ID);
                 when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
                 when(parent.getPackageUrls()).thenReturn(List.of(PARENT_PURL));
-                when(parent.getLicense()).thenReturn(License.NONE);
+                when(parent.getLicense()).thenReturn(Optional.of(License.NONE));
                 when(client.getComponentDetails(parent)).thenReturn(details);
             }
 
