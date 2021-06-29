@@ -274,6 +274,36 @@ class BlackDuckReaderTest {
             }
 
             @Test
+            void exportsAdditionalRelationshipsOnMultipleInstancesOfTheSameComponent() {
+                final var child1 = mockBdComponent("child1");
+                final var child2 = mockBdComponent("child2");
+                when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent, parent));
+                //noinspection unchecked
+                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(child1), List.of(child2));
+
+                reader.read(bom);
+
+                assertThat(bom.getPackages()).hasSize(1 + 1 + 2); // project + parent + 2x child
+                final var parentPkg = bom.getPackages().get(1);
+                final var child1Pkg = bom.getPackages().get(2);
+                final var child2Pkg = bom.getPackages().get(3);
+                assertThat(bom.getRelations()).contains(
+                        new Relation(parentPkg, child1Pkg, Relation.Type.DEPENDS_ON),
+                        new Relation(parentPkg, child2Pkg, Relation.Type.DEPENDS_ON)
+                );
+            }
+
+            private BlackDuckComponent mockBdComponent(String name) {
+                final var component = mock(BlackDuckComponent.class);
+                when(component.getId()).thenReturn(UUID.randomUUID());
+                when(component.getVersionId()).thenReturn(UUID.randomUUID());
+                when(component.getLicense()).thenReturn(Optional.of(License.NONE));
+                when(component.getPackageUrls()).thenReturn(List.of(purlFrom("pkg:generic/" + name + "@1.0")));
+                when(client.getComponentDetails(component)).thenReturn(mock(BlackDuckComponentDetails.class));
+                return component;
+            }
+
+            @Test
             void mapsRelationshipTypeFromComponentUsage() {
                 assertRelationship(List.of("SOURCE_CODE"), Relation.Type.DESCENDANT_OF);
                 assertRelationship(List.of("DYNAMICALLY_LINKED"), Relation.Type.DYNAMICALLY_LINKS);
