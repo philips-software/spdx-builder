@@ -33,12 +33,9 @@ class BlackDuckReaderTest {
     private static final String VERSION_SHORT = "VersionShort";
     private static final UUID VERSION_ID = UUID.randomUUID();
     private static final String BLACK_DUCK_VERSION = "BlackDuckVersion";
-    private static final UUID COMPONENT_ID = UUID.randomUUID();
-    private static final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
     private static final String NAMESPACE = "Namespace";
     private static final String NAME = "Name";
     private static final String SUMMARY = "Summary";
-    private static final PackageURL PACKAGE_URL = purlFrom(String.format("pkg:maven/%s/%s@%s", NAMESPACE, NAME, VERSION));
 
     private final BlackDuckProduct project = mock(BlackDuckProduct.class);
     private final BlackDuckProduct projectVersion = mock(BlackDuckProduct.class);
@@ -100,25 +97,27 @@ class BlackDuckReaderTest {
         private static final String HOMEPAGE = "https://homepage.com";
         private final License LICENSE = License.of("GPL-3.0-only");
 
-        private final BlackDuckComponent component = mock(BlackDuckComponent.class);
-        private final BlackDuckComponentDetails details = mock(BlackDuckComponentDetails.class);
+        private final BlackDuckComponent component = mockBdComponent(NAME);
+
+        private BlackDuckComponent mockBdComponent(String name) {
+            final var component = mock(BlackDuckComponent.class);
+            when(component.getId()).thenReturn(UUID.randomUUID());
+            when(component.getVersionId()).thenReturn(UUID.randomUUID());
+            when(component.getName()).thenReturn(name);
+            when(component.getVersion()).thenReturn(VERSION);
+            when(component.getLicense()).thenReturn(Optional.of(License.NONE));
+            when(component.getPackageUrls()).thenReturn(List.of(purlFrom("pkg:generic/" + NAMESPACE + "/" + name + "@" + VERSION)));
+            when(component.getUsages()).thenReturn(List.of("DYNAMICALLY_LINKED"));
+            when(client.getComponentDetails(component)).thenReturn(mock(BlackDuckComponentDetails.class));
+            return component;
+        }
 
         @BeforeEach
-        void beforeEach() throws Exception {
+        void beforeEach() {
             when(client.getServerVersion()).thenReturn(BLACK_DUCK_VERSION);
             when(client.findProject(PROJECT_SHORT)).thenReturn(Optional.of(project));
             when(client.findProjectVersion(PROJECT_ID, VERSION_SHORT)).thenReturn(Optional.of(projectVersion));
             when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(component));
-            when(client.getComponentDetails(component)).thenReturn(details);
-            when(component.getId()).thenReturn(COMPONENT_ID);
-            when(component.getVersionId()).thenReturn(COMPONENT_VERSION_ID);
-            when(component.getName()).thenReturn(NAME);
-            when(component.getVersion()).thenReturn(VERSION);
-            when(component.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
-            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
-            when(component.getUsages()).thenReturn(List.of("DYNAMICALLY_LINKED"));
-            when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
-            when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
         }
 
         @Test
@@ -153,13 +152,17 @@ class BlackDuckReaderTest {
 
         @Test
         void exportsComponent() throws Exception {
-            when(component.getName()).thenReturn(SUMMARY);
+            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
+            final var details = mock(BlackDuckComponentDetails.class);
+            when(details.getDescription()).thenReturn(Optional.of(DESCRIPTION));
+            when(details.getHomepage()).thenReturn(Optional.of(new URL(HOMEPAGE)));
+            when(client.getComponentDetails(component)).thenReturn(details);
 
             reader.read(bom);
 
             assertThat(bom.getPackages()).hasSize(2);
             final var pkg = bom.getPackages().get(1);
-            assertThat(pkg.getPurl()).contains(PACKAGE_URL);
+            assertThat(pkg.getPurl()).contains(component.getPackageUrls().get(0));
             assertThat(pkg.getName()).isEqualTo(NAME);
             assertThat(pkg.getNamespace()).isEqualTo(NAMESPACE);
             assertThat(pkg.getVersion()).isEqualTo(VERSION);
@@ -167,12 +170,13 @@ class BlackDuckReaderTest {
             assertThat(pkg.getConcludedLicense()).contains(LICENSE);
             assertThat(pkg.getDescription()).contains(DESCRIPTION);
             assertThat(pkg.getHomePage()).contains(new URL(HOMEPAGE));
-            assertThat(pkg.getSummary()).contains(SUMMARY);
+            assertThat(pkg.getSummary()).contains(NAME);
         }
 
         @Test
         void exportsComponentWithoutOriginAsAnonymous() {
             when(component.getPackageUrls()).thenReturn(List.of());
+            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
 
             reader.read(bom);
 
@@ -191,6 +195,7 @@ class BlackDuckReaderTest {
             final var purl1 = purlFrom("pkg:maven/ns1/purl1@1");
             final var purl2 = purlFrom("pkg:npm/ns2/purl2@2");
             when(component.getPackageUrls()).thenReturn(List.of(purl1, purl2));
+            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
 
             reader.read(bom);
 
@@ -223,40 +228,28 @@ class BlackDuckReaderTest {
             when(component.isSubproject()).thenReturn(true);
             when(component.getId()).thenReturn(projectId);
             when(component.getVersionId()).thenReturn(versionId);
-            final var sub = mock(BlackDuckComponent.class);
-            when(sub.getPackageUrls()).thenReturn(List.of(PACKAGE_URL));
+            when(component.getLicense()).thenReturn(Optional.of(LICENSE));
+            final var sub = mockBdComponent("sub-project-component");
             when(client.getRootComponents(projectId, versionId)).thenReturn(List.of(sub));
-            when(client.getComponentDetails(sub)).thenReturn(details);
 
             reader.read(bom);
 
             assertThat(bom.getPackages()).hasSize(3); // Root + subproject + component in subproject
             final var root = bom.getPackages().get(0);
             final var subproject = bom.getPackages().get(1);
+            final var subprojectPkg = bom.getPackages().get(2);
             assertThat(subproject.getName()).contains(NAME);
             assertThat(subproject.getVersion()).contains(VERSION);
             assertThat(subproject.getConcludedLicense()).contains(LICENSE);
             assertThat(bom.getRelations()).contains(
-                    new Relation(root, subproject, Relation.Type.DYNAMICALLY_LINKS)
+                    new Relation(root, subproject, Relation.Type.DYNAMICALLY_LINKS),
+                    new Relation(subproject, subprojectPkg, Relation.Type.DYNAMICALLY_LINKS)
             );
         }
 
         @Nested
         class PackageRelations {
-            private final UUID PARENT_ID = UUID.randomUUID();
-            private final UUID PARENT_VERSION_ID = UUID.randomUUID();
-            private final PackageURL PARENT_PURL = purlFrom("pkg:maven/group/parent@version");
-
-            private final BlackDuckComponent parent = mock(BlackDuckComponent.class);
-
-            @BeforeEach
-            void beforeEach() {
-                when(parent.getId()).thenReturn(PARENT_ID);
-                when(parent.getVersionId()).thenReturn(PARENT_VERSION_ID);
-                when(parent.getPackageUrls()).thenReturn(List.of(PARENT_PURL));
-                when(parent.getLicense()).thenReturn(Optional.of(License.NONE));
-                when(client.getComponentDetails(parent)).thenReturn(details);
-            }
+            private final BlackDuckComponent parent = mockBdComponent("parent");
 
             @Test
             void exportsDependencyRelationships() {
@@ -271,6 +264,26 @@ class BlackDuckReaderTest {
                 assertThat(bom.getRelations()).hasSize(2);
                 assertThat(bom.getRelations()).contains(
                         new Relation(from, to, Relation.Type.DYNAMICALLY_LINKS));
+            }
+
+            @Test
+            void exportsAdditionalRelationshipsOnMultipleInstancesOfTheSameComponent() {
+                final var child1 = mockBdComponent("child1");
+                final var child2 = mockBdComponent("child2");
+                when(client.getRootComponents(PROJECT_ID, VERSION_ID)).thenReturn(List.of(parent, parent));
+                //noinspection unchecked
+                when(client.getDependencies(PROJECT_ID, VERSION_ID, parent)).thenReturn(List.of(child1), List.of(child2));
+
+                reader.read(bom);
+
+                assertThat(bom.getPackages()).hasSize(1 + 1 + 2); // project + parent + 2x child
+                final var parentPkg = bom.getPackages().get(1);
+                final var child1Pkg = bom.getPackages().get(2);
+                final var child2Pkg = bom.getPackages().get(3);
+                assertThat(bom.getRelations()).contains(
+                        new Relation(parentPkg, child1Pkg, Relation.Type.DYNAMICALLY_LINKS),
+                        new Relation(parentPkg, child2Pkg, Relation.Type.DYNAMICALLY_LINKS)
+                );
             }
 
             @Test

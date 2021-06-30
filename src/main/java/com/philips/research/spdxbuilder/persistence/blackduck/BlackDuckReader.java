@@ -143,19 +143,16 @@ public class BlackDuckReader implements BomReader {
     }
 
     private Package exportPackageIfNotExists(BillOfMaterials bom, BlackDuckComponent component, PackageURL purl, UUID projectId, UUID versionId) {
-        final var existing = packages.get(purl);
-        if (existing != null) {
-            return existing;
-        }
-
-        final var details = client.getComponentDetails(component);
-        final var pkg = new Package(purl)
-                .setSummary(component.getName());
-        component.getLicense().ifPresent(pkg::setConcludedLicense);
-        details.getDescription().ifPresent(pkg::setDescription);
-        details.getHomepage().ifPresent(pkg::setHomePage);
-        bom.addPackage(pkg);
-        packages.put(purl, pkg);
+        @NullOr Package pkg = packages.computeIfAbsent(purl, x -> {
+            final var details = client.getComponentDetails(component);
+            final var newPkg = new Package(purl)
+                    .setSummary(component.getName());
+            component.getLicense().ifPresent(newPkg::setConcludedLicense);
+            details.getDescription().ifPresent(newPkg::setDescription);
+            details.getHomepage().ifPresent(newPkg::setHomePage);
+            bom.addPackage(newPkg);
+            return newPkg;
+        });
 
         final var dependencies = client.getDependencies(projectId, versionId, component);
         addChildren(bom, pkg, dependencies, projectId, versionId);
