@@ -22,7 +22,7 @@ repositories {
 }
 
 ext {
-    jacksonVersion = '2.12.3'
+    jacksonVersion = '2.12.4'
     junitVersion = '5.7.2'
     mockWebServerVersion = '4.9.1'
     retrofitVersion = '2.9.0'
