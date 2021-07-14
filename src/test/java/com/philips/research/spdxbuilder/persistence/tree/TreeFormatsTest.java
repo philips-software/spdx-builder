@@ -175,8 +175,8 @@ class TreeFormatsTest {
         }
 
         @Test
-        void spdxTree() {
-            format.configure(parser, "spdx");
+        void purlTree() {
+            format.configure(parser, "purl");
 
             parse("TREE start =====",
                     "pkg:type/top@1.0",

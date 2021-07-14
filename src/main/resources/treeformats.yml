@@ -91,7 +91,7 @@ formats:
     version:
       regex: "(\\S==|installed:\\s)([^\\]]+)\\]?$"
       group: 2
-  - format: spdx
+  - format: purl
     description: "Tree output of SPDX-Builder itself."
     tool: "SPDX-Builder <mode> --tree"
     type:
