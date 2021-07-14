@@ -59,7 +59,7 @@ public class TagValueDocument implements Closeable {
         if (string.isBlank()) {
             value = NONE;
         }
-        final var isMultiline = string.contains("\n") || string.contains("text>");
+        final var isMultiline = string.contains("\r") || string.contains("\n") || string.contains("text>");
         final var escaped = value.toString().replaceAll("</text>", "</text> ");
         writeLine(tag + ": " + (isMultiline ? "<text>" + escaped + "</text>" : value));
     }
