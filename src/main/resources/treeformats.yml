@@ -36,15 +36,6 @@ formats:
       group: 1
     start: "^runtimeClasspath" # Only runtime dependencies
     end: "^\\s*$" # Empty line
-  - format: nuget
-    description: "Nuget tree output"
-    tool: "See https://github.com/Brend-Smits/NugetTree"
-    name:
-      regex: "(?<= ) ([^ ]*)"
-      group: 1
-    version:
-      regex: "(?<= )(\d.+)"
-      group: 1
   - format: npm
     description: "Default NPM tree output"
     tool: "npm list --all --production"
@@ -59,6 +50,17 @@ formats:
       group: 2
     version:
       regex: "@([^@\\s]+)(\\s\\S+)?$"
+      group: 1
+  - format: nuget
+    description: "Nuget tree output"
+    tool: "See https://github.com/Brend-Smits/NugetTree"
+    types:
+      "": "nuget"
+    name:
+      regex: "([^ ]*)"
+      group: 1
+    version:
+      regex: "(?<= )(\\d.+)"
       group: 1
   - format: rust
     description: "Default Rust (=Cargo) tree output"
