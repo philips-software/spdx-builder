@@ -52,16 +52,14 @@ formats:
       regex: "@([^@\\s]+)(\\s\\S+)?$"
       group: 1
   - format: nuget
-    description: "Nuget tree output"
-    tool: "See https://github.com/Brend-Smits/NugetTree"
+    description: "Tree output for NuGet based on tooling found in https://github.com/Brend-Smits/NugetTree"
+    tool: "dotnet src/NugetTree/bin/Debug/netcoreapp3.1/NugetTree.dll \"NugetTree.sln\" -t"
     types:
       "": "nuget"
     name:
-      regex: "([^ ]*)"
-      group: 1
+      regex: "(^\\S+)"
     version:
-      regex: "(?<= )(\\d.+)"
-      group: 1
+      regex: "\\s(\\S+)"
   - format: rust
     description: "Default Rust (=Cargo) tree output"
     tool: "cargo tree -e no-dev,no-build --locked"
