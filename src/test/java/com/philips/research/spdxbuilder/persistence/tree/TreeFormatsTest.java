@@ -84,6 +84,24 @@ class TreeFormatsTest {
         }
 
         @Test
+        void nuget() {
+            format.configure(parser, "nuget");
+
+            parse("ProjectName 1.0.0-dev",
+                    "---IdentityModel.AspNetCore7.1 3.0.0.0",
+                    "---xunit.extensibility.core 2.4.1.0 by xunit.core (2.4.1.0)",
+                    "AnotherProjectName 1.0.1",
+                    "---Coravel 4.0.2.0");
+
+            assertThat(bom.getPackages()).containsExactly(
+                    new Package("","ProjectName", "1.0.0-dev"),
+                    new Package("","IdentityModel.AspNetCore7.1", "3.0.0.0"),
+                    new Package("","xunit.extensibility.core", "2.4.1.0"),
+                    new Package("","AnotherProjectName", "1.0.1"),
+                    new Package("","Coravel", "4.0.2.0"));
+        }
+
+        @Test
         void maven() {
             format.configure(parser, "maven");
 
