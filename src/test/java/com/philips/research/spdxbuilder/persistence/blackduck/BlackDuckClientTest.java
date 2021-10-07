@@ -35,6 +35,7 @@ class BlackDuckClientTest {
     private static final UUID COMPONENT_VERSION_ID = UUID.randomUUID();
     private static final String DESCRIPTION = "Description";
     private static final String LICENSE = "Apache-2.0";
+    private static final String DISTRIBUTION = "Distribution";
     private static final int PORT = 1080;
 
     private final MockWebServer server = new MockWebServer();
@@ -162,6 +163,7 @@ class BlackDuckClientTest {
                                     .put("name", PROJECT)
                                     .put("versionName", VERSION)
                                     .put("releaseComments", DESCRIPTION)
+                                    .put("distribution", DISTRIBUTION)
                                     .put("license", new JSONObject().put("spdxId", LICENSE))
                                     .put("_meta", new JSONObject()
                                             .put("href", URI.create("https://server/something/" + VERSION_ID))))).toString()));
@@ -170,7 +172,9 @@ class BlackDuckClientTest {
 
             assertThat(projectVersion.getId()).isEqualTo(VERSION_ID);
             assertThat(projectVersion.getName()).isEqualTo(VERSION);
-            assertThat(projectVersion.getDescription()).contains(DESCRIPTION);
+            final var description = projectVersion.getDescription().orElseThrow();
+            assertThat(description).contains(DESCRIPTION);
+            assertThat(description).contains(DISTRIBUTION);
             assertThat(projectVersion.getLicense()).contains(License.of(LICENSE));
             final var request = server.takeRequest();
             assertThat(request.getMethod()).isEqualTo("GET");

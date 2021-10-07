@@ -72,12 +72,13 @@ public class OrtReader implements BomReader {
         System.out.println("Reading ORT file '" + file + "'...");
         try {
             final var yaml = MAPPER.readValue(file, OrtJson.class);
-
-            //TODO Break if Analyzer reported failures
-
             final var dictionary = new HashMap<String, Package>();
+
             if (yaml.analyzer == null || yaml.analyzer.result == null) {
                 throw new OrtReaderException("ORT file does not include an 'analyzer.result' section");
+            }
+            if (yaml.analyzer.result.hasIssues) {
+                throw new OrtReaderException("The analyzed ORT file has issues");
             }
             final var result = yaml.analyzer.result;
 

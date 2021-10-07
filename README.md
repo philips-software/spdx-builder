@@ -114,8 +114,6 @@ A local ORT-based self-test (if ORT is installed locally) can be run by:
 
 Must-have:
 
-- [x] Properly expand Black Duck origin identifiers to package URLs.
-- [ ] Recursively import sub-projects from Black Duck.
 - [ ] Abort if ORT Analyzer raised errors.
 - [ ] Support the new (more compact) ORT tree structure. (Currently breaks Gradle projects.)
 - [ ] Add hashes of build results (where possible).

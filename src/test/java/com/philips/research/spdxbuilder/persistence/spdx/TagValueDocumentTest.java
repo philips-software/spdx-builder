@@ -81,7 +81,7 @@ class TagValueDocumentTest {
     }
 
     @Test
-    void writesTextValue() throws Exception {
+    void writesMultiLineTextValue() throws Exception {
         assertOutput(String.format(MULTI_LINE_TEMPLATE, TAG, MULTI_VALUE), (doc) -> doc.addValue(TAG, MULTI_VALUE));
     }
 

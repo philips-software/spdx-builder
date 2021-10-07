@@ -51,6 +51,15 @@ formats:
     version:
       regex: "@([^@\\s]+)(\\s\\S+)?$"
       group: 1
+  - format: nuget
+    description: "Tree output for NuGet based on tooling found in https://github.com/Brend-Smits/NugetTree"
+    tool: "dotnet src/NugetTree/bin/Debug/netcoreapp3.1/NugetTree.dll \"NugetTree.sln\" -t"
+    types:
+      "": "nuget"
+    name:
+      regex: "(^\\S+)"
+    version:
+      regex: "\\s(\\S+)"
   - format: rust
     description: "Default Rust (=Cargo) tree output"
     tool: "cargo tree -e no-dev,no-build --locked"
@@ -91,7 +100,7 @@ formats:
     version:
       regex: "(\\S==|installed:\\s)([^\\]]+)\\]?$"
       group: 2
-  - format: spdx
+  - format: purl
     description: "Tree output of SPDX-Builder itself."
     tool: "SPDX-Builder <mode> --tree"
     type:

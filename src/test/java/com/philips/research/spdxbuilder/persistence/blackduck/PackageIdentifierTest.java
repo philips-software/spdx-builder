@@ -13,8 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PackageIdentifierTest {
     @Test
-        // (Formats are based on external namespaces list provided by Black Duck.)
     void decodesFormats() {
+        // (Formats are based on external namespaces list provided by Black Duck.)
         assertIdentifier("alpine", "name/version/architecture", "alpine/name@version");
         // alt_linux
         // anaconda

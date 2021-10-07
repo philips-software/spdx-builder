@@ -104,49 +104,63 @@ public class BlackDuckReader implements BomReader {
         });
     }
 
-    private void addSubproject(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
-        final var pkg = new Package(null, component.getName(), component.getVersion())
-                .setConcludedLicense(component.getLicense());
-        bom.addPackage(pkg);
-        exportRelation(bom, parent, pkg, component);
+    private void addSubproject(BillOfMaterials bom, @NullOr Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
+        final Package pkg = exportAnonymousPackage(bom, parent, component);
+        component.getLicense().ifPresent(pkg::setConcludedLicense);
 
         final var components = client.getRootComponents(projectId, versionId);
         addChildren(bom, pkg, components, projectId, versionId);
     }
 
-    private void addChild(BillOfMaterials bom, Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
+    private Package exportAnonymousPackage(BillOfMaterials bom, @NullOr Package parent, BlackDuckComponent component) {
+        final var pkg = new Package(null, component.getName(), component.getVersion());
+        component.getLicense().ifPresent(pkg::setConcludedLicense);
+        bom.addPackage(pkg);
+        exportRelation(bom, parent, pkg, relationshipFor(component));
+        return pkg;
+    }
+
+    private void addChild(BillOfMaterials bom, @NullOr Package parent, UUID projectId, UUID versionId, BlackDuckComponent component) {
         final var purls = component.getPackageUrls();
         if (purls.isEmpty()) {
-            System.err.println("\nWARNING: Skipped component '" + component + "' as it does not specify any packages");
+            System.err.println("\nWARNING: Component '" + component + "' does not specify any packages");
+            exportAnonymousPackage(bom, parent, component);
+            return;
         }
-        purls.stream()
-                .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
-                .forEach(pkg -> exportRelation(bom, parent, pkg, component));
+
+        if (purls.size() > 1) {
+            System.err.println("\nWARNING: Component '" + component + "' specifies " + purls.size() + " packages");
+            final var pkg = exportAnonymousPackage(bom, parent, component);
+            purls.stream()
+                    .map(purl -> exportPackageIfNotExists(bom, component, purl, projectId, versionId))
+                    .forEach(child -> exportRelation(bom, pkg, child, Relation.Type.DEPENDS_ON));
+            return;
+        }
+
+        final var purl = purls.get(0);
+        final var pkg = exportPackageIfNotExists(bom, component, purl, projectId, versionId);
+        exportRelation(bom, parent, pkg, relationshipFor(component));
     }
 
     private Package exportPackageIfNotExists(BillOfMaterials bom, BlackDuckComponent component, PackageURL purl, UUID projectId, UUID versionId) {
-        final var existing = packages.get(purl);
-        if (existing != null) {
-            return existing;
-        }
-
-        final var details = client.getComponentDetails(component);
-        final var pkg = new Package(purl)
-                .setConcludedLicense(component.getLicense())
-                .setSummary(component.getName());
-        details.getDescription().ifPresent(pkg::setDescription);
-        details.getHomepage().ifPresent(pkg::setHomePage);
-        bom.addPackage(pkg);
-        packages.put(purl, pkg);
+        @NullOr Package pkg = packages.computeIfAbsent(purl, x -> {
+            final var details = client.getComponentDetails(component);
+            final var newPkg = new Package(purl)
+                    .setSummary(component.getName());
+            component.getLicense().ifPresent(newPkg::setConcludedLicense);
+            details.getDescription().ifPresent(newPkg::setDescription);
+            details.getHomepage().ifPresent(newPkg::setHomePage);
+            bom.addPackage(newPkg);
+            return newPkg;
+        });
 
         final var dependencies = client.getDependencies(projectId, versionId, component);
         addChildren(bom, pkg, dependencies, projectId, versionId);
         return pkg;
     }
 
-    private void exportRelation(BillOfMaterials bom, @NullOr Package parent, Package child, BlackDuckComponent component) {
+    private void exportRelation(BillOfMaterials bom, @NullOr Package parent, Package child, Relation.Type relationship) {
         if (parent != null) {
-            final var relationship = relationshipFor(component);
             bom.addRelation(parent, child, relationship);
         }
     }
