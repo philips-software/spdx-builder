@@ -171,6 +171,7 @@ class BlackDuckReaderTest {
             assertThat(pkg.getDescription()).contains(DESCRIPTION);
             assertThat(pkg.getHomePage()).contains(new URL(HOMEPAGE));
             assertThat(pkg.getSummary()).contains(NAME);
+            assertThat(pkg.getSupplier()).isEmpty();
         }
 
         @Test

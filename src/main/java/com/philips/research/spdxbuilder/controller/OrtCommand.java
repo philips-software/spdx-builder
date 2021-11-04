@@ -41,7 +41,7 @@ public class OrtCommand extends AbstractCommand {
     @Override
     protected ConversionService createService() {
         final OrtReader reader = new OrtReader(ortFile);
-        final BomProcessor writer = new SpdxWriter(spdxFile);
+        final BomProcessor writer = new SpdxWriter(spdxStream);
         ConversionService service = licenseScanner != null
                 ? new ConversionInteractor(reader, writer).setKnowledgeBase(new LicenseKnowledgeBase(licenseScanner))
                 : new ConversionInteractor(reader, writer);

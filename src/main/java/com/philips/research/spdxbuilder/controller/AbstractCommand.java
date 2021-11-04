@@ -11,6 +11,8 @@ import picocli.CommandLine.Option;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.net.URI;
 
 /**
@@ -27,6 +29,7 @@ public abstract class AbstractCommand implements Runnable {
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
+    FileOutputStream spdxStream;
 
     @Option(names = {"--tree"}, description = "Print dependency tree")
     boolean printTree;
@@ -55,6 +58,13 @@ public abstract class AbstractCommand implements Runnable {
 
         if (!spdxFile.getName().contains(".")) {
             spdxFile = new File(spdxFile.getPath() + ".spdx");
+            System.out.println("Writing SBOM to '" + spdxFile.getName() + "'");
+            try {
+                spdxStream = new FileOutputStream(spdxFile);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
 
         final var service = createService();
