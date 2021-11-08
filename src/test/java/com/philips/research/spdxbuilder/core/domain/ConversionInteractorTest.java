@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -120,13 +121,12 @@ class ConversionInteractorTest {
     @Test
     void verifyPackageWithNoSupplierField() {
         bom.addPackage(pkg);
-        ByteArrayOutputStream spdxFile = new ByteArrayOutputStream();
-        BomProcessor spdxWriter = new SpdxWriter(spdxFile);
+        ByteArrayOutputStream spdxOutputStream = new ByteArrayOutputStream();
+        BomProcessor spdxWriter = new SpdxWriter(spdxOutputStream);
         interactor.apply(spdxWriter);
-        String packageSupplier;
 
-        Stream<String> lines = spdxFile.toString(Charset.defaultCharset()).lines();
-        packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).collect(Collectors.joining(""));
+        Stream<String> lines = spdxOutputStream.toString(Charset.defaultCharset()).lines();
+        String packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).collect(Collectors.joining(""));
         assertThat(packageSupplier).isEqualTo("PackageSupplier: NOASSERTION");
     }
 
