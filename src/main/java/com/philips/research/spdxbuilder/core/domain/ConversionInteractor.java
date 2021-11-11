@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 /**
  * Implementation of conversion use cases.
  */
-public class ConversionInteractor implements ConversionService {
+public class ConversionInteractor implements ConversionService, AutoCloseable {
     private final BomReader reader;
     private final BomProcessor writer;
     private final BillOfMaterials bom;
@@ -98,5 +98,12 @@ public class ConversionInteractor implements ConversionService {
                 //FIXME Will never be equal!?
                 .filter(pkg -> Objects.equals(purl, pkg.getPurl()))
                 .forEach(curate);
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (this.writer != null) {
+            this.writer.close();
+        }
     }
 }

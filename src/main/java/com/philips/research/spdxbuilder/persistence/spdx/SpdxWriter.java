@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * Converts a bill-of-materials to an SPDX file.
  */
-public class SpdxWriter implements BomProcessor {
+public class SpdxWriter implements BomProcessor, AutoCloseable {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .withZone(ZoneId.of("UTC"));
     private static final List<String> SUPPORTED_HASH_KEYS =
@@ -48,12 +48,13 @@ public class SpdxWriter implements BomProcessor {
             System.out.println("Total: " + bom.getPackages().size() + " packages and " + bom.getRelations().size() + " relations");
         } catch (IOException e) {
             throw new SpdxException("Could not write SPDX file: " + e.getMessage());
-        } finally {
-            try {
-                if (this.stream != null) this.stream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (this.stream != null) {
+            this.stream.close();
         }
     }
 
