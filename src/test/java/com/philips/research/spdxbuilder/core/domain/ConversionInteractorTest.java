@@ -6,12 +6,18 @@
 package com.philips.research.spdxbuilder.core.domain;
 
 import com.philips.research.spdxbuilder.core.*;
+import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -110,6 +116,18 @@ class ConversionInteractorTest {
 
         assertThat(bom.getNamespace()).contains(NAMESPACE_URI);
         assertThat(bom.getIdentifier()).contains(PROJECT);
+    }
+
+    @Test
+    void verifyPackageWithNoSupplierField() {
+        bom.addPackage(pkg);
+        ByteArrayOutputStream spdxOutputStream = new ByteArrayOutputStream();
+        BomProcessor spdxWriter = new SpdxWriter(spdxOutputStream);
+        interactor.apply(spdxWriter);
+
+        Stream<String> lines = spdxOutputStream.toString(Charset.defaultCharset()).lines();
+        String packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).collect(Collectors.joining(""));
+        assertThat(packageSupplier).isEqualTo("PackageSupplier: NOASSERTION");
     }
 
 //    @Nested

@@ -11,6 +11,9 @@ import picocli.CommandLine.Option;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -27,6 +30,8 @@ public abstract class AbstractCommand implements Runnable {
     @SuppressWarnings("NotNullFieldNotInitialized")
     @Option(names = {"--output", "-o"}, description = "Output SPDX tag-value file", paramLabel = "FILE", defaultValue = "bom.spdx")
     File spdxFile;
+
+    @NullOr FileOutputStream spdxStream;
 
     @Option(names = {"--tree"}, description = "Print dependency tree")
     boolean printTree;
@@ -53,23 +58,39 @@ public abstract class AbstractCommand implements Runnable {
             System.exit(0);
         }
 
-        if (!spdxFile.getName().contains(".")) {
-            spdxFile = new File(spdxFile.getPath() + ".spdx");
-        }
+        String filePathName = spdxFile.getPath() + (spdxFile.getName().contains(".") ? "" : ".spdx");
 
-        final var service = createService();
-        service.read();
-        if (printTree) {
-            service.apply(new TreeWriter());
-        }
-        service.convert(forceContinue);
+        try {
+            spdxFile = new File(filePathName);
+            System.out.println("Writing SBOM to '" + spdxFile.getName() + "'");
+            spdxStream = new FileOutputStream(spdxFile);
 
-        if (uploadUrl != null) {
-            System.out.println("Uploading '" + spdxFile.getName() + "' to " + uploadUrl);
-            new UploadClient(uploadUrl).upload(spdxFile);
-        }
+            final var service = createService();
+            service.read();
+            if (printTree) {
+                service.apply(new TreeWriter());
+            }
+            service.convert(forceContinue);
 
-        System.exit(0);
+            if (uploadUrl != null) {
+                System.out.println("Uploading '" + spdxFile.getName() + "' to " + uploadUrl);
+                new UploadClient(uploadUrl).upload(spdxFile);
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.exit(1);
+        } finally {
+            try {
+                if (spdxStream != null) {
+                    spdxStream.close();
+                    System.exit(0);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
     }
 
     private void showBanner() {
