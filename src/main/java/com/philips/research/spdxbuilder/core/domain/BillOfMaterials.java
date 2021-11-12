@@ -21,6 +21,16 @@ public class BillOfMaterials {
     private @NullOr Party organization;
     private @NullOr String identifier;
     private @NullOr URI namespace;
+    private @NullOr String createdAt;
+
+    public String getCreatedAt() {
+        return (createdAt != null) ? createdAt : "";
+    }
+
+    public BillOfMaterials setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
 
     public List<Package> getPackages() {
         return packages;

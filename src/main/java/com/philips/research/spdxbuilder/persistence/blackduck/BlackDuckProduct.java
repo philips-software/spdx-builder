@@ -18,4 +18,6 @@ public interface BlackDuckProduct {
     Optional<String> getDescription();
 
     Optional<License> getLicense();
+
+    String getCreatedAt();
 }

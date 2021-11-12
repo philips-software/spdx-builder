@@ -112,10 +112,16 @@ public interface BlackDuckApi {
         public Optional<License> getLicense() {
             return Optional.empty();
         }
+
+        @Override
+        public String getCreatedAt() {
+            return "";
+        }
     }
 
     class ProjectVersionJson implements BlackDuckProduct {
         String versionName = "";
+        String createdAt = "";
         @NullOr String releaseComments;
         @NullOr String distribution;
         @NullOr LicenseJson license;
@@ -144,6 +150,11 @@ public interface BlackDuckApi {
         @Override
         public Optional<License> getLicense() {
             return (license != null) ? license.getLicense() : Optional.empty();
+        }
+
+        @Override
+        public String getCreatedAt() {
+            return createdAt;
         }
     }
 
