@@ -30,7 +30,7 @@ public class SpdxWriter implements BomProcessor, AutoCloseable {
             List.of("SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6");
 
     private final OutputStream stream;
-    private final Map<Package, SpdxRef> identifiers = new HashMap<>();
+    private final Map<Package, SpdxRef> identifiers = new LinkedHashMap<>();
 
     private int nextId = 1;
 
