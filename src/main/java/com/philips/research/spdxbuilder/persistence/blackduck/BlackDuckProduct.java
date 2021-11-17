@@ -8,6 +8,7 @@ package com.philips.research.spdxbuilder.persistence.blackduck;
 import com.philips.research.spdxbuilder.core.domain.License;
 import pl.tlinkowski.annotation.basic.NullOr;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,5 +21,5 @@ public interface BlackDuckProduct {
 
     Optional<License> getLicense();
 
-    Optional<String> getCreatedAt();
+    Optional<LocalDateTime> getCreatedAt();
 }

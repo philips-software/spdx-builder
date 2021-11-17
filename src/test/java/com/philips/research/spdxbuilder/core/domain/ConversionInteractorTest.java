@@ -138,9 +138,8 @@ class ConversionInteractorTest {
 
         @BeforeEach
         void setUp() {
-            bom.setCreatedAt(dateString);
+            bom.setCreatedAt(localDateTime);
             bom.addPackage(project).addPackage(pkg);
-            bom.setCreatedAt("2000-01-01T01:01:01.105Z");
             BomProcessor spdxWriter = new SpdxWriter(spdxOutputStream);
             interactor.apply(spdxWriter);
             lines = spdxOutputStream.toString(Charset.defaultCharset()).lines();
@@ -152,9 +151,9 @@ class ConversionInteractorTest {
         }
 
         @Test
-        void verifyPackageWithNoSupplierField() {
-            Optional<String> packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst();
-            assertThat(packageSupplier.get()).isEqualTo("PackageSupplier: NOASSERTION");
+        void verifyPackageWithoutSupplierField() {
+            String packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst().orElse("");
+            assertThat(packageSupplier).isEqualTo("PackageSupplier: NOASSERTION");
         }
 
         @Test

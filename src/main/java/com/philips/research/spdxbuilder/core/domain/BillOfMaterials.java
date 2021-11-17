@@ -5,14 +5,12 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
-import com.philips.research.spdxbuilder.core.BusinessException;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
+
 
 /**
  * Report on the composition of a product
@@ -28,22 +26,11 @@ public class BillOfMaterials {
     private @NullOr LocalDateTime createdAt;
 
     public Optional<LocalDateTime> getCreatedAt() {
-        return  Optional.ofNullable(createdAt);
+        return Optional.ofNullable(createdAt);
     }
 
-    public BillOfMaterials setCreatedAt(String createdTime) {
-        DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        LocalDateTime localDateTime;
-        if (!createdTime.isEmpty()) {
-            try {
-                localDateTime = LocalDateTime.parse(createdTime, parser);
-                this.createdAt = localDateTime;
-            } catch (DateTimeParseException e) {
-                throw new BusinessException("Failed to parse date " + e.getMessage());
-            }
-        } else {
-            this.createdAt = null;
-        }
+    public BillOfMaterials setCreatedAt(LocalDateTime createdTime) {
+        this.createdAt = createdTime;
         return this;
     }
 

@@ -14,7 +14,12 @@ import retrofit2.http.*;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -111,7 +116,7 @@ public interface BlackDuckApi {
         }
 
         @Override
-        public Optional<String> getCreatedAt() {
+        public Optional<LocalDateTime> getCreatedAt() {
             return Optional.empty();
         }
     }
@@ -150,8 +155,9 @@ public interface BlackDuckApi {
         }
 
         @Override
-        public Optional<String> getCreatedAt() {
-            return Optional.ofNullable(createdAt);
+        public Optional<LocalDateTime> getCreatedAt() {
+            DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            return (createdAt !=null) ? Optional.of(LocalDateTime.parse(createdAt, parser)):  Optional.empty() ;
         }
     }
 
