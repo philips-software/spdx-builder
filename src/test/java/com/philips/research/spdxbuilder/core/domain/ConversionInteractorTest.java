@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.core.domain;
 
 import com.philips.research.spdxbuilder.core.*;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -124,9 +124,10 @@ class ConversionInteractorTest {
     }
 
     @Nested
-    class spdxDocument{
+    class spdxDocument {
         ByteArrayOutputStream spdxOutputStream = new ByteArrayOutputStream();
         Stream<String> lines;
+
         @BeforeEach
         void setUp() {
             bom.addPackage(project).addPackage(pkg);
@@ -135,22 +136,24 @@ class ConversionInteractorTest {
             lines = spdxOutputStream.toString(Charset.defaultCharset()).lines();
         }
 
-        @Test
-        void verifyPackageWithNoSupplierField () throws IOException {
-            Optional<String> packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst();
-            assertThat(packageSupplier.get()).isEqualTo("PackageSupplier: NOASSERTION");
+        @AfterEach
+        void shutdown() throws IOException {
             spdxOutputStream.close();
         }
 
         @Test
-        void verifyPackageOrder () throws IOException {
+        void verifyPackageWithNoSupplierField() {
+            Optional<String> packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst();
+            assertThat(packageSupplier.get()).isEqualTo("PackageSupplier: NOASSERTION");
+        }
+
+        @Test
+        void verifyPackageOrder() {
             ArrayList<String> packages = new ArrayList<>(List.of("PackageName: Namespace/Project", "PackageName: Namespace/Package"));
             ArrayList<String> packageNames = lines.filter(line -> line.startsWith("PackageName: ")).collect(Collectors.toCollection(ArrayList::new));
             assertThat(packages).isEqualTo(packageNames);
-            spdxOutputStream.close();
         }
     }
-
 
 
 //    @Nested
