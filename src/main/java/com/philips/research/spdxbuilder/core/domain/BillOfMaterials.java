@@ -5,9 +5,13 @@
 
 package com.philips.research.spdxbuilder.core.domain;
 
+import com.philips.research.spdxbuilder.core.BusinessException;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -21,14 +25,25 @@ public class BillOfMaterials {
     private @NullOr Party organization;
     private @NullOr String identifier;
     private @NullOr URI namespace;
-    private @NullOr String createdAt;
+    private @NullOr LocalDateTime createdAt;
 
-    public String getCreatedAt() {
-        return (createdAt != null) ? createdAt : "";
+    public Optional<LocalDateTime> getCreatedAt() {
+        return  Optional.ofNullable(createdAt);
     }
 
-    public BillOfMaterials setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public BillOfMaterials setCreatedAt(String createdTime) {
+        DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        LocalDateTime localDateTime;
+        if (!createdTime.isEmpty()) {
+            try {
+                localDateTime = LocalDateTime.parse(createdTime, parser);
+                this.createdAt = localDateTime;
+            } catch (DateTimeParseException e) {
+                throw new BusinessException("Failed to parse date " + e.getMessage());
+            }
+        } else {
+            this.createdAt = null;
+        }
         return this;
     }
 

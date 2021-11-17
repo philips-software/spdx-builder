@@ -87,7 +87,7 @@ public class BlackDuckReader implements BomReader {
         project.getDescription().ifPresent(root::setDescription);
         projectVersion.getDescription().ifPresent(root::setSummary);
         projectVersion.getLicense().ifPresent(root::setConcludedLicense);
-        bom.setCreatedAt(projectVersion.getCreatedAt());
+        projectVersion.getCreatedAt().ifPresent(bom::setCreatedAt);
         bom.addPackage(root);
 
         final var components = client.getRootComponents(project.getId(), projectVersion.getId());

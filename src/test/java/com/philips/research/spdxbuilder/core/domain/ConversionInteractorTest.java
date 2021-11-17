@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -127,9 +130,15 @@ class ConversionInteractorTest {
     class spdxDocument {
         ByteArrayOutputStream spdxOutputStream = new ByteArrayOutputStream();
         Stream<String> lines;
+        DateTimeFormatter isoFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                .withZone(ZoneId.of("UTC"));
+        String dateString = "2000-01-01T01:01:01.111Z";
+        DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, parser);
 
         @BeforeEach
         void setUp() {
+            bom.setCreatedAt(dateString);
             bom.addPackage(project).addPackage(pkg);
             bom.setCreatedAt("2000-01-01T01:01:01.105Z");
             BomProcessor spdxWriter = new SpdxWriter(spdxOutputStream);
@@ -146,7 +155,6 @@ class ConversionInteractorTest {
         void verifyPackageWithNoSupplierField() {
             Optional<String> packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst();
             assertThat(packageSupplier.get()).isEqualTo("PackageSupplier: NOASSERTION");
-
         }
 
         @Test
@@ -158,12 +166,12 @@ class ConversionInteractorTest {
 
         @Test
         void verifySBOMCreatedTime() {
+            String isoDate = isoFormat.format(localDateTime);
             String created = lines.filter(line -> line.startsWith("Created: ")).collect(Collectors.joining(""));
-            assertThat(created).isEqualTo("Created: 2000-01-01T01:01:01.105Z");
+            assertThat(created).isEqualTo("Created: " + isoDate);
         }
     }
-
-//    class Curation {
+        //    class Curation {
 //        private final Package otherPkg = new Package(TYPE, GROUP, NAME, VERSION);
 //
 //        @BeforeEach
@@ -188,4 +196,4 @@ class ConversionInteractorTest {
 //            assertThat(otherPkg.getSourceLocation()).isEmpty();
 //        }
 //    }
-}
+    }

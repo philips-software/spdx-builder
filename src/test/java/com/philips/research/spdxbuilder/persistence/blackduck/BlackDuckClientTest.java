@@ -165,7 +165,7 @@ class BlackDuckClientTest {
                                     .put("releaseComments", DESCRIPTION)
                                     .put("distribution", DISTRIBUTION)
                                     .put("license", new JSONObject().put("spdxId", LICENSE))
-                                    .put("createdAt","2021-02-15T09:47:02.105Z")
+                                    .put("createdAt", "2021-02-15T09:47:02.105Z")
                                     .put("_meta", new JSONObject()
                                             .put("href", URI.create("https://server/something/" + VERSION_ID))))).toString()));
 
@@ -173,7 +173,7 @@ class BlackDuckClientTest {
 
             assertThat(projectVersion.getId()).isEqualTo(VERSION_ID);
             assertThat(projectVersion.getName()).isEqualTo(VERSION);
-           assertThat(projectVersion.getCreatedAt()).isEqualTo("2021-02-15T09:47:02.105Z");
+            assertThat(projectVersion.getCreatedAt()).contains("2021-02-15T09:47:02.105Z");
             final var description = projectVersion.getDescription().orElseThrow();
             assertThat(description).contains(DESCRIPTION);
             assertThat(description).contains(DISTRIBUTION);

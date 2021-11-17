@@ -14,10 +14,7 @@ import retrofit2.http.*;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -114,14 +111,14 @@ public interface BlackDuckApi {
         }
 
         @Override
-        public String getCreatedAt() {
-            return "";
+        public Optional<String> getCreatedAt() {
+            return Optional.empty();
         }
     }
 
     class ProjectVersionJson implements BlackDuckProduct {
         String versionName = "";
-        String createdAt = "";
+        @NullOr String createdAt;
         @NullOr String releaseComments;
         @NullOr String distribution;
         @NullOr LicenseJson license;
@@ -153,8 +150,8 @@ public interface BlackDuckApi {
         }
 
         @Override
-        public String getCreatedAt() {
-            return createdAt;
+        public Optional<String> getCreatedAt() {
+            return Optional.ofNullable(createdAt);
         }
     }
 
