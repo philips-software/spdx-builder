@@ -12,6 +12,7 @@ import com.philips.research.spdxbuilder.core.domain.BillOfMaterials;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -114,5 +115,9 @@ public class TreeWriter implements BomProcessor {
                 throw new IllegalArgumentException("Failed to create generic package URL for " + pkg);
             }
         }).toString();
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

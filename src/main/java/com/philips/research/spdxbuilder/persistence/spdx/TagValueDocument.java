@@ -85,7 +85,9 @@ public class TagValueDocument implements Closeable {
 
     @Override
     public void close() throws IOException {
-        writer.close();
+        if (writer != null) {
+            writer.close();
+        }
     }
 
 }

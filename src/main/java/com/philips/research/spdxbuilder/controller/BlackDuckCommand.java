@@ -42,7 +42,7 @@ public class BlackDuckCommand extends AbstractCommand {
     @Override
     protected ConversionService createService() {
         final BomReader reader = new BlackDuckReader(url, token, project, version, insecure);
-        final BomProcessor writer = new SpdxWriter(spdxFile);
+        final BomProcessor writer = new SpdxWriter(spdxStream);
 
         return new ConversionInteractor(reader, writer);
     }

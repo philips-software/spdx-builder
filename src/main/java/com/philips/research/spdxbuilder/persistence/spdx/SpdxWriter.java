@@ -11,41 +11,36 @@ import com.philips.research.spdxbuilder.core.domain.LicenseDictionary;
 import com.philips.research.spdxbuilder.core.domain.Package;
 import com.philips.research.spdxbuilder.core.domain.Relation;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Converts a bill-of-materials to an SPDX file.
  */
-public class SpdxWriter implements BomProcessor {
+public class SpdxWriter implements BomProcessor, AutoCloseable {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .withZone(ZoneId.of("UTC"));
     private static final List<String> SUPPORTED_HASH_KEYS =
             List.of("SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6");
 
-    private final File file;
-    private final Map<Package, SpdxRef> identifiers = new HashMap<>();
+    private final OutputStream stream;
+    private final Map<Package, SpdxRef> identifiers = new LinkedHashMap<>();
 
     private int nextId = 1;
 
-    public SpdxWriter(File file) {
-        this.file = file;
+    public SpdxWriter(OutputStream stream) {
+        this.stream = stream;
     }
 
     @Override
     public void process(BillOfMaterials bom) {
-        System.out.println("Writing SBOM to '" + file + "'");
-        try (final var doc = new TagValueDocument(new FileOutputStream(file))) {
+        try (final var doc = new TagValueDocument(this.stream)) {
             writeDocumentInformation(doc, bom);
             generatePackageIdentifiers(bom);
             writePackages(doc, bom);
@@ -53,6 +48,13 @@ public class SpdxWriter implements BomProcessor {
             System.out.println("Total: " + bom.getPackages().size() + " packages and " + bom.getRelations().size() + " relations");
         } catch (IOException e) {
             throw new SpdxException("Could not write SPDX file: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (this.stream != null) {
+            this.stream.close();
         }
     }
 
@@ -102,7 +104,8 @@ public class SpdxWriter implements BomProcessor {
             doc.optionallyAddValue("PackageSupplier", bom.getOrganization().map(SpdxParty::from));
         } else {
             doc.optionallyAddValue("ExternalRef", pkg.getPurl().map(ExternalReference::new));
-            doc.optionallyAddValue("PackageSupplier", pkg.getSupplier().map(SpdxParty::from));
+            Optional supplier = pkg.getSupplier().map(SpdxParty::from);
+            doc.addValue("PackageSupplier", supplier.isPresent() ? supplier : null);
         }
         doc.optionallyAddValue("PackageOriginator", pkg.getOriginator().map(SpdxParty::from));
         doc.addValue("PackageDownloadLocation", pkg.getDownloadLocation());
