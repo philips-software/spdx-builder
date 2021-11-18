@@ -36,6 +36,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
     implementation "com.github.package-url:packageurl-java:1.4.1"
 
     testImplementation "com.squareup.okhttp3:mockwebserver:${mockWebServerVersion}"

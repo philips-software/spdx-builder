@@ -23,7 +23,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -170,7 +169,8 @@ class ConversionInteractorTest {
             assertThat(created).isEqualTo("Created: " + isoDate);
         }
     }
-        //    class Curation {
+
+//    class Curation {
 //        private final Package otherPkg = new Package(TYPE, GROUP, NAME, VERSION);
 //
 //        @BeforeEach
@@ -195,4 +195,4 @@ class ConversionInteractorTest {
 //            assertThat(otherPkg.getSourceLocation()).isEmpty();
 //        }
 //    }
-    }
+}

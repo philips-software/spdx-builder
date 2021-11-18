@@ -11,7 +11,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 
-
 /**
  * Report on the composition of a product
  */

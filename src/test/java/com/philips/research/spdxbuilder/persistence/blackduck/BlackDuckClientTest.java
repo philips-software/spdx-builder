@@ -172,7 +172,7 @@ class BlackDuckClientTest {
                                     .put("releaseComments", DESCRIPTION)
                                     .put("distribution", DISTRIBUTION)
                                     .put("license", new JSONObject().put("spdxId", LICENSE))
-                                    .put("createdAt", dateString)
+                                    .put("createdAt", localDateTime)
                                     .put("_meta", new JSONObject()
                                             .put("href", URI.create("https://server/something/" + VERSION_ID))))).toString()));
 

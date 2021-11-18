@@ -15,7 +15,6 @@ import retrofit2.http.*;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -123,7 +122,7 @@ public interface BlackDuckApi {
 
     class ProjectVersionJson implements BlackDuckProduct {
         String versionName = "";
-        @NullOr String createdAt;
+        @NullOr LocalDateTime createdAt;
         @NullOr String releaseComments;
         @NullOr String distribution;
         @NullOr LicenseJson license;
@@ -156,8 +155,7 @@ public interface BlackDuckApi {
 
         @Override
         public Optional<LocalDateTime> getCreatedAt() {
-            DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            return (createdAt !=null) ? Optional.of(LocalDateTime.parse(createdAt, parser)):  Optional.empty() ;
+            return (createdAt != null) ? Optional.of(createdAt) : Optional.empty();
         }
     }
 
