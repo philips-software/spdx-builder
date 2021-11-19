@@ -7,6 +7,7 @@ package com.philips.research.spdxbuilder.core.domain;
 
 import com.philips.research.spdxbuilder.core.*;
 import com.philips.research.spdxbuilder.persistence.spdx.SpdxWriter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,10 +18,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -124,36 +126,50 @@ class ConversionInteractorTest {
     }
 
     @Nested
-    class spdxDocument{
+    class spdxDocument {
         ByteArrayOutputStream spdxOutputStream = new ByteArrayOutputStream();
         Stream<String> lines;
+        DateTimeFormatter isoFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                .withZone(ZoneId.of("UTC"));
+        String dateString = "2000-01-01T01:01:01.111Z";
+        DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, parser);
+
         @BeforeEach
         void setUp() {
+            bom.setCreatedAt(localDateTime);
             bom.addPackage(project).addPackage(pkg);
             BomProcessor spdxWriter = new SpdxWriter(spdxOutputStream);
             interactor.apply(spdxWriter);
             lines = spdxOutputStream.toString(Charset.defaultCharset()).lines();
         }
 
-        @Test
-        void verifyPackageWithNoSupplierField () throws IOException {
-            Optional<String> packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst();
-            assertThat(packageSupplier.get()).isEqualTo("PackageSupplier: NOASSERTION");
+        @AfterEach
+        void shutdown() throws IOException {
             spdxOutputStream.close();
         }
 
         @Test
-        void verifyPackageOrder () throws IOException {
+        void verifyPackageWithoutSupplierField() {
+            String packageSupplier = lines.filter(line -> line.startsWith("PackageSupplier: ")).findFirst().orElse("");
+            assertThat(packageSupplier).isEqualTo("PackageSupplier: NOASSERTION");
+        }
+
+        @Test
+        void verifyPackageOrder() {
             ArrayList<String> packages = new ArrayList<>(List.of("PackageName: Namespace/Project", "PackageName: Namespace/Package"));
             ArrayList<String> packageNames = lines.filter(line -> line.startsWith("PackageName: ")).collect(Collectors.toCollection(ArrayList::new));
             assertThat(packages).isEqualTo(packageNames);
-            spdxOutputStream.close();
+        }
+
+        @Test
+        void verifySBOMCreatedTime() {
+            String isoDate = isoFormat.format(localDateTime);
+            String created = lines.filter(line -> line.startsWith("Created: ")).collect(Collectors.joining(""));
+            assertThat(created).isEqualTo("Created: " + isoDate);
         }
     }
 
-
-
-//    @Nested
 //    class Curation {
 //        private final Package otherPkg = new Package(TYPE, GROUP, NAME, VERSION);
 //

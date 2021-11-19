@@ -11,7 +11,6 @@ import picocli.CommandLine.Option;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -77,7 +76,7 @@ public abstract class AbstractCommand implements Runnable {
                 new UploadClient(uploadUrl).upload(spdxFile);
             }
 
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         } finally {
