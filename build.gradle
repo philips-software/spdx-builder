@@ -68,6 +68,7 @@ jar {
                 'Implementation-Version': 'v0.9.0'
         )
     }
+    duplicatesStrategy = 'exclude'
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
