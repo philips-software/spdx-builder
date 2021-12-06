@@ -8,6 +8,7 @@ package com.philips.research.spdxbuilder.core.domain;
 import pl.tlinkowski.annotation.basic.NullOr;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -21,6 +22,16 @@ public class BillOfMaterials {
     private @NullOr Party organization;
     private @NullOr String identifier;
     private @NullOr URI namespace;
+    private @NullOr LocalDateTime createdAt;
+
+    public Optional<LocalDateTime> getCreatedAt() {
+        return Optional.ofNullable(createdAt);
+    }
+
+    public BillOfMaterials setCreatedAt(LocalDateTime createdTime) {
+        this.createdAt = createdTime;
+        return this;
+    }
 
     public List<Package> getPackages() {
         return packages;

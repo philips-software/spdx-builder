@@ -7,13 +7,13 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.24.23"
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.25.1"
   }
 }
 
 plugins {
     id 'application'
-    id 'com.adarshr.test-logger' version '3.0.0'
+    id 'com.adarshr.test-logger' version '3.1.0'
 }
 
 repositories {
@@ -23,8 +23,8 @@ repositories {
 
 ext {
     jacksonVersion = '2.13.0'
-    junitVersion = '5.8.1'
-    mockWebServerVersion = '4.9.2'
+    junitVersion = '5.8.2'
+    mockWebServerVersion = '4.9.3'
     retrofitVersion = '2.9.0'
 }
 
@@ -36,15 +36,16 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
     implementation "com.github.package-url:packageurl-java:1.4.1"
 
     testImplementation "com.squareup.okhttp3:mockwebserver:${mockWebServerVersion}"
-    testImplementation "org.json:json:20210307"
+    testImplementation "org.json:json:20211205"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
     testImplementation "org.assertj:assertj-core:3.21.0"
-    testImplementation "org.mockito:mockito-core:4.0.0"
-    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.7.2"
+    testImplementation "org.mockito:mockito-core:4.1.0"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.8"
 }
 
 testlogger {
@@ -64,9 +65,10 @@ jar {
         attributes(
                 'Main-Class': 'com.philips.research.spdxbuilder.SpdxBuilder',
                 'Implementation-Title': 'SPDX-Builder',
-                'Implementation-Version': 'v0.9.0'
+                'Implementation-Version': 'v0.9.1'
         )
     }
+    duplicatesStrategy = 'exclude'
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
@@ -76,4 +78,4 @@ java {
     }
 }
 
-version = 'v0.9.0'
+version = 'v0.9.1'
