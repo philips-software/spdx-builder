@@ -5,11 +5,12 @@ on:
     branches: 
       - main
       - develop
+      - use-tree-format
   pull_request:
     branches:
       - main
       - develop
-        
+
 jobs:
   scan:
 
@@ -19,7 +20,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v2
       with:
-        java-version: '11.0.1'
+        java-version: '11.0.13'
         distribution: 'zulu'
     - name: Download asset
       uses: fabriciobastian/download-release-asset-action@v1.0.6
@@ -27,13 +28,12 @@ jobs:
         repository: philips-software/spdx-builder 
         file: spdx-builder.jar
         token: ${{ secrets.GITHUB_TOKEN }} 
-    - name: Run ORT scan 
-      run: | 
-        docker run -v ${GITHUB_WORKSPACE}:/project philipssoftware/ort --info analyze -f JSON -i /project -o /project/ort
-      continue-on-error: true
+    - name: Create dependency list
+      run: |
+        ./gradlew -q dependencies --configuration runtimeClasspath > dependencies.txt
     - name: Create SPDX file
       run: |
-        java -jar spdx-builder.jar -c .spdx-builder.yml -o spdx-builder.spdx ort/analyzer-result.json
+        cat dependencies.txt | java -jar spdx-builder.jar tree -f gradle -c .spdx-builder.yml -o spdx-builder.spdx
     - uses: actions/upload-artifact@v2
       with:
         name: licenses 

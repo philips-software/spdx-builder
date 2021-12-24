@@ -55,11 +55,8 @@ git push origin main --tags
 This needs to be improved in the future, but for now:
 
 Change version into new version in file / linenumber:
-- `build.gradle` : line 67.
-- `build.gradle` : line 79.
-- `.spdx-builder.yml` : line 8.
-- `.spdx-builder.yml` : line 9.
-- `.spdx-builder.yml` : line 16.
+- `build.gradle` : line 68.
+- `build.gradle` : line 81.
 
 Commit these changes to `develop`:
 ```

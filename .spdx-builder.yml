@@ -4,14 +4,5 @@ document:
   comment: "This is an experimental tool"
   key:
   namespace: "https://research.philips.com/spdx-builder"
-projects:
-  - id: "Gradle:com.philips.research.spdxbuilder:spdx-builder:v0.9.1"
-    purl: "pkg:maven/philips/spdx-builder@v0.9.1"
-    excluded:
-      - "annotation*"
-      - "archives"
-      - "runtime*"
-      - "test*"
-curations:
-  - purl: "pkg:maven/philips/spdx-builder@v0.9.1"
-    license: "MIT"
+internal:
+  - com.philips.research:*
