@@ -34,7 +34,7 @@ jobs:
     - name: Create SPDX file
       run: |
         cat dependencies.txt | java -jar spdx-builder.jar tree -f gradle -c .spdx-builder.yml -o spdx-builder.spdx
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: licenses 
         path: |
