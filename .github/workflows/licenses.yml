@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
       with:
         java-version: '11.0.13'
         distribution: 'zulu'
@@ -34,7 +34,7 @@ jobs:
     - name: Create SPDX file
       run: |
         cat dependencies.txt | java -jar spdx-builder.jar tree -f gradle -c .spdx-builder.yml -o spdx-builder.spdx
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: licenses 
         path: |

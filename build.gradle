@@ -7,13 +7,13 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.25.3"
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.2"
   }
 }
 
 plugins {
     id 'application'
-    id 'com.adarshr.test-logger' version '3.1.0'
+    id 'com.adarshr.test-logger' version '3.2.0'
 }
 
 repositories {
@@ -22,14 +22,14 @@ repositories {
 }
 
 ext {
-    jacksonVersion = '2.13.1'
-    junitVersion = '5.8.2'
-    mockWebServerVersion = '4.9.3'
+    jacksonVersion = '2.14.0'
+    junitVersion = '5.9.1'
+    mockWebServerVersion = '4.10.0'
     retrofitVersion = '2.9.0'
 }
 
 dependencies {
-    implementation "info.picocli:picocli:4.6.2"
+    implementation "info.picocli:picocli:4.7.0"
     implementation "pl.tlinkowski.annotation:pl.tlinkowski.annotation.basic:0.2.0"
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
@@ -40,12 +40,12 @@ dependencies {
     implementation "com.github.package-url:packageurl-java:1.4.1"
 
     testImplementation "com.squareup.okhttp3:mockwebserver:${mockWebServerVersion}"
-    testImplementation "org.json:json:20211205"
+    testImplementation "org.json:json:20220924"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-    testImplementation "org.assertj:assertj-core:3.21.0"
-    testImplementation "org.mockito:mockito-core:4.2.0"
-    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.8.1"
+    testImplementation "org.assertj:assertj-core:3.23.1"
+    testImplementation "org.mockito:mockito-core:4.8.1"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.11"
 }
 
 testlogger {
