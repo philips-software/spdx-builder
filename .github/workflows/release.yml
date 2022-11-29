@@ -71,7 +71,7 @@ jobs:
           cat "${SIGNATURE}"
           curl_args=(-s -H "Authorization: token ${GITHUB_TOKEN}")
           curl_args+=(-H "Accept: application/vnd.github.v3+json")
-          release_id="$(curl "${curl_args[@]}" "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases?per_page=10" | jq "map(select(.name == \"${GITHUB_REF_NAME}\"))" | jq -r '.[0].id')"
+          release_id="$(curl "${curl_args[@]}" "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases?per_page=10" | jq "map(select(.tag_name == \"${GITHUB_REF_NAME}\"))" | jq -r '.[0].id')"
           echo "Upload ${SIGNATURE} to release with id ${release_id}…"
           curl_args+=(-H "Content-Type: $(file -b --mime-type "${SIGNATURE}")")
           curl "${curl_args[@]}" \
