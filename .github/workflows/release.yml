@@ -43,6 +43,29 @@ jobs:
         asset_name: spdx-builder.jar
         asset_content_type: application/java-archive
 
+    - name: Install cosign
+      uses: sigstore/cosign-installer@v2.8.1
+      with:
+        cosign-release: 'v1.13.1'
+
+    - name: Sign release
+      run: |
+        echo '${{ secrets.COSIGN_PRIVATE_KEY }}' > cosign.key
+        cosign sign-blob --key cosign.key --output-signature "${SIGNATURE}" ./build/libs/spdx-builder.jar 
+        cat "${SIGNATURE}"
+        curl_args=(-s -H "Authorization: token ${GITHUB_TOKEN}")
+        curl_args+=(-H "Accept: application/vnd.github.v3+json")
+        release_id="$(curl "${curl_args[@]}" "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases?per_page=10" | jq "map(select(.tag_name == \"${GITHUB_REF_NAME}\"))" | jq -r '.[0].id')"
+        echo "Upload ${SIGNATURE} to release with id ${release_id}…"
+        curl_args+=(-H "Content-Type: $(file -b --mime-type "${SIGNATURE}")")
+        curl "${curl_args[@]}" \
+          --data-binary @"${SIGNATURE}" \
+          "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${release_id}/assets?name=${SIGNATURE}"
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+        SIGNATURE: spdx-builder.jar.sig
+
   provenance:
     name: Generate provenance
     runs-on: ubuntu-20.04
@@ -50,6 +73,11 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v2.8.1
+        with:
+          cosign-release: 'v1.13.1'
+
       - name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@v0.8.0
         with:
@@ -58,11 +86,6 @@ jobs:
           arguments: --artifact-path release-assets --output-path provenance.att --tag-name ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v2.8.1
-        with:
-          cosign-release: 'v1.13.1'
 
       - name: Sign provenance
         run: |
