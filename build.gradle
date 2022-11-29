@@ -7,7 +7,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.2"
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.3"
   }
 }
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 ext {
-    jacksonVersion = '2.14.0'
+    jacksonVersion = '2.14.1'
     junitVersion = '5.9.1'
     mockWebServerVersion = '4.10.0'
     retrofitVersion = '2.9.0'
@@ -44,8 +44,8 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
     testImplementation "org.assertj:assertj-core:3.23.1"
-    testImplementation "org.mockito:mockito-core:4.8.1"
-    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.11"
+    testImplementation "org.mockito:mockito-core:4.9.0"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:3.11.1"
 }
 
 testlogger {
@@ -65,7 +65,7 @@ jar {
         attributes(
                 'Main-Class': 'com.philips.research.spdxbuilder.SpdxBuilder',
                 'Implementation-Title': 'SPDX-Builder',
-                'Implementation-Version': 'v0.9.2'
+                'Implementation-Version': 'v0.9.4'
         )
     }
     duplicatesStrategy = 'exclude'
@@ -78,4 +78,4 @@ java {
     }
 }
 
-version = 'v0.9.2'
+version = 'v0.9.4'
