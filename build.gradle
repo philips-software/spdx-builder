@@ -37,7 +37,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
-    implementation "com.github.package-url:packageurl-java:1.4.1"
+    implementation "com.github.package-url:packageurl-java:1.4.2"
 
     testImplementation "com.squareup.okhttp3:mockwebserver:${mockWebServerVersion}"
     testImplementation "org.json:json:20231013"
