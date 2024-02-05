@@ -44,7 +44,7 @@ jobs:
         asset_content_type: application/java-archive
 
     - name: Install cosign
-      uses: sigstore/cosign-installer@v3.3.0
+      uses: sigstore/cosign-installer@v3.4.0
       with:
         cosign-release: 'v1.13.1'
 
@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.3.0
+        uses: sigstore/cosign-installer@v3.4.0
         with:
           cosign-release: 'v1.13.1'
 
